@@ -13,6 +13,7 @@ import AboutMe from './pages/AboutMe';
 import CreateGallery from './pages/CreateGallery';
 import AdminDashboard from './pages/AdminDashboard';
 import ApplePhotosTest from './pages/ApplePhotosTest';
+import GooglePhotosTest from './pages/GooglePhotosTest';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -72,6 +73,11 @@ function App() {
             <Route path="/test/apple-photos" element={
               <PrivateRoute>
                 <ApplePhotosTest />
+              </PrivateRoute>
+            } />
+            <Route path="/test/google-photos" element={
+              <PrivateRoute>
+                <GooglePhotosTest />
               </PrivateRoute>
             } />
           </Routes>
