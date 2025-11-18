@@ -10,6 +10,8 @@ import MissionDetail from './pages/MissionDetailEnhanced';
 import GalleryView from './pages/GalleryView';
 import PublicGallery from './pages/PublicGallery';
 import AboutMe from './pages/AboutMe';
+import CreateGallery from './pages/CreateGallery';
+import AdminDashboard from './pages/AdminDashboard';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -54,6 +56,16 @@ function App() {
             <Route path="/about" element={
               <PrivateRoute>
                 <AboutMe />
+              </PrivateRoute>
+            } />
+            <Route path="/admin" element={
+              <PrivateRoute>
+                <AdminDashboard />
+              </PrivateRoute>
+            } />
+            <Route path="/galleries/create" element={
+              <PrivateRoute>
+                <CreateGallery />
               </PrivateRoute>
             } />
           </Routes>

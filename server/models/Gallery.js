@@ -47,6 +47,23 @@ const gallerySchema = new mongoose.Schema({
     default: 'grid',
   },
   layoutConfig: mongoose.Schema.Types.Mixed,
+  // E-commerce fields
+  enablePrints: {
+    type: Boolean,
+    default: false,
+  },
+  printPricing: {
+    '8x10': { type: Number, default: 25 },
+    '11x14': { type: Number, default: 35 },
+    '16x20': { type: Number, default: 65 },
+    '20x30': { type: Number, default: 95 },
+    '24x36': { type: Number, default: 145 },
+  },
+  shopifyProductIds: {
+    type: Map,
+    of: String, // Maps image ID to Shopify product ID
+  },
+  lumaLabId: String, // Luma Prints lab ID
   createdAt: {
     type: Date,
     default: Date.now,
