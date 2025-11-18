@@ -1,0 +1,65 @@
+import mongoose from 'mongoose';
+
+const missionSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  description: String,
+  location: String,
+  startDate: Date,
+  endDate: Date,
+  summary: String,
+  aiGenerated: {
+    type: Boolean,
+    default: false,
+  },
+  isPortfolio: {
+    type: Boolean,
+    default: false,
+  },
+  includeDiptychs: {
+    type: Boolean,
+    default: false,
+  },
+  includeTriptychs: {
+    type: Boolean,
+    default: false,
+  },
+  layout: {
+    type: String,
+    enum: ['grid', 'masonry', 'slideshow', 'custom'],
+    default: 'grid',
+  },
+  layoutConfig: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  gearList: [{
+    name: String,
+    category: String,
+    description: String,
+    specifications: mongoose.Schema.Types.Mixed,
+    aiGenerated: Boolean,
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+missionSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+export default mongoose.model('Mission', missionSchema);
