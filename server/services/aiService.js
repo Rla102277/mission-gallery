@@ -181,7 +181,7 @@ export async function generateMissions(location, summary, preferences = {}) {
 async function generateMissionsWithModel(location, summary, preferences = {}) {
   const { includeDiptychs, includeTriptychs, gearRoles, duration, model = 'gpt-4o-mini' } = preferences;
   
-  const prompt = `Generate a detailed photography mission plan for a ${duration || '7-day'} trip to ${location}.
+  const prompt = `You are an expert travel photographer and creative director. Generate an inspiring, detailed photography mission plan for a ${duration || '7-day'} trip to ${location}.
 
 Trip Summary: ${summary}
 
@@ -191,59 +191,123 @@ Preferences:
 - Include Diptychs: ${includeDiptychs ? 'Yes' : 'No'}
 - Include Triptychs: ${includeTriptychs ? 'Yes' : 'No'}
 
-Generate missions in this structure:
+IMPORTANT: Be creative, specific, and inspiring! Think like a professional photographer planning a portfolio-worthy shoot.
 
 For EACH DAY, provide:
-- Day title (e.g., "Day 1 - The Dragon's Coast")
-- Locations to visit
-- Core Missions (M1, M2, etc.) with:
-  * Mission title and location
-  * Specific gear to use (camera + lens)
-  * Camera settings (mode, aperture, ISO, shutter speed)
-  * Special notes (filters, techniques)
-  * Creative idea/goal
-- Series Missions (S1, S2, etc.) - Diptychs/Triptychs with:
-  * Series title
-  * Frame descriptions (Frame A, B, C)
-  * Which core missions to combine
+1. **Day Title**: Evocative, poetic title (e.g., "Day 1 - Where Mountains Meet Sky")
+2. **Theme**: Overall creative theme or mood for the day
+3. **Locations**: 2-4 specific locations with brief descriptions
+4. **Best Times**: Golden hour, blue hour, or specific timing recommendations
+5. **Weather Considerations**: How to adapt to conditions
+
+For EACH CORE MISSION (M1, M2, etc.):
+- **Title**: Creative, descriptive mission name
+- **Location**: Exact spot or landmark
+- **Gear**: Specific camera + lens from available gear
+- **Settings**: 
+  * Mode (A/M/S/P)
+  * Aperture (with reasoning)
+  * ISO range
+  * Shutter speed (with reasoning)
+- **Composition Ideas**: 
+  * Rule of thirds, leading lines, framing techniques
+  * Foreground/background elements to include
+  * Perspective (low angle, bird's eye, etc.)
+- **Creative Vision**: 
+  * Mood/emotion to capture
+  * Story to tell
+  * Unique angle or approach
+- **Technical Notes**: 
+  * Filters (ND, polarizer, etc.)
+  * Focus techniques (hyperfocal, focus stacking)
+  * Bracketing or special techniques
+- **Pro Tips**: 
+  * Timing considerations
+  * Common mistakes to avoid
+  * How to make this shot portfolio-worthy
+
+For SERIES MISSIONS (S1, S2, etc.) - Diptychs/Triptychs:
+- **Series Title**: Cohesive title for the series
+- **Narrative**: Story or theme connecting the frames
+- **Type**: diptych or triptych
+- **Frames**: Each frame with:
+  * Label (Frame A, B, C)
+  * Detailed description of what to shoot
+  * How it relates to other frames
+  * Mission reference (M1, M2, etc.)
+- **Cohesion Tips**: How to ensure visual consistency
 
 Format as JSON:
 {
   "days": [
     {
       "dayNumber": 1,
-      "title": "Day title",
-      "locations": ["Location 1", "Location 2"],
+      "title": "Evocative day title",
+      "theme": "Overall creative theme",
+      "locations": [
+        {"name": "Location name", "description": "Brief description"}
+      ],
+      "bestTimes": "Golden hour, blue hour, etc.",
+      "weatherTips": "How to adapt to conditions",
       "coreMissions": [
         {
           "id": "M1",
-          "title": "Mission title",
+          "title": "Creative mission title",
           "location": "Specific location",
           "gear": "Camera + Lens",
           "settings": {
             "mode": "A/M/S",
             "aperture": "f/8",
+            "apertureReason": "Why this aperture",
             "iso": "100-400",
-            "shutterSpeed": "1/125"
+            "shutterSpeed": "1/125",
+            "shutterReason": "Why this speed"
           },
-          "specialNotes": "Any filters or techniques",
-          "idea": "Creative goal"
+          "composition": {
+            "techniques": ["Rule of thirds", "Leading lines"],
+            "foreground": "What to include in foreground",
+            "background": "What to include in background",
+            "perspective": "Shooting angle/perspective"
+          },
+          "creativeVision": {
+            "mood": "Emotion to capture",
+            "story": "Story to tell",
+            "uniqueAngle": "What makes this special"
+          },
+          "technicalNotes": {
+            "filters": "ND, polarizer, etc.",
+            "focusTechnique": "Hyperfocal, focus stacking, etc.",
+            "specialTechniques": "Bracketing, long exposure, etc."
+          },
+          "proTips": [
+            "Timing tip",
+            "Composition tip",
+            "Technical tip"
+          ]
         }
       ],
       "seriesMissions": [
         {
           "id": "S1",
           "title": "Series title",
+          "narrative": "Story connecting the frames",
           "type": "triptych/diptych",
           "frames": [
-            {"label": "Frame A", "description": "What to shoot", "missionRef": "M1"},
-            {"label": "Frame B", "description": "What to shoot", "missionRef": "M2"}
-          ]
+            {
+              "label": "Frame A",
+              "description": "Detailed shot description",
+              "relationship": "How it relates to other frames",
+              "missionRef": "M1"
+            }
+          ],
+          "cohesionTips": "How to ensure visual consistency"
         }
       ]
     }
   ]
-}`;
+}
+
+Be specific, creative, and inspiring. Think portfolio-quality work!`;
 
   return await retryWithBackoff(async () => {
     console.log('🤖 Using model:', model);
