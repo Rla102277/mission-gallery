@@ -144,23 +144,23 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
 }
 
 export async function generateMissions(location, summary, preferences = {}) {
-  const { includeDiptychs, includeTriptychs, gearRoles, duration, model = 'gpt-4o-mini' } = preferences;
+  const { includeDiptychs, includeTriptychs, gearRoles, duration, model = 'gemini-1.5-flash' } = preferences;
   
-  // Try the requested model first, then fallback chain if rate limited
+  // Try the requested model first, then fallback to Gemini if rate limited
   try {
     return await generateMissionsWithModel(location, summary, { includeDiptychs, includeTriptychs, gearRoles, duration, model });
   } catch (error) {
     const isRateLimit = error.status === 429 || error.code === 'rate_limit_exceeded' || error.message?.includes('rate limit');
     
     if (isRateLimit) {
-      // Fallback chain: Try Groq first (best free tier), then Gemini
-      if (!model.startsWith('llama') && !model.startsWith('mixtral')) {
+      // Fallback to Gemini (best free tier: 15 req/min)
+      if (!model.startsWith('gemini')) {
         try {
-          console.log('⚠️ Rate limited, trying Groq Llama 3.1 70B (free tier: 30 req/min)...');
-          return await generateMissionsWithModel(location, summary, { includeDiptychs, includeTriptychs, gearRoles, duration, model: 'llama-3.1-70b-versatile' });
-        } catch (groqError) {
-          console.log('⚠️ Groq also limited, falling back to Gemini...');
+          console.log('⚠️ Rate limited, falling back to Gemini 1.5 Flash (free tier: 15 req/min)...');
           return await generateMissionsWithModel(location, summary, { includeDiptychs, includeTriptychs, gearRoles, duration, model: 'gemini-1.5-flash' });
+        } catch (geminiError) {
+          console.log('⚠️ Gemini also limited, please wait and try again...');
+          throw geminiError;
         }
       }
     }
