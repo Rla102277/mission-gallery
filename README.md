@@ -10,9 +10,11 @@ A SmugMug-inspired photography mission management platform with AI-powered featu
 - Organize images by mission with separate galleries for public viewing
 - Control visibility of individual images (public/private)
 
-### 🤖 AI-Powered Tools
+### 🤖 AI-Powered Tools (5 Providers, 20+ Models)
 
-- **AI Mission Generation**: Generate mission ideas based on location and trip summary
+- **AI Mission Generation**: Generate detailed photography mission plans based on location and trip summary
+- **Multi-AI Provider Support**: Choose from Groq, Together AI, Google Gemini, Anthropic Claude, or OpenAI
+- **Smart Fallback**: Automatically switches providers if one is rate-limited
 - **AI Gear List**: Automatically generate comprehensive photography gear lists
 - **Gear Details**: Get detailed specifications and information about photography equipment
 
@@ -36,8 +38,13 @@ A SmugMug-inspired photography mission management platform with AI-powered featu
 - Node.js + Express
 - MongoDB + Mongoose
 - Passport.js (Google OAuth)
-- OpenAI API (GPT-4)
-- Multer + Sharp (image processing)
+- Cloudinary (image hosting)
+- Multi-AI Integration:
+  - Groq (Llama, Mixtral, Qwen)
+  - Together AI (Llama, Mixtral)
+  - Google Gemini (1.5/2.5 Flash, Pro)
+  - Anthropic Claude (3.5 Haiku, Sonnet)
+  - OpenAI (GPT-4o, GPT-4o Mini)
 
 ### Frontend
 
@@ -55,15 +62,29 @@ A SmugMug-inspired photography mission management platform with AI-powered featu
 Create a `.env` file in the root directory:
 
 ```env
+# Required
 MONGODB_URI=your_mongodb_connection_string
 SESSION_SECRET=your_random_session_secret
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-OPENAI_API_KEY=your_openai_api_key
 CALLBACK_URL=https://your-replit-url.repl.co/auth/google/callback
 CLIENT_URL=https://your-replit-url.repl.co
-PORT=5000
+PORT=3001
+
+# Cloudinary (for image hosting)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# AI Providers (add at least one)
+GROQ_API_KEY=gsk_your_key_here                    # Recommended: Best free tier (30 req/min)
+GEMINI_API_KEY=AIza_your_key_here                 # Cheap backup option
+TOGETHER_API_KEY=your_key_here                    # Optional: $25 free credit
+ANTHROPIC_API_KEY=sk-ant_your_key_here            # Optional: Claude models
+OPENAI_API_KEY=sk_your_key_here                   # Optional: Premium option
 ```
+
+**Quick Start:** Only `GROQ_API_KEY` is needed for AI features! See [AI_PROVIDERS_SETUP.md](AI_PROVIDERS_SETUP.md) for details.
 
 ### 2. Google OAuth Setup
 
