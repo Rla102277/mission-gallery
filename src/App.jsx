@@ -12,6 +12,7 @@ import PublicGallery from './pages/PublicGallery';
 import AboutMe from './pages/AboutMe';
 import CreateGallery from './pages/CreateGallery';
 import AdminDashboard from './pages/AdminDashboard';
+import ApplePhotosTest from './pages/ApplePhotosTest';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -66,6 +67,11 @@ function App() {
             <Route path="/galleries/create" element={
               <PrivateRoute>
                 <CreateGallery />
+              </PrivateRoute>
+            } />
+            <Route path="/test/apple-photos" element={
+              <PrivateRoute>
+                <ApplePhotosTest />
               </PrivateRoute>
             } />
           </Routes>
