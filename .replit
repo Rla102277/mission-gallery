@@ -2,11 +2,10 @@ run = "npm run dev"
 entrypoint = "server/index.js"
 
 [nix]
-channel = "stable-22_11"
+channel = "stable-23_11"
 
 [deployment]
 run = ["sh", "-c", "npm start"]
-deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 3001
