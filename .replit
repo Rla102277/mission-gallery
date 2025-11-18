@@ -1,4 +1,4 @@
-run = "npm start"
+run = "npm run dev"
 entrypoint = "server/index.js"
 
 [nix]
@@ -9,5 +9,9 @@ run = ["sh", "-c", "npm start"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
-localPort = 5000
+localPort = 3001
 externalPort = 80
+
+[[ports]]
+localPort = 5173
+externalPort = 3000
