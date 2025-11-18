@@ -14,7 +14,7 @@ export default function CreateMissionEnhanced() {
     location: '',
     summary: '',
     duration: '7 days',
-    model: 'gemini-1.5-flash',
+    model: 'llama-3.3-70b-versatile',
     gearRoles: `GFX 100S II ("The Portfolio"): 100MP, IBIS hero camera
 Lenses: GF 32-64mm f/4, Mitakon 135mm f/2.5
 X-E5 ("The Specialist"): Ultra-Wide dedicated
@@ -311,10 +311,14 @@ iPhone: Diary, quick clips, timelapses`,
                     onChange={handleAiChange}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    <optgroup label="🆓 Google Gemini (Best Free)" className="bg-gray-900">
-                      <option value="gemini-1.5-flash" className="bg-gray-900">🚀 Gemini 1.5 Flash (Recommended - Free)</option>
-                      <option value="gemini-2.5-flash" className="bg-gray-900">⚡ Gemini 2.5 Flash (Newer)</option>
-                      <option value="gemini-2.5-pro" className="bg-gray-900">💎 Gemini 2.5 Pro</option>
+                    <optgroup label="🆓 Groq (Best Free - Fastest!)" className="bg-gray-900">
+                      <option value="llama-3.3-70b-versatile" className="bg-gray-900">🚀 Llama 3.3 70B (Recommended)</option>
+                      <option value="llama-3.1-8b-instant" className="bg-gray-900">⚡ Llama 3.1 8B (Ultra Fast)</option>
+                    </optgroup>
+                    <optgroup label="💰 Google Gemini (Cheap)" className="bg-gray-900">
+                      <option value="gemini-1.5-flash" className="bg-gray-900">Gemini 1.5 Flash</option>
+                      <option value="gemini-2.5-flash" className="bg-gray-900">Gemini 2.5 Flash (Newer)</option>
+                      <option value="gemini-2.5-pro" className="bg-gray-900">Gemini 2.5 Pro</option>
                     </optgroup>
                     <optgroup label="🆓 Together AI ($25 free credit)" className="bg-gray-900">
                       <option value="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo" className="bg-gray-900">Llama 3.1 70B Turbo</option>
@@ -332,7 +336,7 @@ iPhone: Diary, quick clips, timelapses`,
                     </optgroup>
                   </select>
                   <p className="text-xs text-purple-300 mt-1">
-                    💡 Gemini 1.5 Flash is free with 15 req/min. Auto-fallback enabled for rate limits.
+                    💡 Groq is FREE and FAST! 30 req/min. Auto-fallback to Gemini if rate limited.
                   </p>
                 </div>
               </div>
