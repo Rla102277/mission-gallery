@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Upload, Eye, EyeOff, Trash2, Sparkles, Plus, Info } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 
@@ -28,8 +28,8 @@ export default function MissionDetail() {
   const fetchMissionData = async () => {
     try {
       const [missionRes, imagesRes] = await Promise.all([
-        axios.get(`/api/missions/${id}`, { withCredentials: true }),
-        axios.get(`/api/images/mission/${id}`, { withCredentials: true }),
+        api.get(`/api/missions/${id}`),
+        api.get(`/api/images/mission/${id}`),
       ]);
       setMission(missionRes.data);
       setImages(imagesRes.data);
@@ -48,7 +48,7 @@ export default function MissionDetail() {
     });
 
     try {
-      const response = await axios.post(`/api/images/upload/${id}`, formData, {
+      const response = await api.post(`/api/images/upload/${id}`, formData, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -69,7 +69,7 @@ export default function MissionDetail() {
 
   const toggleImageVisibility = async (imageId, currentStatus) => {
     try {
-      const response = await axios.put(
+      const response = await api.put(
         `/api/images/${imageId}`,
         { isPublic: !currentStatus },
         { withCredentials: true }
@@ -84,7 +84,7 @@ export default function MissionDetail() {
     if (!confirm('Are you sure you want to delete this image?')) return;
     
     try {
-      await axios.delete(`/api/images/${imageId}`, { withCredentials: true });
+      await api.delete(`/api/images/${imageId}`);
       setImages(images.filter((img) => img._id !== imageId));
     } catch (error) {
       console.error('Error deleting image:', error);
@@ -94,7 +94,7 @@ export default function MissionDetail() {
   const generateGearList = async () => {
     setGearLoading(true);
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `/api/missions/${id}/gear`,
         { userInputs: gearInputs },
         { withCredentials: true }
@@ -111,7 +111,7 @@ export default function MissionDetail() {
 
   const createGallery = async () => {
     try {
-      const response = await axios.post(
+      const response = await api.post(
         '/api/galleries',
         {
           missionId: id,

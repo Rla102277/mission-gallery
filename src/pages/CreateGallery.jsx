@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Camera, Plus, X, Image as ImageIcon, Save, Trash2 } from 'lucide-react';
 import LightroomAlbumSelector from '../components/LightroomAlbumSelector';
 
@@ -40,7 +40,7 @@ function CreateGallery() {
 
   const fetchMissions = async () => {
     try {
-      const response = await axios.get('/api/missions', { withCredentials: true });
+      const response = await api.get('/api/missions');
       setMissions(response.data);
     } catch (error) {
       console.error('Error fetching missions:', error);
@@ -49,7 +49,7 @@ function CreateGallery() {
 
   const fetchMissionImages = async (missionId) => {
     try {
-      const response = await axios.get(`/api/images/mission/${missionId}`, { withCredentials: true });
+      const response = await api.get(`/api/images/mission/${missionId}`);
       setAvailableImages(response.data);
     } catch (error) {
       console.error('Error fetching images:', error);
@@ -108,7 +108,7 @@ function CreateGallery() {
         images: selectedImages.map(img => img._id)
       };
 
-      const response = await axios.post('/api/galleries', galleryData, {
+      const response = await api.post('/api/galleries', galleryData, {
         withCredentials: true
       });
 

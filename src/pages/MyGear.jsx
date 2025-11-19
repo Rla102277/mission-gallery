@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { Camera, Loader } from 'lucide-react';
 
 export default function MyGear() {
@@ -12,7 +12,7 @@ export default function MyGear() {
 
   const fetchGear = async () => {
     try {
-      const response = await axios.get('/api/gear/published');
+      const response = await api.get('/api/gear/published');
       if (response.data) {
         setGear(response.data);
       }

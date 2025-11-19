@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { 
   Image as ImageIcon, 
   Edit, 
@@ -35,8 +35,8 @@ function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [galleriesRes, missionsRes] = await Promise.all([
-        axios.get('/api/galleries', { withCredentials: true }),
-        axios.get('/api/missions', { withCredentials: true })
+        api.get('/api/galleries'),
+        api.get('/api/missions')
       ]);
       setGalleries(galleriesRes.data);
       setMissions(missionsRes.data);
@@ -51,7 +51,7 @@ function AdminDashboard() {
     if (!window.confirm('Are you sure you want to delete this gallery? This action cannot be undone.')) return;
 
     try {
-      await axios.delete(`/api/galleries/${id}`, { withCredentials: true });
+      await api.delete(`/api/galleries/${id}`);
       setGalleries(galleries.filter(g => g._id !== id));
       setSelectedGalleries(selectedGalleries.filter(gId => gId !== id));
     } catch (error) {
@@ -68,7 +68,7 @@ function AdminDashboard() {
     try {
       await Promise.all(
         selectedGalleries.map(id => 
-          axios.delete(`/api/galleries/${id}`, { withCredentials: true })
+          api.delete(`/api/galleries/${id}`)
         )
       );
       setGalleries(galleries.filter(g => !selectedGalleries.includes(g._id)));
@@ -84,7 +84,7 @@ function AdminDashboard() {
     if (!window.confirm('Are you sure you want to delete this mission? This action cannot be undone.')) return;
 
     try {
-      await axios.delete(`/api/missions/${id}`, { withCredentials: true });
+      await api.delete(`/api/missions/${id}`);
       setMissions(missions.filter(m => m._id !== id));
       setSelectedMissions(selectedMissions.filter(mId => mId !== id));
     } catch (error) {
@@ -101,7 +101,7 @@ function AdminDashboard() {
     try {
       await Promise.all(
         selectedMissions.map(id => 
-          axios.delete(`/api/missions/${id}`, { withCredentials: true })
+          api.delete(`/api/missions/${id}`)
         )
       );
       setMissions(missions.filter(m => !selectedMissions.includes(m._id)));
@@ -115,7 +115,7 @@ function AdminDashboard() {
 
   const toggleGalleryVisibility = async (gallery) => {
     try {
-      await axios.put(`/api/galleries/${gallery._id}`, 
+      await api.put(`/api/galleries/${gallery._id}`, 
         { isPublic: !gallery.isPublic },
         { withCredentials: true }
       );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Link as LinkIcon, Share2 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import PhotoLinker from '../components/PhotoLinker';
@@ -41,8 +41,8 @@ iPhone: Diary, quick clips, timelapses`,
   const fetchMissionData = async () => {
     try {
       const [missionRes, imagesRes] = await Promise.all([
-        axios.get(`/api/missions/${id}`, { withCredentials: true }),
-        axios.get(`/api/images/mission/${id}`, { withCredentials: true }),
+        api.get(`/api/missions/${id}`),
+        api.get(`/api/images/mission/${id}`),
       ]);
       setMission(missionRes.data);
       setImages(imagesRes.data);
@@ -61,7 +61,7 @@ iPhone: Diary, quick clips, timelapses`,
     });
 
     try {
-      const response = await axios.post(`/api/images/upload/${id}`, formData, {
+      const response = await api.post(`/api/images/upload/${id}`, formData, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -82,7 +82,7 @@ iPhone: Diary, quick clips, timelapses`,
 
   const toggleImageVisibility = async (imageId, currentStatus) => {
     try {
-      const response = await axios.put(
+      const response = await api.put(
         `/api/images/${imageId}`,
         { isPublic: !currentStatus },
         { withCredentials: true }
@@ -97,7 +97,7 @@ iPhone: Diary, quick clips, timelapses`,
     if (!confirm('Are you sure you want to delete this image?')) return;
 
     try {
-      await axios.delete(`/api/images/${imageId}`, { withCredentials: true });
+      await api.delete(`/api/images/${imageId}`);
       setImages(images.filter((img) => img._id !== imageId));
     } catch (error) {
       console.error('Error deleting image:', error);
@@ -108,7 +108,7 @@ iPhone: Diary, quick clips, timelapses`,
   const generateGearList = async () => {
     setGearLoading(true);
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `/api/missions/${id}/gear`,
         { 
           duration: gearInputs.duration,
@@ -143,7 +143,7 @@ iPhone: Diary, quick clips, timelapses`,
     
     setPublishing(true);
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `/api/missions/${id}/publish-gallery`,
         {},
         { withCredentials: true }

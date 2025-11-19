@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Plus, MapPin, Calendar, Eye, EyeOff, Trash2, Star } from 'lucide-react';
 
 export default function Dashboard() {
@@ -15,8 +15,8 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       const [missionsRes, galleriesRes] = await Promise.all([
-        axios.get('/api/missions', { withCredentials: true }),
-        axios.get('/api/galleries', { withCredentials: true }),
+        api.get('/api/missions'),
+        api.get('/api/galleries'),
       ]);
       setMissions(missionsRes.data);
       setGalleries(galleriesRes.data);
@@ -36,7 +36,7 @@ export default function Dashboard() {
     }
 
     try {
-      await axios.delete(`/api/galleries/${galleryId}`, { withCredentials: true });
+      await api.delete(`/api/galleries/${galleryId}`);
       setGalleries(galleries.filter(g => g._id !== galleryId));
       alert('Gallery deleted successfully!');
     } catch (error) {

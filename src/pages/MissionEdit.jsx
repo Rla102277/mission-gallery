@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Save, ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function MissionEdit() {
@@ -23,7 +23,7 @@ export default function MissionEdit() {
 
   const fetchMission = async () => {
     try {
-      const response = await axios.get(`/api/missions/${id}`, { withCredentials: true });
+      const response = await api.get(`/api/missions/${id}`);
       setMission(response.data);
       setFormData({
         title: response.data.title || '',
@@ -45,7 +45,7 @@ export default function MissionEdit() {
     setSaving(true);
 
     try {
-      await axios.put(
+      await api.put(
         `/api/missions/${id}`,
         formData,
         { withCredentials: true }

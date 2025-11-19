@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { Camera, Loader, Sparkles, Save, Eye } from 'lucide-react';
 
 export default function GearEditor() {
@@ -16,7 +16,7 @@ export default function GearEditor() {
 
   const fetchGear = async () => {
     try {
-      const response = await axios.get('/api/gear', { withCredentials: true });
+      const response = await api.get('/api/gear');
       if (response.data) {
         setGear(response.data);
         setRawGearList(response.data.rawGearList || '');
@@ -37,9 +37,9 @@ export default function GearEditor() {
 
     setGenerating(true);
     try {
-      const response = await axios.post('/api/gear/generate', {
+      const response = await api.post('/api/gear/generate', {
         gearList: rawGearList
-      }, { withCredentials: true });
+      });
 
       setRefinedContent(response.data.refinedContent);
     } catch (error) {
@@ -62,11 +62,11 @@ export default function GearEditor() {
   const saveGear = async () => {
     setSaveStatus('saving');
     try {
-      await axios.post('/api/gear', {
+      await api.post('/api/gear', {
         rawGearList,
         refinedContent,
         isPublished: true
-      }, { withCredentials: true });
+      });
 
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(''), 3000);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Camera, Eye, Calendar } from 'lucide-react';
 
 export default function PublicGalleries() {
@@ -14,7 +14,7 @@ export default function PublicGalleries() {
 
   const fetchPublicGalleries = async () => {
     try {
-      const response = await axios.get('/api/galleries/public/all');
+      const response = await api.get('/api/galleries/public/all');
       setGalleries(response.data);
     } catch (error) {
       console.error('Error fetching galleries:', error);

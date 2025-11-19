@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { Sparkles, Loader, Eye, EyeOff, Save } from 'lucide-react';
 
 export default function AboutMeEditor() {
@@ -21,7 +21,7 @@ export default function AboutMeEditor() {
 
   const fetchAbout = async () => {
     try {
-      const response = await axios.get('/api/about', {
+      const response = await api.get('/api/about', {
         withCredentials: true,
       });
       if (response.data) {
@@ -50,7 +50,7 @@ export default function AboutMeEditor() {
 
     setRefining(true);
     try {
-      const response = await axios.post(
+      const response = await api.post(
         '/api/about/refine',
         {
           rawText: about.rawText,
@@ -74,7 +74,7 @@ export default function AboutMeEditor() {
   const saveAbout = async () => {
     setSaving(true);
     try {
-      await axios.post('/api/about', about, {
+      await api.post('/api/about', about, {
         withCredentials: true,
       });
       alert('About page saved successfully!');
@@ -88,7 +88,7 @@ export default function AboutMeEditor() {
 
   const togglePublish = async () => {
     try {
-      const response = await axios.patch('/api/about/publish', {}, {
+      const response = await api.patch('/api/about/publish', {}, {
         withCredentials: true,
       });
       setAbout(response.data);

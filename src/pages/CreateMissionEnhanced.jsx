@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Sparkles, Loader, ChevronDown, ChevronUp, Camera, MapPin, Calendar } from 'lucide-react';
 
 export default function CreateMissionEnhanced() {
@@ -42,7 +42,7 @@ iPhone: Diary, quick clips, timelapses`,
     console.log('🚀 Sending to API:', aiFormData);
     console.log('📝 Selected model:', aiFormData.model);
     try {
-      const response = await axios.post('/api/missions/generate', aiFormData, {
+      const response = await api.post('/api/missions/generate', aiFormData, {
         withCredentials: true,
       });
       setAiMissionPlan(response.data.missions);
@@ -95,7 +95,7 @@ iPhone: Diary, quick clips, timelapses`,
         missionIdeas: missionIdeas, // Store individual mission ideas
       };
 
-      const response = await axios.post('/api/missions', missionData, {
+      const response = await api.post('/api/missions', missionData, {
         withCredentials: true,
       });
 
@@ -123,7 +123,7 @@ iPhone: Diary, quick clips, timelapses`,
         structuredPlan: day,
       };
 
-      const missionResponse = await axios.post('/api/missions', missionData, {
+      const missionResponse = await api.post('/api/missions', missionData, {
         withCredentials: true,
       });
 
@@ -136,7 +136,7 @@ iPhone: Diary, quick clips, timelapses`,
         layout: 'grid',
       };
 
-      await axios.post('/api/galleries', galleryData, {
+      await api.post('/api/galleries', galleryData, {
         withCredentials: true,
       });
 
@@ -167,7 +167,7 @@ iPhone: Diary, quick clips, timelapses`,
         isPortfolio: true, // Mark as portfolio
       };
 
-      const missionResponse = await axios.post('/api/missions', missionData, {
+      const missionResponse = await api.post('/api/missions', missionData, {
         withCredentials: true,
       });
 
@@ -181,7 +181,7 @@ iPhone: Diary, quick clips, timelapses`,
         isPortfolio: true,
       };
 
-      await axios.post('/api/galleries', galleryData, {
+      await api.post('/api/galleries', galleryData, {
         withCredentials: true,
       });
 
@@ -207,7 +207,7 @@ iPhone: Diary, quick clips, timelapses`,
       // Create missions for all days
       const missionPromises = aiMissionPlan.map(day => {
         const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
-        return axios.post('/api/missions', {
+        return api.post('/api/missions', {
           title: day.title,
           description: `${locationNames} - ${day.coreMissions.length} missions planned`,
           location: aiFormData.location,
@@ -215,7 +215,7 @@ iPhone: Diary, quick clips, timelapses`,
           includeDiptychs: aiFormData.includeDiptychs,
           includeTriptychs: aiFormData.includeTriptychs,
           structuredPlan: day,
-        }, { withCredentials: true });
+        });
       });
 
       const missionResponses = await Promise.all(missionPromises);
@@ -229,7 +229,7 @@ iPhone: Diary, quick clips, timelapses`,
         layout: 'grid',
       };
 
-      await axios.post('/api/galleries', galleryData, {
+      await api.post('/api/galleries', galleryData, {
         withCredentials: true,
       });
 
@@ -248,7 +248,7 @@ iPhone: Diary, quick clips, timelapses`,
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('/api/missions', formData, {
+      const response = await api.post('/api/missions', formData, {
         withCredentials: true,
       });
       navigate(`/missions/${response.data._id}`);

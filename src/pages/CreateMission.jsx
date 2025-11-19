@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Sparkles, Loader } from 'lucide-react';
 
 export default function CreateMission() {
@@ -48,7 +48,7 @@ export default function CreateMission() {
     e.preventDefault();
     setAiLoading(true);
     try {
-      const response = await axios.post('/api/missions/generate', aiFormData, {
+      const response = await api.post('/api/missions/generate', aiFormData, {
         withCredentials: true,
       });
       setAiSuggestions(response.data.missions);
@@ -78,7 +78,7 @@ export default function CreateMission() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('/api/missions', formData, {
+      const response = await api.post('/api/missions', formData, {
         withCredentials: true,
       });
       navigate(`/missions/${response.data._id}`);
