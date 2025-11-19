@@ -4,7 +4,7 @@ const gallerySchema = new mongoose.Schema({
   missionId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Mission',
-    required: true,
+    required: false, // Optional - can be null for Lightroom-only galleries
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -64,6 +64,21 @@ const gallerySchema = new mongoose.Schema({
     of: String, // Maps image ID to Shopify product ID
   },
   lumaLabId: String, // Luma Prints lab ID
+  // Lightroom integration
+  lightroomAlbum: {
+    id: String,
+    name: String,
+    catalogId: String,
+  },
+  // Track which Lightroom photos are visible (hidden by default for new photos)
+  visibleLightroomPhotos: [{
+    type: String, // Lightroom photo IDs
+  }],
+  // Store additional data like enhanced Lightroom photos
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   createdAt: {
     type: Date,
     default: Date.now,

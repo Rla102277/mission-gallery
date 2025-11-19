@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Camera, Plus, X, Image as ImageIcon, Save, Trash2 } from 'lucide-react';
+import LightroomAlbumSelector from '../components/LightroomAlbumSelector';
 
 function CreateGallery() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ function CreateGallery() {
     layout: 'grid',
     missionId: '',
     enablePrints: false,
+    lightroomAlbum: null,
     printPricing: {
       '8x10': 25,
       '11x14': 35,
@@ -80,11 +82,22 @@ function CreateGallery() {
     }
   };
 
+  const handleLightroomSelect = (album) => {
+    setFormData({
+      ...formData,
+      lightroomAlbum: {
+        id: album.id,
+        name: album.payload?.name || 'Untitled Album',
+        catalogId: localStorage.getItem('lr_catalog_id')
+      }
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (selectedImages.length === 0) {
-      alert('Please select at least one image for the gallery');
+    if (selectedImages.length === 0 && !formData.lightroomAlbum) {
+      alert('Please select at least one image or link a Lightroom album');
       return;
     }
 
@@ -287,6 +300,29 @@ function CreateGallery() {
               )}
             </div>
           )}
+
+          {/* Lightroom Album Integration */}
+          <div className="bg-stone-800/50 backdrop-blur-sm border border-stone-700 rounded-lg p-6">
+            <h2 className="text-2xl font-semibold text-stone-100 mb-4">
+              Or Link Lightroom Album
+            </h2>
+            <p className="text-stone-400 text-sm mb-4">
+              Connect your Adobe Lightroom album to automatically sync photos
+            </p>
+            <LightroomAlbumSelector 
+              onSelect={handleLightroomSelect}
+              selectedAlbumId={formData.lightroomAlbum?.id}
+              allowCreate={true}
+              missionTitle={formData.title}
+            />
+            {formData.lightroomAlbum && (
+              <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <p className="text-amber-200 text-sm">
+                  ✓ Linked to: <span className="font-semibold">{formData.lightroomAlbum.name}</span>
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">

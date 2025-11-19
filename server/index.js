@@ -17,6 +17,8 @@ import missionRoutes from './routes/missions.js';
 import imageRoutes from './routes/images.js';
 import galleryRoutes from './routes/galleries.js';
 import aboutRoutes from './routes/about.js';
+import adobeRoutes from './routes/adobe.js';
+import gearRoutes from './routes/gear.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,6 +61,8 @@ app.use('/api/missions', missionRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/galleries', galleryRoutes);
 app.use('/api/about', aboutRoutes);
+app.use('/api/adobe', adobeRoutes);
+app.use('/api/gear', gearRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -93,5 +97,8 @@ mongoose
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  if (err?.oauthError?.data) {
+    console.error('OAuth error response:', err.oauthError.data.toString());
+  }
   res.status(500).json({ error: err.message || 'Something went wrong!' });
 });

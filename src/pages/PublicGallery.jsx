@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Camera } from 'lucide-react';
+import ImageViewer from '../components/ImageViewer';
 
 export default function PublicGallery() {
   const { slug } = useParams();
@@ -9,6 +10,9 @@ export default function PublicGallery() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [lightroomPhotos, setLightroomPhotos] = useState([]);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchGallery();
@@ -18,11 +22,54 @@ export default function PublicGallery() {
     try {
       const response = await axios.get(`/api/galleries/public/${slug}`);
       setGallery(response.data);
+      
+      // Fetch Lightroom photos if this is a Lightroom gallery
+      if (response.data.lightroomAlbum) {
+        await fetchLightroomPhotos(response.data);
+      }
     } catch (error) {
       console.error('Error fetching gallery:', error);
       setError('Gallery not found or is private');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLightroomPhotos = async (galleryData) => {
+    try {
+      const token = localStorage.getItem('adobe_lightroom_token');
+      if (!token) return;
+
+      const { catalogId, id: albumId } = galleryData.lightroomAlbum;
+      const response = await fetch(
+        `https://lr.adobe.io/v2/catalogs/${catalogId}/albums/${albumId}/assets?embed=asset&subtype=image`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-API-Key': import.meta.env.VITE_ADOBE_CLIENT_ID
+          }
+        }
+      );
+
+      let responseText = await response.text();
+      if (responseText.trim().startsWith('while')) {
+        const firstBrace = responseText.indexOf('{');
+        const secondBrace = responseText.indexOf('{', firstBrace + 1);
+        if (secondBrace > 0) {
+          responseText = responseText.substring(secondBrace);
+        }
+      }
+
+      const photosData = JSON.parse(responseText);
+      const allPhotos = photosData.resources || [];
+      
+      // Filter to only show visible photos
+      const visiblePhotoIds = galleryData.visibleLightroomPhotos || [];
+      const visiblePhotos = allPhotos.filter(photo => visiblePhotoIds.includes(photo.id));
+      
+      setLightroomPhotos(visiblePhotos);
+    } catch (error) {
+      console.error('Error fetching Lightroom photos:', error);
     }
   };
 
@@ -78,7 +125,40 @@ export default function PublicGallery() {
 
       {/* Gallery */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {gallery.images && gallery.images.length > 0 ? (
+        {lightroomPhotos.length > 0 ? (
+          <div className={getGridClass()}>
+            {lightroomPhotos.map((photo) => {
+              const thumbnailHref = photo.asset?.links?.['/rels/rendition_type/thumbnail2x']?.href;
+              const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery.lightroomAlbum.catalogId}/`;
+              const lrUrl = thumbnailHref ? `${baseUrl}${thumbnailHref}` : null;
+              const thumbnailUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}` : null;
+              const fileName = photo.asset?.payload?.importSource?.fileName || 'Photo';
+
+              return (
+                <div
+                  key={photo.id}
+                  className="cursor-pointer group"
+                  onClick={() => {
+                    setCurrentImageIndex(lightroomPhotos.indexOf(photo));
+                    setViewerOpen(true);
+                  }}
+                >
+                  <img
+                    src={thumbnailUrl}
+                    alt={fileName}
+                    className={`w-full ${
+                      gallery.layout === 'masonry'
+                        ? 'mb-4'
+                        : gallery.layout === 'slideshow'
+                        ? 'max-h-[600px] object-contain'
+                        : 'h-64 object-cover'
+                    } rounded-lg shadow-md hover:shadow-xl transition-shadow`}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        ) : gallery.images && gallery.images.length > 0 ? (
           <div className={getGridClass()}>
             {gallery.images.map((item) => {
               const image = item.imageId;
@@ -88,7 +168,11 @@ export default function PublicGallery() {
                 <div
                   key={image._id}
                   className="cursor-pointer group"
-                  onClick={() => setSelectedImage(image)}
+                  onClick={() => {
+                    const publicImages = gallery.images.filter(item => item.imageId?.isPublic);
+                    setCurrentImageIndex(publicImages.indexOf(item));
+                    setViewerOpen(true);
+                  }}
                 >
                   <img
                     src={`/${image.path}`}
@@ -115,30 +199,33 @@ export default function PublicGallery() {
         )}
       </div>
 
-      {/* Lightbox */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="max-w-7xl max-h-full">
-            <img
-              src={`/${selectedImage.path}`}
-              alt={selectedImage.caption || 'Gallery image'}
-              className="max-w-full max-h-[90vh] object-contain"
-            />
-            {selectedImage.caption && (
-              <p className="text-white text-center mt-4 text-lg">{selectedImage.caption}</p>
-            )}
-          </div>
-          <button
-            className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300"
-            onClick={() => setSelectedImage(null)}
-          >
-            ×
-          </button>
-        </div>
-      )}
+      {/* Image Viewer */}
+      <ImageViewer
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        images={lightroomPhotos.length > 0 ? lightroomPhotos.map((photo) => {
+          // Use larger 2048px rendition for viewer
+          const largeHref = photo.asset?.links?.['/rels/rendition_type/2048']?.href;
+          const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery?.lightroomAlbum?.catalogId}/`;
+          const lrUrl = largeHref ? `${baseUrl}${largeHref}` : null;
+          const largeUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}` : null;
+          
+          return {
+            url: largeUrl,
+            title: photo.asset?.payload?.importSource?.fileName || 'Photo',
+            date: photo.asset?.payload?.captureDate ? new Date(photo.asset.payload.captureDate).toLocaleDateString() : null
+          };
+        }) : gallery?.images?.map((item) => {
+          const image = item.imageId;
+          return {
+            url: `/${image.path}`,
+            title: image.caption || image.filename || 'Photo',
+            date: image.uploadDate ? new Date(image.uploadDate).toLocaleDateString() : null
+          };
+        }).filter(img => img.url) || []}
+        currentIndex={currentImageIndex}
+        onNavigate={setCurrentImageIndex}
+      />
 
       {/* Footer */}
       <div className="bg-white border-t mt-12">

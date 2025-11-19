@@ -11,8 +11,13 @@ import {
   Camera,
   Grid,
   ShoppingCart,
-  ExternalLink
+  ExternalLink,
+  User
 } from 'lucide-react';
+import AboutMeEditor from '../components/AboutMeEditor';
+import FujifilmRecipeGuide from '../components/FujifilmRecipeGuide';
+import GearEditor from '../components/GearEditor';
+import LightroomTest from './LightroomTest';
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -20,6 +25,8 @@ function AdminDashboard() {
   const [missions, setMissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('galleries');
+  const [selectedGalleries, setSelectedGalleries] = useState([]);
+  const [selectedMissions, setSelectedMissions] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -41,26 +48,68 @@ function AdminDashboard() {
   };
 
   const handleDeleteGallery = async (id) => {
-    if (!confirm('Are you sure you want to delete this gallery?')) return;
+    if (!window.confirm('Are you sure you want to delete this gallery? This action cannot be undone.')) return;
 
     try {
       await axios.delete(`/api/galleries/${id}`, { withCredentials: true });
       setGalleries(galleries.filter(g => g._id !== id));
+      setSelectedGalleries(selectedGalleries.filter(gId => gId !== id));
     } catch (error) {
       console.error('Error deleting gallery:', error);
       alert('Failed to delete gallery');
     }
   };
 
+  const handleBulkDeleteGalleries = async () => {
+    if (selectedGalleries.length === 0) return;
+    
+    if (!window.confirm(`Are you sure you want to delete ${selectedGalleries.length} ${selectedGalleries.length === 1 ? 'gallery' : 'galleries'}? This action cannot be undone.`)) return;
+
+    try {
+      await Promise.all(
+        selectedGalleries.map(id => 
+          axios.delete(`/api/galleries/${id}`, { withCredentials: true })
+        )
+      );
+      setGalleries(galleries.filter(g => !selectedGalleries.includes(g._id)));
+      setSelectedGalleries([]);
+      alert(`Successfully deleted ${selectedGalleries.length} ${selectedGalleries.length === 1 ? 'gallery' : 'galleries'}`);
+    } catch (error) {
+      console.error('Error deleting galleries:', error);
+      alert('Failed to delete some galleries');
+    }
+  };
+
   const handleDeleteMission = async (id) => {
-    if (!confirm('Are you sure you want to delete this mission?')) return;
+    if (!window.confirm('Are you sure you want to delete this mission? This action cannot be undone.')) return;
 
     try {
       await axios.delete(`/api/missions/${id}`, { withCredentials: true });
       setMissions(missions.filter(m => m._id !== id));
+      setSelectedMissions(selectedMissions.filter(mId => mId !== id));
     } catch (error) {
       console.error('Error deleting mission:', error);
       alert('Failed to delete mission');
+    }
+  };
+
+  const handleBulkDeleteMissions = async () => {
+    if (selectedMissions.length === 0) return;
+    
+    if (!window.confirm(`Are you sure you want to delete ${selectedMissions.length} ${selectedMissions.length === 1 ? 'mission' : 'missions'}? This action cannot be undone.`)) return;
+
+    try {
+      await Promise.all(
+        selectedMissions.map(id => 
+          axios.delete(`/api/missions/${id}`, { withCredentials: true })
+        )
+      );
+      setMissions(missions.filter(m => !selectedMissions.includes(m._id)));
+      setSelectedMissions([]);
+      alert(`Successfully deleted ${selectedMissions.length} ${selectedMissions.length === 1 ? 'mission' : 'missions'}`);
+    } catch (error) {
+      console.error('Error deleting missions:', error);
+      alert('Failed to delete some missions');
     }
   };
 
@@ -153,11 +202,65 @@ function AdminDashboard() {
           >
             Missions ({missions.length})
           </button>
+          <button
+            onClick={() => setActiveTab('about')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'about'
+                ? 'text-amber-500 border-b-2 border-amber-500'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            About Me
+          </button>
+          <button
+            onClick={() => setActiveTab('gear')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'gear'
+                ? 'text-amber-500 border-b-2 border-amber-500'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            My Gear
+          </button>
+          <button
+            onClick={() => setActiveTab('recipes')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'recipes'
+                ? 'text-amber-500 border-b-2 border-amber-500'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            Film Recipes
+          </button>
+          <button
+            onClick={() => setActiveTab('lightroom')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'lightroom'
+                ? 'text-amber-500 border-b-2 border-amber-500'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            Lightroom
+          </button>
         </div>
 
         {/* Galleries Tab */}
         {activeTab === 'galleries' && (
           <div className="space-y-4">
+            {selectedGalleries.length > 0 && (
+              <div className="bg-amber-600/20 border border-amber-600 rounded-lg p-4 flex items-center justify-between">
+                <span className="text-amber-100">
+                  {selectedGalleries.length} {selectedGalleries.length === 1 ? 'gallery' : 'galleries'} selected
+                </span>
+                <button
+                  onClick={handleBulkDeleteGalleries}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Selected
+                </button>
+              </div>
+            )}
             {galleries.length === 0 ? (
               <div className="bg-stone-800/50 border border-stone-700 rounded-lg p-12 text-center">
                 <ImageIcon className="w-16 h-16 text-stone-600 mx-auto mb-4" />
@@ -178,6 +281,18 @@ function AdminDashboard() {
                   className="bg-stone-800/50 backdrop-blur-sm border border-stone-700 rounded-lg p-6 hover:border-stone-600 transition-colors"
                 >
                   <div className="flex items-start justify-between">
+                    <input
+                      type="checkbox"
+                      checked={selectedGalleries.includes(gallery._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedGalleries([...selectedGalleries, gallery._id]);
+                        } else {
+                          setSelectedGalleries(selectedGalleries.filter(id => id !== gallery._id));
+                        }
+                      }}
+                      className="mt-1 mr-4 w-4 h-4 rounded border-stone-600 bg-stone-700 text-amber-600 focus:ring-amber-500"
+                    />
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-xl font-semibold text-stone-100">
@@ -228,9 +343,9 @@ function AdminDashboard() {
                         {gallery.isPublic ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                       </button>
                       <button
-                        onClick={() => navigate(`/galleries/${gallery._id}/edit`)}
+                        onClick={() => navigate(`/galleries/${gallery._id}`)}
                         className="p-2 text-amber-400 hover:text-amber-300 hover:bg-stone-700 rounded-lg transition-colors"
-                        title="Edit gallery"
+                        title="View gallery"
                       >
                         <Edit className="w-5 h-5" />
                       </button>
@@ -249,9 +364,55 @@ function AdminDashboard() {
           </div>
         )}
 
+        {/* About Me Tab */}
+        {activeTab === 'about' && (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-stone-100 mb-2">About Me Editor</h2>
+              <p className="text-stone-400">Create and manage your About Me page with AI assistance</p>
+            </div>
+            <AboutMeEditor />
+          </div>
+        )}
+
+        {/* My Gear Tab */}
+        {activeTab === 'gear' && (
+          <GearEditor />
+        )}
+
+        {/* Film Recipes Tab */}
+        {activeTab === 'recipes' && (
+          <FujifilmRecipeGuide />
+        )}
+
+        {/* Lightroom Tab */}
+        {activeTab === 'lightroom' && (
+          <div className="bg-stone-800 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-white mb-4">Lightroom Integration</h2>
+            <p className="text-stone-300 mb-6">
+              Connect to Adobe Lightroom to sync your photos and create albums directly from your galleries.
+            </p>
+            <LightroomTest />
+          </div>
+        )}
+
         {/* Missions Tab */}
         {activeTab === 'missions' && (
           <div className="space-y-4">
+            {selectedMissions.length > 0 && (
+              <div className="bg-amber-600/20 border border-amber-600 rounded-lg p-4 flex items-center justify-between">
+                <span className="text-amber-100">
+                  {selectedMissions.length} {selectedMissions.length === 1 ? 'mission' : 'missions'} selected
+                </span>
+                <button
+                  onClick={handleBulkDeleteMissions}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Selected
+                </button>
+              </div>
+            )}
             {missions.length === 0 ? (
               <div className="bg-stone-800/50 border border-stone-700 rounded-lg p-12 text-center">
                 <Camera className="w-16 h-16 text-stone-600 mx-auto mb-4" />
@@ -272,6 +433,18 @@ function AdminDashboard() {
                   className="bg-stone-800/50 backdrop-blur-sm border border-stone-700 rounded-lg p-6 hover:border-stone-600 transition-colors"
                 >
                   <div className="flex items-start justify-between">
+                    <input
+                      type="checkbox"
+                      checked={selectedMissions.includes(mission._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedMissions([...selectedMissions, mission._id]);
+                        } else {
+                          setSelectedMissions(selectedMissions.filter(id => id !== mission._id));
+                        }
+                      }}
+                      className="mt-1 mr-4 w-4 h-4 rounded border-stone-600 bg-stone-700 text-amber-600 focus:ring-amber-500"
+                    />
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-stone-100 mb-2">
                         {mission.title}
@@ -290,11 +463,18 @@ function AdminDashboard() {
 
                     <div className="flex items-center space-x-2 ml-4">
                       <button
+                        onClick={() => navigate(`/missions/${mission._id}/edit`)}
+                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-stone-700 rounded-lg transition-colors"
+                        title="Edit mission"
+                      >
+                        <Edit className="h-5 w-5" />
+                      </button>
+                      <button
                         onClick={() => navigate(`/missions/${mission._id}`)}
                         className="p-2 text-amber-400 hover:text-amber-300 hover:bg-stone-700 rounded-lg transition-colors"
                         title="View mission"
                       >
-                        <Eye className="w-5 h-5" />
+                        <ExternalLink className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteMission(mission._id)}

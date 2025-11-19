@@ -18,11 +18,25 @@ router.get('/', ensureAuth, async (req, res) => {
 // Get public about page by user ID
 router.get('/public/:userId', async (req, res) => {
   try {
-    const about = await About.findOne({ userId: req.params.userId, isPublished: true });
+    const about = await About.findOne({ userId: req.params.userId, isPublished: true })
+      .populate('userId', 'name avatar');
+
     if (!about) {
       return res.status(404).json({ error: 'About page not found or not published' });
     }
-    res.json({ refinedText: about.refinedText, style: about.style });
+
+    res.json({
+      refinedText: about.refinedText || about.rawText,
+      style: about.style,
+      updatedAt: about.updatedAt,
+      user: about.userId
+        ? {
+            id: about.userId._id,
+            name: about.userId.name,
+            avatar: about.userId.avatar,
+          }
+        : null,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

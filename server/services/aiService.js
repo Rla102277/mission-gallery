@@ -347,9 +347,13 @@ Be specific, creative, and inspiring. Think portfolio-quality work!`;
         ],
         temperature: 0.7,
         max_tokens: 4096,
+        response_format: { type: 'json_object' },
       });
       
-      text = completion.choices[0].message.content;
+      const groqMessage = completion.choices[0].message.content;
+      text = Array.isArray(groqMessage)
+        ? groqMessage.map((msg) => (typeof msg === 'string' ? msg : msg.text || '')).join('')
+        : groqMessage;
       
     } else if (model.startsWith('claude')) {
       // Anthropic Claude
@@ -414,6 +418,9 @@ Be specific, creative, and inspiring. Think portfolio-quality work!`;
       text = completion.choices[0].message.content;
     }
     
+    if (typeof text !== 'string') {
+      text = JSON.stringify(text);
+    }
     console.log('📝 Raw response length:', text.length);
     
     // Clean the response
@@ -572,6 +579,126 @@ Format as JSON with fields: fullName, manufacturer, specifications (object), fea
     const text = completion.choices[0].message.content;
     const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     return JSON.parse(cleanText);
+  });
+}
+
+export async function generateGearContent(gearList) {
+  const prompt = `Create engaging, detailed content about the following photography gear for a portfolio website.
+
+Gear List:
+${gearList}
+
+Write a comprehensive, well-structured article that:
+1. Introduces the photographer's gear philosophy
+2. Describes each piece of equipment and why it was chosen
+3. Explains how the gear works together as a system
+4. Shares real-world experiences and insights
+5. Maintains an authentic, personal tone
+
+Format the output as flowing prose with clear paragraphs. Make it informative yet approachable.`;
+
+  return await retryWithBackoff(async () => {
+    const completion = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional photographer writing about your gear with expertise and passion.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
+
+    return completion.choices[0].message.content.trim();
+  });
+}
+
+export async function generatePhotoDescription(exifData, caption = '') {
+  const technicalDetails = [];
+  
+  if (exifData.camera) technicalDetails.push(`Camera: ${exifData.camera}`);
+  if (exifData.lens) technicalDetails.push(`Lens: ${exifData.lens}`);
+  if (exifData.focalLength) technicalDetails.push(`Focal Length: ${exifData.focalLength}`);
+  if (exifData.aperture) technicalDetails.push(`Aperture: ${exifData.aperture}`);
+  if (exifData.shutterSpeed) technicalDetails.push(`Shutter Speed: ${exifData.shutterSpeed}`);
+  if (exifData.iso) technicalDetails.push(`ISO: ${exifData.iso}`);
+  if (exifData.location) technicalDetails.push(`Location: ${exifData.location}`);
+  
+  const prompt = `Create a brief, engaging description for a photograph based on its technical details.
+
+Technical Information:
+${technicalDetails.join('\n')}
+
+${caption ? `Photographer's Caption: ${caption}\n` : ''}
+
+Write a 2-3 sentence description that:
+1. Highlights interesting technical choices (like why this aperture/shutter speed combo works)
+2. Mentions the location if provided
+3. Keeps a professional but approachable tone
+4. Focuses on the photography technique, not what's in the photo
+
+Keep it concise and informative. Do not use phrases like "this image" or "this photo".`;
+
+  return await retryWithBackoff(async () => {
+    const completion = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional photography educator who explains technical camera settings in an engaging way.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 200,
+    });
+
+    return completion.choices[0].message.content.trim();
+  });
+}
+
+export async function enhanceGalleryDescription(title, currentDescription = '', imageCount = 0, missionContext = '') {
+  const prompt = `Create an engaging description for a photography gallery.
+
+Gallery Title: ${title}
+Current Description: ${currentDescription || 'None'}
+Number of Images: ${imageCount}
+${missionContext ? `Mission Context: ${missionContext}` : ''}
+
+Write a compelling 2-3 sentence description that:
+1. Captures the essence and theme of the gallery
+2. Entices viewers to explore the images
+3. Maintains a professional yet approachable tone
+4. Highlights what makes this collection special
+
+Keep it concise and engaging.`;
+
+  return await retryWithBackoff(async () => {
+    const completion = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional photography curator writing compelling gallery descriptions.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 200,
+    });
+
+    return completion.choices[0].message.content.trim();
   });
 }
 

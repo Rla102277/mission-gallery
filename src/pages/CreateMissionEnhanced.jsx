@@ -9,6 +9,7 @@ export default function CreateMissionEnhanced() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMissionPlan, setAiMissionPlan] = useState(null);
   const [expandedDays, setExpandedDays] = useState({});
+  const [saveAllMode, setSaveAllMode] = useState(true);
 
   const [aiFormData, setAiFormData] = useState({
     location: '',
@@ -68,9 +69,10 @@ iPhone: Diary, quick clips, timelapses`,
   const createMissionFromDay = async (day) => {
     setLoading(true);
     try {
+      const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
       const missionData = {
         title: day.title,
-        description: `${day.locations.join(', ')} - ${day.coreMissions.length} missions planned`,
+        description: `${locationNames} - ${day.coreMissions.length} missions planned`,
         location: aiFormData.location,
         aiGenerated: true,
         includeDiptychs: aiFormData.includeDiptychs,
@@ -95,9 +97,10 @@ iPhone: Diary, quick clips, timelapses`,
     setLoading(true);
     try {
       // First create the mission
+      const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
       const missionData = {
         title: day.title,
-        description: `${day.locations.join(', ')} - ${day.coreMissions.length} missions planned`,
+        description: `${locationNames} - ${day.coreMissions.length} missions planned`,
         location: aiFormData.location,
         aiGenerated: true,
         includeDiptychs: aiFormData.includeDiptychs,
@@ -137,9 +140,10 @@ iPhone: Diary, quick clips, timelapses`,
     setLoading(true);
     try {
       // First create the mission
+      const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
       const missionData = {
         title: day.title,
-        description: `${day.locations.join(', ')} - ${day.coreMissions.length} missions planned`,
+        description: `${locationNames} - ${day.coreMissions.length} missions planned`,
         location: aiFormData.location,
         aiGenerated: true,
         includeDiptychs: aiFormData.includeDiptychs,
@@ -186,17 +190,18 @@ iPhone: Diary, quick clips, timelapses`,
     setLoading(true);
     try {
       // Create missions for all days
-      const missionPromises = aiMissionPlan.map(day => 
-        axios.post('/api/missions', {
+      const missionPromises = aiMissionPlan.map(day => {
+        const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
+        return axios.post('/api/missions', {
           title: day.title,
-          description: `${day.locations.join(', ')} - ${day.coreMissions.length} missions planned`,
+          description: `${locationNames} - ${day.coreMissions.length} missions planned`,
           location: aiFormData.location,
           aiGenerated: true,
           includeDiptychs: aiFormData.includeDiptychs,
           includeTriptychs: aiFormData.includeTriptychs,
           structuredPlan: day,
-        }, { withCredentials: true })
-      );
+        }, { withCredentials: true });
+      });
 
       const missionResponses = await Promise.all(missionPromises);
       
@@ -400,7 +405,40 @@ iPhone: Diary, quick clips, timelapses`,
             {/* AI Generated Mission Plan */}
             {aiMissionPlan && aiMissionPlan.length > 0 && (
               <div className="mt-8 space-y-4">
-                <h3 className="text-xl font-bold text-white mb-4">Your Mission Plan</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">Your Mission Plan</h3>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-white cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={saveAllMode}
+                        onChange={(e) => setSaveAllMode(e.target.checked)}
+                        className="w-4 h-4 rounded border-white/20 bg-white/5 text-amber-600 focus:ring-amber-500"
+                      />
+                      <span className="text-sm font-medium">
+                        {saveAllMode ? 'Save All Days Together' : 'Save Individual Days'}
+                      </span>
+                    </label>
+                    {saveAllMode && (
+                      <button
+                        onClick={saveAllToGallery}
+                        disabled={loading}
+                        className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all disabled:opacity-50 font-semibold shadow-lg flex items-center gap-2"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader className="w-5 h-5 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            Save All {aiMissionPlan.length} Days as Mission Plan
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
                 {aiMissionPlan.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
@@ -499,38 +537,20 @@ iPhone: Diary, quick clips, timelapses`,
                           </div>
                         )}
 
-                        <div className="mt-4 space-y-2">
-                          <button
-                            onClick={() => createMissionFromDay(day)}
-                            disabled={loading}
-                            className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 font-semibold"
-                          >
-                            {loading ? 'Creating...' : `Create Mission`}
-                          </button>
-                          <div className="grid grid-cols-3 gap-2">
+                        {!saveAllMode && (
+                          <div className="mt-4">
                             <button
-                              onClick={() => createGalleryFromDay(day)}
+                              onClick={() => createMissionFromDay(day)}
                               disabled={loading}
-                              className="py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 font-semibold text-sm"
+                              className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 font-semibold shadow-lg"
                             >
-                              Save Gallery
+                              {loading ? 'Saving...' : `Save "${day.title}" as Mission Plan`}
                             </button>
-                            <button
-                              onClick={() => createPortfolioFromDay(day)}
-                              disabled={loading}
-                              className="py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 font-semibold text-sm"
-                            >
-                              Portfolio
-                            </button>
-                            <button
-                              onClick={() => saveAllToGallery()}
-                              disabled={loading || !aiMissionPlan || aiMissionPlan.length === 0}
-                              className="py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all disabled:opacity-50 font-semibold text-sm"
-                            >
-                              Save All
-                            </button>
+                            <p className="text-xs text-purple-200 mt-2 text-center">
+                              You can link photos and create galleries later from the mission detail page
+                            </p>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>

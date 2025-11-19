@@ -6,6 +6,8 @@ import fs from 'fs/promises';
 import Image from '../models/Image.js';
 import Mission from '../models/Mission.js';
 import { ensureAuth } from '../middleware/auth.js';
+import { extractExifData, reverseGeocode } from '../services/exifService.js';
+import { generatePhotoDescription } from '../services/aiService.js';
 
 const router = express.Router();
 
@@ -151,6 +153,109 @@ router.post('/reorder', ensureAuth, async (req, res) => {
     await Promise.all(updatePromises);
     res.json({ message: 'Images reordered' });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Enhance image with EXIF data and AI description
+router.post('/:id/enhance', ensureAuth, async (req, res) => {
+  try {
+    const image = await Image.findOne({ _id: req.params.id, userId: req.user._id });
+    
+    if (!image) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    console.log('📸 Enhancing image:', image.filename);
+
+    // Extract EXIF data
+    const filePath = path.join(process.cwd(), image.path);
+    const exifData = await extractExifData(filePath);
+
+    if (!exifData) {
+      return res.status(400).json({ error: 'No EXIF data found in image' });
+    }
+
+    // Reverse geocode GPS if available
+    if (exifData.gps && exifData.gps.latitude && exifData.gps.longitude) {
+      console.log('🌍 Reverse geocoding GPS coordinates...');
+      exifData.location = await reverseGeocode(exifData.gps.latitude, exifData.gps.longitude);
+    }
+
+    // Generate AI description
+    console.log('🤖 Generating AI description...');
+    const aiDescription = await generatePhotoDescription(exifData, image.caption);
+
+    // Update image with EXIF and AI data
+    image.exif = exifData;
+    image.aiDescription = aiDescription;
+    await image.save();
+
+    console.log('✅ Image enhanced successfully');
+    res.json(image);
+  } catch (error) {
+    console.error('❌ Error enhancing image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Bulk enhance all images in a mission
+router.post('/mission/:missionId/enhance-all', ensureAuth, async (req, res) => {
+  try {
+    const images = await Image.find({ 
+      missionId: req.params.missionId, 
+      userId: req.user._id 
+    });
+
+    console.log(`📸 Enhancing ${images.length} images...`);
+
+    const results = {
+      success: 0,
+      failed: 0,
+      skipped: 0,
+    };
+
+    for (const image of images) {
+      try {
+        // Skip if already enhanced
+        if (image.exif && image.aiDescription) {
+          results.skipped++;
+          continue;
+        }
+
+        const filePath = path.join(process.cwd(), image.path);
+        const exifData = await extractExifData(filePath);
+
+        if (!exifData) {
+          results.failed++;
+          continue;
+        }
+
+        // Reverse geocode GPS if available
+        if (exifData.gps && exifData.gps.latitude && exifData.gps.longitude) {
+          exifData.location = await reverseGeocode(exifData.gps.latitude, exifData.gps.longitude);
+        }
+
+        // Generate AI description
+        const aiDescription = await generatePhotoDescription(exifData, image.caption);
+
+        // Update image
+        image.exif = exifData;
+        image.aiDescription = aiDescription;
+        await image.save();
+
+        results.success++;
+        console.log(`✅ Enhanced ${image.filename}`);
+      } catch (error) {
+        console.error(`❌ Failed to enhance ${image.filename}:`, error.message);
+        results.failed++;
+      }
+    }
+
+    console.log('📊 Enhancement complete:', results);
+    res.json(results);
+  } catch (error) {
+    console.error('❌ Error in bulk enhancement:', error);
     res.status(500).json({ error: error.message });
   }
 });

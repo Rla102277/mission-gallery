@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp, Plus, Image as ImageIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 
 export default function MissionDetailEnhanced() {
@@ -157,7 +157,7 @@ iPhone: Diary, quick clips, timelapses`,
         {/* Mission Header */}
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-white/20 mb-6">
           <div className="flex items-start justify-between mb-4">
-            <div>
+            <div className="flex-1">
               <h1 className="text-4xl font-bold text-white mb-2">{mission.title}</h1>
               <div className="flex items-center gap-4 text-purple-200">
                 {mission.location && (
@@ -174,12 +174,21 @@ iPhone: Diary, quick clips, timelapses`,
                 )}
               </div>
             </div>
-            {mission.aiGenerated && (
-              <span className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm flex items-center gap-1">
-                <Sparkles className="w-4 h-4" />
-                AI Generated
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {mission.aiGenerated && (
+                <span className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm flex items-center gap-1">
+                  <Sparkles className="w-4 h-4" />
+                  AI Generated
+                </span>
+              )}
+              <button
+                onClick={() => navigate(`/galleries/create?missionId=${mission._id}`)}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-lg"
+              >
+                <ImageIcon className="w-5 h-5" />
+                Create Gallery
+              </button>
+            </div>
           </div>
           <p className="text-purple-100">{mission.description}</p>
         </div>

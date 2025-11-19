@@ -42,6 +42,23 @@ const imageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
+  exif: {
+    camera: String,
+    lens: String,
+    focalLength: String,
+    aperture: String,
+    shutterSpeed: String,
+    iso: Number,
+    exposureCompensation: String,
+    dateTime: Date,
+    gps: {
+      latitude: Number,
+      longitude: Number,
+      altitude: Number,
+    },
+    location: String, // Reverse geocoded location
+  },
+  aiDescription: String, // AI-generated description based on EXIF
   uploadedAt: {
     type: Date,
     default: Date.now,

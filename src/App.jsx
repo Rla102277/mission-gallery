@@ -4,16 +4,17 @@ import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import CreateMission from './pages/CreateMissionEnhanced';
-import MissionDetail from './pages/MissionDetailEnhanced';
-import GalleryView from './pages/GalleryView';
+import PublicGalleries from './pages/PublicGalleries';
 import PublicGallery from './pages/PublicGallery';
 import AboutMe from './pages/AboutMe';
-import CreateGallery from './pages/CreateGallery';
+import MyGear from './pages/MyGear';
 import AdminDashboard from './pages/AdminDashboard';
-import ApplePhotosTest from './pages/ApplePhotosTest';
-import GooglePhotosTest from './pages/GooglePhotosTest';
+import GalleryView from './pages/GalleryView';
+import CreateGallery from './pages/CreateGallery';
+import CreateMission from './pages/CreateMissionEnhanced';
+import MissionDetail from './pages/MissionDetailEnhanced';
+import MissionEdit from './pages/MissionEdit';
+import LightroomTest from './pages/LightroomTest';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -32,11 +33,20 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <Navbar />
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Home />} />
+            <Route path="/galleries" element={<PublicGalleries />} />
+            <Route path="/gallery/:slug" element={<PublicGallery />} />
+            <Route path="/about" element={<AboutMe />} />
+            <Route path="/gear" element={<MyGear />} />
+            
+            {/* Auth */}
             <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={
+            
+            {/* Admin Routes */}
+            <Route path="/admin/*" element={
               <PrivateRoute>
-                <Dashboard />
+                <AdminDashboard />
               </PrivateRoute>
             } />
             <Route path="/missions/create" element={
@@ -49,20 +59,9 @@ function App() {
                 <MissionDetail />
               </PrivateRoute>
             } />
-            <Route path="/galleries/:id" element={
+            <Route path="/missions/:id/edit" element={
               <PrivateRoute>
-                <GalleryView />
-              </PrivateRoute>
-            } />
-            <Route path="/gallery/:slug" element={<PublicGallery />} />
-            <Route path="/about" element={
-              <PrivateRoute>
-                <AboutMe />
-              </PrivateRoute>
-            } />
-            <Route path="/admin" element={
-              <PrivateRoute>
-                <AdminDashboard />
+                <MissionEdit />
               </PrivateRoute>
             } />
             <Route path="/galleries/create" element={
@@ -70,14 +69,14 @@ function App() {
                 <CreateGallery />
               </PrivateRoute>
             } />
-            <Route path="/test/apple-photos" element={
+            <Route path="/galleries/:id" element={
               <PrivateRoute>
-                <ApplePhotosTest />
+                <GalleryView />
               </PrivateRoute>
             } />
-            <Route path="/test/google-photos" element={
+            <Route path="/test/lightroom" element={
               <PrivateRoute>
-                <GooglePhotosTest />
+                <LightroomTest />
               </PrivateRoute>
             } />
           </Routes>
