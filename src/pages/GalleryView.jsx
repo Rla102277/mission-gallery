@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { getApiUrl } from '../lib/api';
 import { Eye, EyeOff, Layout, Grid, Columns, Save, Share2, RefreshCw, Camera, Check, X, Sparkles, Edit3, GripVertical, MessageSquare, Link as LinkIcon } from 'lucide-react';
 import ImageViewer from '../components/ImageViewer';
 
@@ -28,7 +28,7 @@ export default function GalleryView() {
 
   const fetchGallery = async () => {
     try {
-      const response = await axios.get(`/api/galleries/${id}`, { withCredentials: true });
+      const response = await api.get(`/api/galleries/${id}`);
       setGallery(response.data);
       setLayoutType(response.data.layout || 'grid');
       
@@ -84,7 +84,7 @@ export default function GalleryView() {
 
   const togglePublic = async () => {
     try {
-      const response = await axios.put(
+      const response = await api.put(
         `/api/galleries/${id}`,
         { isPublic: !gallery.isPublic },
         { withCredentials: true }
@@ -97,7 +97,7 @@ export default function GalleryView() {
 
   const updateLayout = async () => {
     try {
-      const response = await axios.put(
+      const response = await api.put(
         `/api/galleries/${id}`,
         { layout: layoutType },
         { withCredentials: true }
@@ -111,7 +111,7 @@ export default function GalleryView() {
 
   const removeImage = async (imageId) => {
     try {
-      await axios.delete(`/api/galleries/${id}/images/${imageId}`, { withCredentials: true });
+      await api.delete(`/api/galleries/${id}/images/${imageId}`);
       setGallery({
         ...gallery,
         images: gallery.images.filter((img) => img.imageId._id !== imageId),
@@ -129,9 +129,9 @@ export default function GalleryView() {
 
   const togglePhotoVisibility = async (photoId) => {
     try {
-      const response = await axios.post(`/api/galleries/${id}/toggle-photo`, {
+      const response = await api.post(`/api/galleries/${id}/toggle-photo`, {
         photoId
-      }, { withCredentials: true });
+      });
       
       setGallery(response.data);
     } catch (error) {
@@ -165,7 +165,7 @@ export default function GalleryView() {
         await enhanceLightroomGallery();
       } else {
         // Enhance regular gallery
-        const response = await axios.post(
+        const response = await api.post(
           `/api/images/mission/${gallery.missionId}/enhance-all`,
           {},
           { withCredentials: true }
@@ -215,7 +215,7 @@ export default function GalleryView() {
 
     console.log('Sending photos for enhancement:', photosWithExif);
     
-    const response = await axios.post(
+    const response = await api.post(
       `/api/galleries/${id}/enhance-lightroom`,
       { photos: photosWithExif },
       { withCredentials: true }
@@ -234,7 +234,7 @@ export default function GalleryView() {
 
   const enhanceDescription = async () => {
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `/api/galleries/${id}/enhance-description`,
         {},
         { withCredentials: true }
@@ -251,7 +251,7 @@ export default function GalleryView() {
 
   const saveDescription = async () => {
     try {
-      await axios.put(
+      await api.put(
         `/api/galleries/${id}`,
         { description: tempDescription },
         { withCredentials: true }
@@ -268,7 +268,7 @@ export default function GalleryView() {
 
   const fetchMissions = async () => {
     try {
-      const response = await axios.get('/api/missions', { withCredentials: true });
+      const response = await api.get('/api/missions');
       setMissions(response.data);
     } catch (error) {
       console.error('Error fetching missions:', error);
@@ -277,7 +277,7 @@ export default function GalleryView() {
 
   const linkMission = async (missionId) => {
     try {
-      await axios.put(
+      await api.put(
         `/api/galleries/${id}`,
         { missionId },
         { withCredentials: true }
@@ -303,9 +303,8 @@ export default function GalleryView() {
         return;
       }
 
-      const response = await axios.get(
-        `/api/adobe/image-proxy?url=${encodeURIComponent(`${baseUrl}/albums`)}&token=${token}`,
-        { withCredentials: true }
+      const response = await api.get(
+        `/api/adobe/image-proxy?url=${encodeURIComponent(`${baseUrl}/albums`)}&token=${token}`
       );
 
       // Parse the response if it's a buffer
@@ -322,7 +321,7 @@ export default function GalleryView() {
     try {
       const catalogId = localStorage.getItem('lr_catalog_id');
       
-      await axios.put(
+      await api.put(
         `/api/galleries/${id}`,
         { 
           lightroomAlbum: {
@@ -367,7 +366,7 @@ export default function GalleryView() {
 
       console.log('Creating Lightroom album with:', { catalogId, albumName });
 
-      const response = await axios.post(
+      const response = await api.post(
         `/api/galleries/${id}/create-lightroom-album`,
         { 
           catalogId,
@@ -542,7 +541,7 @@ export default function GalleryView() {
                       <button
                         onClick={async () => {
                           if (confirm('Unlink this Lightroom album?')) {
-                            await axios.put(`/api/galleries/${id}`, { lightroomAlbum: null }, { withCredentials: true });
+                            await api.put(`/api/galleries/${id}`, { lightroomAlbum: null });
                             fetchGallery();
                           }
                         }}
@@ -712,7 +711,7 @@ export default function GalleryView() {
               const thumbnailHref = photo.asset?.links?.['/rels/rendition_type/thumbnail2x']?.href;
               const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery.lightroomAlbum.catalogId}/`;
               const lrUrl = thumbnailHref ? `${baseUrl}${thumbnailHref}` : null;
-              const thumbnailUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}` : null;
+              const thumbnailUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}`) : null;
               const fileName = photo.asset?.payload?.importSource?.fileName || 'Photo';
               const captureDate = photo.asset?.payload?.captureDate;
 
@@ -828,7 +827,7 @@ export default function GalleryView() {
           const largeHref = photo.asset?.links?.['/rels/rendition_type/2048']?.href;
           const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery?.lightroomAlbum?.catalogId}/`;
           const lrUrl = largeHref ? `${baseUrl}${largeHref}` : null;
-          const largeUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}` : null;
+          const largeUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}`) : null;
           
           // Get enhanced data if available
           const enhancedData = gallery?.metadata?.enhancedLightroomPhotos?.find(p => p.id === photo.id);

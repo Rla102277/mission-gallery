@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api, { getApiUrl } from '../lib/api';
 import { Camera } from 'lucide-react';
 import ImageViewer from '../components/ImageViewer';
 
@@ -20,7 +20,7 @@ export default function PublicGallery() {
 
   const fetchGallery = async () => {
     try {
-      const response = await axios.get(`/api/galleries/public/${slug}`);
+      const response = await api.get(`/api/galleries/public/${slug}`);
       setGallery(response.data);
       
       // Fetch Lightroom photos if this is a Lightroom gallery
@@ -131,7 +131,7 @@ export default function PublicGallery() {
               const thumbnailHref = photo.asset?.links?.['/rels/rendition_type/thumbnail2x']?.href;
               const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery.lightroomAlbum.catalogId}/`;
               const lrUrl = thumbnailHref ? `${baseUrl}${thumbnailHref}` : null;
-              const thumbnailUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}` : null;
+              const thumbnailUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}`) : null;
               const fileName = photo.asset?.payload?.importSource?.fileName || 'Photo';
 
               return (
@@ -208,7 +208,7 @@ export default function PublicGallery() {
           const largeHref = photo.asset?.links?.['/rels/rendition_type/2048']?.href;
           const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery?.lightroomAlbum?.catalogId}/`;
           const lrUrl = largeHref ? `${baseUrl}${largeHref}` : null;
-          const largeUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}` : null;
+          const largeUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}`) : null;
           
           return {
             url: largeUrl,
