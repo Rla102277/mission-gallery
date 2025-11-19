@@ -54,13 +54,21 @@ const sessionConfig = {
     maxAge: 24 * 60 * 60 * 1000,
     secure: false,
     sameSite: 'lax',
+    httpOnly: true,
   },
 };
 
 if (process.env.NODE_ENV === 'production') {
   sessionConfig.cookie.secure = true;
   sessionConfig.cookie.sameSite = 'none';
+  console.log('🔒 Production mode: Using secure cookies with sameSite=none');
 }
+
+console.log('Session config:', {
+  nodeEnv: process.env.NODE_ENV,
+  secure: sessionConfig.cookie.secure,
+  sameSite: sessionConfig.cookie.sameSite,
+});
 
 app.use(session(sessionConfig));
 
