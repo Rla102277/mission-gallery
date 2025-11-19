@@ -40,8 +40,20 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -78,6 +90,13 @@ console.log('Session config:', {
 });
 
 app.use(session(sessionConfig));
+
+// Debug middleware to log cookies
+app.use((req, res, next) => {
+  console.log('🍪 Cookie header:', req.headers.cookie);
+  console.log('🔑 Session ID from request:', req.sessionID);
+  next();
+});
 
 // Passport configuration
 configurePassport();
