@@ -70,6 +70,20 @@ iPhone: Diary, quick clips, timelapses`,
     setLoading(true);
     try {
       const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
+      
+      // Convert core missions to mission ideas format
+      const missionIdeas = day.coreMissions.map(mission => ({
+        id: mission.id,
+        title: mission.title,
+        location: mission.location,
+        description: mission.idea,
+        gear: mission.gear,
+        settings: mission.settings || {},
+        specialNotes: mission.specialNotes || '',
+        linkedPhotos: [],
+        lightroomPhotoIds: []
+      }));
+      
       const missionData = {
         title: day.title,
         description: `${locationNames} - ${day.coreMissions.length} missions planned`,
@@ -78,6 +92,7 @@ iPhone: Diary, quick clips, timelapses`,
         includeDiptychs: aiFormData.includeDiptychs,
         includeTriptychs: aiFormData.includeTriptychs,
         structuredPlan: day, // Store the full structured plan
+        missionIdeas: missionIdeas, // Store individual mission ideas
       };
 
       const response = await axios.post('/api/missions', missionData, {

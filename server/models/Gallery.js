@@ -16,6 +16,10 @@ const gallerySchema = new mongoose.Schema({
     required: true,
   },
   description: String,
+  thumbnail: {
+    url: String,
+    publicId: String,
+  },
   isPublic: {
     type: Boolean,
     default: false,

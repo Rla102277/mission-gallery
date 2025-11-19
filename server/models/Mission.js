@@ -47,6 +47,42 @@ const missionSchema = new mongoose.Schema({
     specifications: mongoose.Schema.Types.Mixed,
     aiGenerated: Boolean,
   }],
+  // Detailed mission structure from AI generation
+  structuredPlan: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null,
+  },
+  // Individual mission ideas with photo links
+  missionIdeas: [{
+    id: String,
+    title: String,
+    location: String,
+    description: String,
+    gear: String,
+    settings: {
+      mode: String,
+      aperture: String,
+      iso: String,
+      shutterSpeed: String,
+    },
+    specialNotes: String,
+    linkedPhotos: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Image',
+    }],
+    lightroomPhotoIds: [String], // For Lightroom photos
+  }],
+  // Lightroom album link
+  lightroomAlbum: {
+    id: String,
+    name: String,
+    catalogId: String,
+  },
+  // Published gallery reference
+  publishedGalleryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Gallery',
+  },
   createdAt: {
     type: Date,
     default: Date.now,

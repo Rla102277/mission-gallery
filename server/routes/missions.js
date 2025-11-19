@@ -94,6 +94,124 @@ router.post('/generate', ensureAuth, async (req, res) => {
   }
 });
 
+// Link Lightroom album to mission
+router.post('/:id/link-lightroom', ensureAuth, async (req, res) => {
+  try {
+    const mission = await Mission.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!mission) {
+      return res.status(404).json({ error: 'Mission not found' });
+    }
+
+    const { albumId, albumName, catalogId } = req.body;
+    
+    mission.lightroomAlbum = {
+      id: albumId,
+      name: albumName,
+      catalogId: catalogId
+    };
+    
+    await mission.save();
+    res.json(mission);
+  } catch (error) {
+    console.error('Error linking Lightroom album:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Link photos to mission idea
+router.post('/:id/ideas/:ideaId/link-photos', ensureAuth, async (req, res) => {
+  try {
+    const mission = await Mission.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!mission) {
+      return res.status(404).json({ error: 'Mission not found' });
+    }
+
+    const { imageIds, lightroomPhotoIds } = req.body;
+    const ideaId = req.params.ideaId;
+    
+    // Find the mission idea
+    const idea = mission.missionIdeas.find(i => i.id === ideaId);
+    if (!idea) {
+      return res.status(404).json({ error: 'Mission idea not found' });
+    }
+    
+    // Add linked photos
+    if (imageIds) {
+      idea.linkedPhotos = [...new Set([...idea.linkedPhotos, ...imageIds])];
+    }
+    if (lightroomPhotoIds) {
+      idea.lightroomPhotoIds = [...new Set([...idea.lightroomPhotoIds || [], ...lightroomPhotoIds])];
+    }
+    
+    await mission.save();
+    res.json(mission);
+  } catch (error) {
+    console.error('Error linking photos to mission idea:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Publish mission as gallery
+router.post('/:id/publish-gallery', ensureAuth, async (req, res) => {
+  try {
+    const mission = await Mission.findOne({ _id: req.params.id, userId: req.user._id })
+      .populate('missionIdeas.linkedPhotos');
+    
+    if (!mission) {
+      return res.status(404).json({ error: 'Mission not found' });
+    }
+
+    // Check if already published
+    if (mission.publishedGalleryId) {
+      const Gallery = (await import('../models/Gallery.js')).default;
+      const existingGallery = await Gallery.findById(mission.publishedGalleryId);
+      if (existingGallery) {
+        return res.json({ gallery: existingGallery, message: 'Mission already published' });
+      }
+    }
+
+    // Create gallery from mission
+    const Gallery = (await import('../models/Gallery.js')).default;
+    
+    // Collect all linked photos
+    const images = [];
+    let order = 0;
+    
+    for (const idea of mission.missionIdeas) {
+      if (idea.linkedPhotos && idea.linkedPhotos.length > 0) {
+        for (const photo of idea.linkedPhotos) {
+          images.push({
+            imageId: photo._id || photo,
+            order: order++,
+            layoutType: 'single'
+          });
+        }
+      }
+    }
+    
+    const gallery = await Gallery.create({
+      userId: req.user._id,
+      missionId: mission._id,
+      title: mission.title,
+      description: mission.description || mission.summary,
+      images: images,
+      lightroomAlbum: mission.lightroomAlbum,
+      isPublic: false, // Start as private
+      layout: mission.layout || 'grid',
+      layoutConfig: mission.layoutConfig || {}
+    });
+    
+    // Update mission with published gallery reference
+    mission.publishedGalleryId = gallery._id;
+    await mission.save();
+    
+    res.json({ gallery, message: 'Gallery created successfully' });
+  } catch (error) {
+    console.error('Error publishing mission as gallery:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // AI: Generate gear list for mission
 router.post('/:id/gear', ensureAuth, async (req, res) => {
   try {
