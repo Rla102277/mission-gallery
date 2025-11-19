@@ -26,26 +26,43 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Middleware
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.CLIENT_URL,
+  'https://mission-gallery-app.web.app',
+  'https://mission-gallery-app.firebaseapp.com',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: process.env.NODE_ENV === 'production',
-    },
-  })
-);
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,
+    secure: false,
+    sameSite: 'lax',
+  },
+};
+
+if (process.env.NODE_ENV === 'production') {
+  sessionConfig.cookie.secure = true;
+  sessionConfig.cookie.sameSite = 'none';
+}
+
+app.use(session(sessionConfig));
 
 // Passport configuration
 configurePassport();

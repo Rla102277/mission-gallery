@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api, { getApiUrl } from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get('/auth/user', { withCredentials: true });
+      const response = await api.get('/auth/user');
       setUser(response.data.user);
     } catch (error) {
       setUser(null);
@@ -27,12 +27,12 @@ export function AuthProvider({ children }) {
   };
 
   const login = () => {
-    window.location.href = '/auth/google';
+    window.location.href = getApiUrl('/auth/google');
   };
 
   const logout = async () => {
     try {
-      await axios.get('/auth/logout', { withCredentials: true });
+      await api.get('/auth/logout');
       setUser(null);
       window.location.href = '/';
     } catch (error) {

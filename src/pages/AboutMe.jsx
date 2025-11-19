@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { Loader, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,9 +13,7 @@ export default function AboutMe() {
 
   const fetchAbout = async () => {
     try {
-      const response = await axios.get('/api/about', {
-        withCredentials: true,
-      });
+      const response = await api.get('/api/about');
       if (response.data && response.data.isPublished) {
         setAbout(response.data);
       }

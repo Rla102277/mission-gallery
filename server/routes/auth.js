@@ -5,11 +5,13 @@ const router = express.Router();
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
+const defaultClientUrl = 'https://mission-gallery-app.web.app';
+
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    res.redirect(process.env.CLIENT_URL || 'http://localhost:5173');
+    res.redirect(process.env.CLIENT_URL || defaultClientUrl);
   }
 );
 
@@ -18,7 +20,7 @@ router.get('/logout', (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Logout failed' });
     }
-    res.redirect(process.env.CLIENT_URL || 'http://localhost:5173');
+    res.redirect(process.env.CLIENT_URL || defaultClientUrl);
   });
 });
 
