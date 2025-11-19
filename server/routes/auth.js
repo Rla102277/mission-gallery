@@ -12,8 +12,6 @@ router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/login', session: false }),
   (req, res) => {
-    console.log('✅ Google auth callback - User authenticated:', req.user?.email);
-    
     // Create JWT token
     const token = jwt.sign(
       { 
@@ -24,8 +22,6 @@ router.get(
       process.env.SESSION_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
     );
-    
-    console.log('🎫 JWT token created for:', req.user.email);
     
     // Redirect with token in URL (will be stored in localStorage by frontend)
     const redirectUrl = `${process.env.CLIENT_URL || defaultClientUrl}?token=${token}`;
@@ -44,10 +40,8 @@ router.get('/logout', (req, res) => {
 
 router.get('/user', (req, res) => {
   const authHeader = req.headers.authorization;
-  console.log('🔍 /auth/user called - Auth header:', authHeader);
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('❌ No valid auth header');
     return res.status(401).json({ user: null });
   }
   
@@ -55,10 +49,8 @@ router.get('/user', (req, res) => {
   
   try {
     const decoded = jwt.verify(token, process.env.SESSION_SECRET || 'your-secret-key');
-    console.log('✅ Token verified for:', decoded.email);
     res.json({ user: decoded });
   } catch (error) {
-    console.log('❌ Token verification failed:', error.message);
     res.status(401).json({ user: null });
   }
 });

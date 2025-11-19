@@ -79,24 +79,9 @@ const sessionConfig = {
 if (process.env.NODE_ENV === 'production') {
   sessionConfig.cookie.secure = true;
   sessionConfig.cookie.sameSite = 'none';
-  console.log('🔒 Production mode: Using secure cookies with sameSite=none');
 }
 
-console.log('Session config:', {
-  nodeEnv: process.env.NODE_ENV,
-  secure: sessionConfig.cookie.secure,
-  sameSite: sessionConfig.cookie.sameSite,
-  store: 'MongoStore',
-});
-
 app.use(session(sessionConfig));
-
-// Debug middleware to log cookies
-app.use((req, res, next) => {
-  console.log('🍪 Cookie header:', req.headers.cookie);
-  console.log('🔑 Session ID from request:', req.sessionID);
-  next();
-});
 
 // Passport configuration
 configurePassport();
