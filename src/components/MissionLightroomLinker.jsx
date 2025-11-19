@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, FolderOpen, Check } from 'lucide-react';
+import { X, FolderOpen, Check, Camera } from 'lucide-react';
 import api from '../lib/api';
 
 export default function MissionLightroomLinker({ missionId, onClose, onLinked }) {
@@ -23,15 +23,20 @@ export default function MissionLightroomLinker({ missionId, onClose, onLinked })
         return;
       }
 
-      const response = await api.get(
-        `${baseUrl}/albums`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` },
-          withCredentials: true
+      const response = await fetch(`${baseUrl}/albums`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-API-Key': import.meta.env.VITE_ADOBE_CLIENT_ID || process.env.VITE_ADOBE_CLIENT_ID || process.env.ADOBE_CLIENT_ID,
+          'Content-Type': 'application/json'
         }
-      );
+      });
 
-      setAlbums(response.data.resources || []);
+      if (!response.ok) {
+        throw new Error(`Lightroom API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAlbums(data.resources || []);
     } catch (error) {
       console.error('Error fetching albums:', error);
       alert('Failed to fetch Lightroom albums');
@@ -52,8 +57,7 @@ export default function MissionLightroomLinker({ missionId, onClose, onLinked })
           albumId: selectedAlbum.id,
           albumName: selectedAlbum.payload?.name || 'Untitled Album',
           catalogId: catalogId
-        },
-        { withCredentials: true }
+        }
       );
 
       onLinked();
