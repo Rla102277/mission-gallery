@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Loader, LogIn, RefreshCw, FolderOpen, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import api from '../lib/api';
 
 // Adobe IMS (Identity Management Services) configuration
 const ADOBE_IMS_CONFIG = {
@@ -84,22 +85,10 @@ export default function LightroomTest() {
     setLoading(true);
     try {
       console.log('Exchanging code for token:', code.substring(0, 20) + '...');
-      const response = await fetch('/api/adobe/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ code }),
-        credentials: 'include'
-      });
+      const response = await api.post('/api/adobe/token', { code });
 
-      const data = await response.json();
-      console.log('Token exchange response:', response.status, data);
-
-      if (!response.ok) {
-        const errorMsg = data.details ? JSON.stringify(data.details) : data.error;
-        throw new Error(errorMsg || 'Failed to exchange code for token');
-      }
+      const data = response.data;
+      console.log('Token exchange response:', data);
 
       localStorage.setItem('adobe_lightroom_token', data.access_token);
       setAccessToken(data.access_token);
