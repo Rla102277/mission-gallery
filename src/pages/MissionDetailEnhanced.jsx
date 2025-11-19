@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp, Plus, Image as ImageIcon } from 'lucide-react';
+import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Link as LinkIcon, Share2 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import PhotoLinker from '../components/PhotoLinker';
+import MissionLightroomLinker from '../components/MissionLightroomLinker';
 
 export default function MissionDetailEnhanced() {
   const { id } = useParams();
@@ -14,6 +16,10 @@ export default function MissionDetailEnhanced() {
   const [showGearForm, setShowGearForm] = useState(false);
   const [gearLoading, setGearLoading] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
+  const [showPhotoLinker, setShowPhotoLinker] = useState(false);
+  const [selectedIdeaId, setSelectedIdeaId] = useState(null);
+  const [showLrLinker, setShowLrLinker] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [gearInputs, setGearInputs] = useState({
     duration: '',
     userGearInventory: `GFX 100S II ("The Portfolio"): 100MP, IBIS hero camera
@@ -121,10 +127,36 @@ iPhone: Diary, quick clips, timelapses`,
   };
 
   const toggleSection = (section) => {
-    setExpandedSections({
-      ...expandedSections,
-      [section]: !expandedSections[section],
-    });
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const openPhotoLinker = (ideaId) => {
+    setSelectedIdeaId(ideaId);
+    setShowPhotoLinker(true);
+  };
+
+  const publishGallery = async () => {
+    if (!confirm('Publish this mission as a gallery?')) return;
+    
+    setPublishing(true);
+    try {
+      const response = await axios.post(
+        `/api/missions/${id}/publish-gallery`,
+        {},
+        { withCredentials: true }
+      );
+      
+      alert('Gallery published successfully!');
+      navigate(`/galleries/${response.data.gallery._id}`);
+    } catch (error) {
+      console.error('Error publishing gallery:', error);
+      alert(error.response?.data?.error || 'Failed to publish gallery');
+    } finally {
+      setPublishing(false);
+    }
   };
 
   if (loading) {
@@ -174,20 +206,45 @@ iPhone: Diary, quick clips, timelapses`,
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               {mission.aiGenerated && (
                 <span className="px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm flex items-center gap-1">
                   <Sparkles className="w-4 h-4" />
                   AI Generated
                 </span>
               )}
+              {!mission.lightroomAlbum && (
+                <button
+                  onClick={() => setShowLrLinker(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all font-semibold flex items-center gap-2 shadow-lg"
+                >
+                  <Camera className="w-5 h-5" />
+                  Link Lightroom
+                </button>
+              )}
+              {mission.lightroomAlbum && (
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-sm flex items-center gap-1">
+                  <Camera className="w-4 h-4" />
+                  {mission.lightroomAlbum.name}
+                </span>
+              )}
               <button
-                onClick={() => navigate(`/galleries/create?missionId=${mission._id}`)}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-lg"
+                onClick={publishGallery}
+                disabled={publishing || mission.publishedGalleryId}
+                className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold flex items-center gap-2 shadow-lg disabled:opacity-50"
               >
-                <ImageIcon className="w-5 h-5" />
-                Create Gallery
+                <Share2 className="w-5 h-5" />
+                {mission.publishedGalleryId ? 'Published' : publishing ? 'Publishing...' : 'Publish Gallery'}
               </button>
+              {mission.publishedGalleryId && (
+                <button
+                  onClick={() => navigate(`/galleries/${mission.publishedGalleryId}`)}
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold flex items-center gap-2 shadow-lg"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                  View Gallery
+                </button>
+              )}
             </div>
           </div>
           <p className="text-purple-100">{mission.description}</p>
@@ -515,7 +572,98 @@ iPhone: Diary, quick clips, timelapses`,
             </div>
           )}
         </div>
+
+        {/* Mission Ideas with Photo Linking */}
+        {mission.missionIdeas && mission.missionIdeas.length > 0 && (
+          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-white/20 mb-6">
+            <h2 className="text-2xl font-bold text-white mb-6">Mission Ideas</h2>
+            <div className="space-y-4">
+              {mission.missionIdeas.map((idea, index) => (
+                <div key={idea.id || index} className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          {idea.id}
+                        </div>
+                        <h3 className="text-xl font-semibold text-white">{idea.title}</h3>
+                      </div>
+                      <p className="text-purple-200 text-sm mb-2">{idea.location}</p>
+                      <p className="text-gray-300 mb-3">{idea.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="px-3 py-1 bg-purple-600/30 text-purple-200 rounded text-sm flex items-center gap-1">
+                          <Camera className="w-3 h-3" />
+                          {idea.gear}
+                        </span>
+                        {idea.settings && (
+                          <span className="px-3 py-1 bg-pink-600/30 text-pink-200 rounded text-sm">
+                            {idea.settings.mode} • {idea.settings.aperture} • ISO {idea.settings.iso}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {idea.specialNotes && (
+                        <p className="text-sm text-yellow-300 italic">⚠️ {idea.specialNotes}</p>
+                      )}
+                    </div>
+                    
+                    <button
+                      onClick={() => openPhotoLinker(idea.id)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <LinkIcon className="w-4 h-4" />
+                      Link Photos
+                    </button>
+                  </div>
+                  
+                  {/* Linked Photos Display */}
+                  {(idea.linkedPhotos?.length > 0 || idea.lightroomPhotoIds?.length > 0) && (
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <p className="text-sm text-purple-300 mb-2">
+                        Linked Photos: {(idea.linkedPhotos?.length || 0) + (idea.lightroomPhotoIds?.length || 0)}
+                      </p>
+                      <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                        {idea.linkedPhotos?.slice(0, 6).map((photo, idx) => (
+                          <div key={idx} className="aspect-square bg-white/5 rounded border border-white/10 flex items-center justify-center">
+                            <ImageIcon className="w-6 h-6 text-purple-400" />
+                          </div>
+                        ))}
+                        {idea.lightroomPhotoIds?.slice(0, 6 - (idea.linkedPhotos?.length || 0)).map((photoId, idx) => (
+                          <div key={idx} className="aspect-square bg-amber-500/10 rounded border border-amber-500/30 flex items-center justify-center">
+                            <Camera className="w-6 h-6 text-amber-400" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Photo Linker Modal */}
+      {showPhotoLinker && selectedIdeaId && (
+        <PhotoLinker
+          missionId={id}
+          ideaId={selectedIdeaId}
+          linkedPhotos={mission.missionIdeas.find(i => i.id === selectedIdeaId)?.linkedPhotos || []}
+          lightroomPhotoIds={mission.missionIdeas.find(i => i.id === selectedIdeaId)?.lightroomPhotoIds || []}
+          onClose={() => setShowPhotoLinker(false)}
+          onUpdate={fetchMissionData}
+        />
+      )}
+
+      {/* Lightroom Linker Modal */}
+      {showLrLinker && (
+        <MissionLightroomLinker
+          missionId={id}
+          onClose={() => setShowLrLinker(false)}
+          onLinked={fetchMissionData}
+        />
+      )}
     </div>
   );
 }
