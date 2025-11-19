@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Camera, X, Check } from 'lucide-react';
-import axios from 'axios';
+import { X, FolderOpen, Check } from 'lucide-react';
+import api from '../lib/api';
 
 export default function MissionLightroomLinker({ missionId, onClose, onLinked }) {
   const [albums, setAlbums] = useState([]);
@@ -23,7 +23,7 @@ export default function MissionLightroomLinker({ missionId, onClose, onLinked })
         return;
       }
 
-      const response = await axios.get(
+      const response = await api.get(
         `${baseUrl}/albums`,
         {
           headers: { 'Authorization': `Bearer ${token}` },
@@ -46,7 +46,7 @@ export default function MissionLightroomLinker({ missionId, onClose, onLinked })
     try {
       const catalogId = localStorage.getItem('lr_catalog_id');
       
-      await axios.post(
+      await api.post(
         `/api/missions/${missionId}/link-lightroom`,
         {
           albumId: selectedAlbum.id,

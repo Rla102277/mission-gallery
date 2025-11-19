@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Loader, LogIn, RefreshCw, FolderOpen, ExternalLink, Link as LinkIcon } from 'lucide-react';
-import api from '../lib/api';
+import api, { getApiUrl } from '../lib/api';
 
 // Adobe IMS (Identity Management Services) configuration
 const ADOBE_IMS_CONFIG = {
@@ -488,10 +488,21 @@ export default function LightroomTest() {
                       const baseUrl = localStorage.getItem('lr_base_url') || 'https://lr.adobe.io/v2/';
                       // The href is relative to the catalog base, so we need to use the catalog base URL
                       const lrUrl = thumbnailHref ? `${baseUrl}${thumbnailHref}` : null;
-                      const thumbnailUrl = lrUrl ? `/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${accessToken}` : null;
+                      const thumbnailUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${accessToken}`) : null;
                       
                       const captureDate = photo.asset?.payload?.captureDate;
                       const fileName = photo.asset?.payload?.importSource?.fileName || 'Photo';
+                      
+                      // Debug logging for first photo
+                      if (photos.indexOf(photo) === 0) {
+                        console.log('First photo debug:', {
+                          thumbnailHref,
+                          baseUrl,
+                          lrUrl,
+                          thumbnailUrl,
+                          photoLinks: photo.asset?.links
+                        });
+                      }
                       
                       return (
                         <div key={photo.id} className="bg-white/5 border border-white/20 rounded-lg overflow-hidden hover:border-purple-500 transition-colors">

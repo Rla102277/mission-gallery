@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Check, Image as ImageIcon } from 'lucide-react';
-import axios from 'axios';
+import api, { getApiUrl } from '../lib/api';
 
 export default function PhotoLinker({ missionId, ideaId, linkedPhotos = [], lightroomPhotoIds = [], onClose, onUpdate }) {
   const [uploadedImages, setUploadedImages] = useState([]);
@@ -17,11 +17,11 @@ export default function PhotoLinker({ missionId, ideaId, linkedPhotos = [], ligh
   const fetchPhotos = async () => {
     try {
       // Fetch uploaded images for this mission
-      const imagesRes = await axios.get(`/api/images/mission/${missionId}`, { withCredentials: true });
+      const imagesRes = await api.get(`/api/images/mission/${missionId}`);
       setUploadedImages(imagesRes.data);
 
       // Fetch mission to get Lightroom album
-      const missionRes = await axios.get(`/api/missions/${missionId}`, { withCredentials: true });
+      const missionRes = await api.get(`/api/missions/${missionId}`);
       
       if (missionRes.data.lightroomAlbum) {
         // Fetch Lightroom photos
@@ -29,7 +29,7 @@ export default function PhotoLinker({ missionId, ideaId, linkedPhotos = [], ligh
         const baseUrl = localStorage.getItem('lr_base_url');
         
         if (token && baseUrl) {
-          const lrRes = await axios.get(
+          const lrRes = await api.get(
             `${baseUrl}/assets?album=${missionRes.data.lightroomAlbum.id}`,
             {
               headers: { 'Authorization': `Bearer ${token}` },
@@ -64,7 +64,7 @@ export default function PhotoLinker({ missionId, ideaId, linkedPhotos = [], ligh
 
   const handleSave = async () => {
     try {
-      await axios.post(
+      await api.post(
         `/api/missions/${missionId}/ideas/${ideaId}/link-photos`,
         {
           imageIds: selectedImages,
@@ -186,7 +186,7 @@ export default function PhotoLinker({ missionId, ideaId, linkedPhotos = [], ligh
                         >
                           {thumbnail && (
                             <img
-                              src={`/api/adobe/image-proxy?url=${encodeURIComponent(thumbnail)}&token=${localStorage.getItem('adobe_lightroom_token')}`}
+                              src={getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(thumbnail)}&token=${localStorage.getItem('adobe_lightroom_token')}`)}
                               alt="Lightroom photo"
                               className="w-full h-full object-cover"
                             />
