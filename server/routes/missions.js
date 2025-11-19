@@ -1,14 +1,69 @@
 import express from 'express';
 import Mission from '../models/Mission.js';
 import { ensureAuth } from '../middleware/auth.js';
-import { generateMissions, generateGearList } from '../services/aiService.js';
+import { generateMissions, generateGearList, enhanceMissionSection } from '../services/aiService.js';
 
 const router = express.Router();
+
+const editableSections = {
+  'gear-roles': 'gearRolesText',
+  'base-recipes': 'baseRecipesText',
+  'series-checklist': 'seriesChecklistText',
+  'composition-notes': 'compositionNotesText',
+  'field-card': 'fieldCardText',
+};
 
 // Get all missions for authenticated user
 router.get('/', ensureAuth, async (req, res) => {
   try {
     const missions = await Mission.find({ userId: req.user._id }).sort({ createdAt: -1 });
+
+// Update mission brief section
+router.put('/:id/sections/:sectionKey', ensureAuth, async (req, res) => {
+  try {
+    const fieldName = editableSections[req.params.sectionKey];
+    if (!fieldName) {
+      return res.status(400).json({ error: 'Invalid section key' });
+    }
+
+    const mission = await Mission.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!mission) {
+      return res.status(404).json({ error: 'Mission not found' });
+    }
+
+    mission[fieldName] = req.body.content || '';
+    await mission.save();
+
+    res.json({ field: fieldName, value: mission[fieldName] });
+  } catch (error) {
+    console.error('Error updating mission section:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// AI enhance mission brief section
+router.post('/:id/sections/:sectionKey/enhance', ensureAuth, async (req, res) => {
+  try {
+    const fieldName = editableSections[req.params.sectionKey];
+    if (!fieldName) {
+      return res.status(400).json({ error: 'Invalid section key' });
+    }
+
+    const mission = await Mission.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!mission) {
+      return res.status(404).json({ error: 'Mission not found' });
+    }
+
+    const enhanced = await enhanceMissionSection(fieldName, mission, req.body?.style || 'default');
+    mission[fieldName] = enhanced;
+    await mission.save();
+
+    res.json({ field: fieldName, value: enhanced });
+  } catch (error) {
+    console.error('Error enhancing mission section:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
     res.json(missions);
   } catch (error) {
     res.status(500).json({ error: error.message });

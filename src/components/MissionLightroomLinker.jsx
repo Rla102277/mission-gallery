@@ -23,7 +23,10 @@ export default function MissionLightroomLinker({ missionId, onClose, onLinked })
         return;
       }
 
-      const response = await fetch(`${baseUrl}/albums`, {
+      const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+      const albumsUrl = `${normalizedBaseUrl}/catalogs/${catalogId}/albums?limit=200`;
+
+      const response = await fetch(albumsUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-API-Key': import.meta.env.VITE_ADOBE_CLIENT_ID || process.env.VITE_ADOBE_CLIENT_ID || process.env.ADOBE_CLIENT_ID,

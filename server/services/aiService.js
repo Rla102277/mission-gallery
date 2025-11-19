@@ -14,12 +14,105 @@ function getOpenAI() {
     if (!apiKey) {
       throw new Error('OPENAI_API_KEY is not set in environment variables');
     }
-    
+
     openai = new OpenAI({
       apiKey: apiKey,
     });
   }
   return openai;
+}
+
+const missionSectionPrompts = {
+  gearRolesText: {
+    title: 'Gear Roles & Camera Personalities',
+    instructions: `Craft a cinematic "gear roles" briefing that assigns personalities and primary use cases to each camera body, lens, or tool in the mission's saved gear list. Explain why each item earns its nickname, which scenarios it owns, and how it pairs with the rest of the kit. Keep it practical but inspiring so the photographer knows exactly why each piece is in the bag. Format as rich paragraphs or short bullet groupings—no JSON, no code fences.`,
+  },
+  baseRecipesText: {
+    title: 'Base Recipes & Settings',
+    instructions: `Produce a set of "base recipes"—repeatable camera setups tuned to this mission's locations (waterfalls, night sky, basalt cliffs, steam, etc.). For each recipe include the scenario, recommended body/lens, exact settings (mode, aperture, shutter, ISO), filters, and execution tips. Keep it punchy and field-ready.`,
+  },
+  seriesChecklistText: {
+    title: 'Series Checklist',
+    instructions: `Summarize all required diptychs/triptychs/series as a checklist. For each series, list the frame labels (A/B/C), what to capture, and which core mission they tie to. Emphasize storytelling continuity and variety (wide/medium/detail).`,
+  },
+  compositionNotesText: {
+    title: 'Composition & Shot Guidance',
+    instructions: `Write composition coaching tailored to this mission: foreground choices, leading lines, perspective swaps, negative space, weather adaptations, and pacing reminders. Reference specific locations or missions where possible.`,
+  },
+  fieldCardText: {
+    title: 'Field Card / Quick Reference',
+    instructions: `Create a one-page field card with three blocks: Gear (must-pack items), Base Recipes (top 3-5), and Aurora/Night/Weather emergency settings. Keep it extremely scannable with bullet lists and micro-headlines.`,
+  },
+};
+
+function summarizeGearList(gearList = []) {
+  if (!gearList.length) return 'No saved gear list yet.';
+  return gearList
+    .map((item) => `- ${item.name}${item.category ? ` (${item.category})` : ''}: ${item.description || ''}`)
+    .join('\n');
+}
+
+function summarizeStructuredPlan(plan) {
+  if (!plan) return 'No structured plan yet.';
+  const days = plan?.days || plan;
+  if (!Array.isArray(days)) return 'No structured plan yet.';
+  return days
+    .map((day) => {
+      const title = day.title || day.dayTitle || `Day ${day.dayNumber || ''}`;
+      const locations = (day.locations || [])
+        .map((loc) => (typeof loc === 'string' ? loc : loc?.name))
+        .filter(Boolean)
+        .join(', ');
+      return `- ${title}: ${locations}`;
+    })
+    .join('\n');
+}
+
+export async function enhanceMissionSection(fieldName, mission, style = 'default') {
+  const config = missionSectionPrompts[fieldName];
+  if (!config) {
+    throw new Error('Unsupported mission section');
+  }
+
+  const missionContext = `Mission: ${mission.title || 'Untitled'}\nLocation: ${mission.location || 'Unknown'}\nDescription: ${mission.description || mission.summary || 'N/A'}\nDuration: ${mission.structuredPlan?.days?.length || 'Not specified'} days`;
+  const gearSummary = summarizeGearList(mission.gearList);
+  const planSummary = summarizeStructuredPlan(mission.structuredPlan);
+  const existingContent = mission[fieldName] || 'None yet—please create from scratch.';
+
+  const prompt = `${config.instructions}
+
+Mission Context:
+${missionContext}
+
+Saved Gear List:
+${gearSummary}
+
+Structured Plan Highlights:
+${planSummary}
+
+Current Draft:
+${existingContent}
+
+Style preference: ${style} (default means cinematic field-notes voice).
+
+Return ONLY the upgraded section text (markdown-friendly), no JSON, no intro or outro.`;
+
+  return await retryWithBackoff(async () => {
+    const completion = await getGroq().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a senior travel photographer and creative director crafting high-impact mission briefings. Be vivid, precise, and field-ready.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 1200,
+    });
+
+    return completion.choices[0].message.content.trim();
+  });
 }
 
 function getGroq() {

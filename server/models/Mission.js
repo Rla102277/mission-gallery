@@ -47,6 +47,26 @@ const missionSchema = new mongoose.Schema({
     specifications: mongoose.Schema.Types.Mixed,
     aiGenerated: Boolean,
   }],
+  gearRolesText: {
+    type: String,
+    default: '',
+  },
+  baseRecipesText: {
+    type: String,
+    default: '',
+  },
+  seriesChecklistText: {
+    type: String,
+    default: '',
+  },
+  compositionNotesText: {
+    type: String,
+    default: '',
+  },
+  fieldCardText: {
+    type: String,
+    default: '',
+  },
   // Detailed mission structure from AI generation
   structuredPlan: {
     type: mongoose.Schema.Types.Mixed,

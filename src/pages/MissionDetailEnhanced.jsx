@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
-import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Link as LinkIcon, Share2 } from 'lucide-react';
+import { Upload, Eye, EyeOff, Trash2, Sparkles, Calendar, MapPin, Camera, ChevronDown, ChevronUp, Plus, Image as ImageIcon, Link as LinkIcon, Share2, Edit3, Loader2 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import PhotoLinker from '../components/PhotoLinker';
 import MissionLightroomLinker from '../components/MissionLightroomLinker';
@@ -33,6 +33,42 @@ iPhone: Diary, quick clips, timelapses`,
     weatherConditions: '',
     photoStyle: '',
   });
+  const sectionConfigs = [
+    {
+      key: 'gear-roles',
+      field: 'gearRolesText',
+      title: 'Gear Roles & Camera Personalities',
+      description: 'Assign hero roles to every camera and lens so you know exactly why it is in the bag.',
+    },
+    {
+      key: 'base-recipes',
+      field: 'baseRecipesText',
+      title: 'Base Recipes & Settings',
+      description: 'Waterfall, night sky, basalt cliffs, steam — dialed-in settings ready to deploy.',
+    },
+    {
+      key: 'series-checklist',
+      field: 'seriesChecklistText',
+      title: 'Series & Triptych Checklist',
+      description: 'Diptychs and triptychs you must capture, with frame-by-frame callouts.',
+    },
+    {
+      key: 'composition-notes',
+      field: 'compositionNotesText',
+      title: 'Composition & Shot Guidance',
+      description: 'Foreground ideas, leading lines, perspective swaps, and pacing reminders.',
+    },
+    {
+      key: 'field-card',
+      field: 'fieldCardText',
+      title: 'Field Card / Quick Reference',
+      description: 'One-page cheat sheet with gear to pack, base recipes, and Aurora emergency settings.',
+    },
+  ];
+  const [editingSection, setEditingSection] = useState(null);
+  const [sectionContent, setSectionContent] = useState('');
+  const [sectionSaving, setSectionSaving] = useState(false);
+  const [enhancingSection, setEnhancingSection] = useState(null);
 
   useEffect(() => {
     fetchMissionData();
@@ -63,6 +99,54 @@ iPhone: Diary, quick clips, timelapses`,
       return parts.length > 0 ? parts.join(' – ') : 'Location';
     }
     return String(location);
+  };
+
+  const getSectionConfig = (sectionKey) => sectionConfigs.find((section) => section.key === sectionKey);
+
+  const toggleEditSection = (sectionKey) => {
+    if (editingSection === sectionKey) {
+      setEditingSection(null);
+      setSectionContent('');
+      return;
+    }
+    const config = getSectionConfig(sectionKey);
+    setEditingSection(sectionKey);
+    setSectionContent((mission && config) ? mission[config.field] || '' : '');
+  };
+
+  const saveSection = async (sectionKey) => {
+    const config = getSectionConfig(sectionKey);
+    if (!config) return;
+    setSectionSaving(true);
+    try {
+      const response = await api.put(`/api/missions/${id}/sections/${sectionKey}` , { content: sectionContent });
+      setMission((prev) => ({ ...prev, [config.field]: response.data.value }));
+      setEditingSection(null);
+      setSectionContent('');
+    } catch (error) {
+      console.error('Error saving section:', error);
+      alert('Failed to save section. Please try again.');
+    } finally {
+      setSectionSaving(false);
+    }
+  };
+
+  const enhanceSection = async (sectionKey) => {
+    const config = getSectionConfig(sectionKey);
+    if (!config) return;
+    setEnhancingSection(sectionKey);
+    try {
+      const response = await api.post(`/api/missions/${id}/sections/${sectionKey}/enhance`, {});
+      setMission((prev) => ({ ...prev, [config.field]: response.data.value }));
+      if (editingSection === sectionKey) {
+        setSectionContent(response.data.value || '');
+      }
+    } catch (error) {
+      console.error('Error enhancing section:', error);
+      alert(error.response?.data?.error || 'Failed to enhance section.');
+    } finally {
+      setEnhancingSection(null);
+    }
   };
 
   const onDrop = async (acceptedFiles) => {
@@ -260,6 +344,84 @@ iPhone: Diary, quick clips, timelapses`,
             </div>
           </div>
           <p className="text-purple-100">{mission.description}</p>
+        </div>
+
+        {/* Mission Brief Sections */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-white/20 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Mission Brief</h2>
+              <p className="text-purple-200 text-sm">Editable sections with AI assistance to keep your field plan sharp.</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {sectionConfigs.map((section) => {
+              const value = mission?.[section.field];
+              const isEditing = editingSection === section.key;
+              const isEnhancing = enhancingSection === section.key;
+              return (
+                <div key={section.key} className="bg-white/5 border border-white/10 rounded-xl p-5">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-white mb-1">{section.title}</h3>
+                      <p className="text-sm text-purple-200">{section.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => enhanceSection(section.key)}
+                        disabled={isEnhancing}
+                        className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg hover:from-emerald-600 hover:to-green-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {isEnhancing ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-4 h-4" />
+                        )}
+                        {isEnhancing ? 'Enhancing...' : 'AI Enhance'}
+                      </button>
+                      <button
+                        onClick={() => toggleEditSection(section.key)}
+                        className="px-4 py-2 border border-white/30 text-white rounded-lg hover:bg-white/10 transition-all flex items-center gap-2"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        {isEditing ? 'Cancel' : 'Edit'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    {isEditing ? (
+                      <>
+                        <textarea
+                          value={sectionContent}
+                          onChange={(e) => setSectionContent(e.target.value)}
+                          rows="8"
+                          className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="Write your notes here..."
+                        />
+                        <div className="flex justify-end mt-3">
+                          <button
+                            onClick={() => saveSection(section.key)}
+                            disabled={sectionSaving}
+                            className="px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50"
+                          >
+                            {sectionSaving ? 'Saving...' : 'Save Section'}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-gray-100 whitespace-pre-line bg-black/20 border border-white/5 rounded-lg p-4">
+                        {value && value.trim().length > 0
+                          ? value
+                          : 'No notes yet. Use Edit or AI Enhance to add this section.'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Structured Mission Plan */}
