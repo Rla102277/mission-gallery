@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import passport from 'passport';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -50,6 +51,11 @@ const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
+  name: 'mission.sid',
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    touchAfter: 24 * 3600,
+  }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000,
     secure: false,
@@ -68,6 +74,7 @@ console.log('Session config:', {
   nodeEnv: process.env.NODE_ENV,
   secure: sessionConfig.cookie.secure,
   sameSite: sessionConfig.cookie.sameSite,
+  store: 'MongoStore',
 });
 
 app.use(session(sessionConfig));
