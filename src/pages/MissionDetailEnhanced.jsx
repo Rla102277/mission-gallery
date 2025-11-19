@@ -53,6 +53,18 @@ iPhone: Diary, quick clips, timelapses`,
     }
   };
 
+  const formatLocation = (location) => {
+    if (!location) return 'Unknown location';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      const parts = [location.name, location.description, location.city, location.country]
+        .filter(Boolean)
+        .map((part) => (typeof part === 'string' ? part.trim() : part));
+      return parts.length > 0 ? parts.join(' – ') : 'Location';
+    }
+    return String(location);
+  };
+
   const onDrop = async (acceptedFiles) => {
     setUploading(true);
     const formData = new FormData();
@@ -195,7 +207,7 @@ iPhone: Diary, quick clips, timelapses`,
                 {mission.location && (
                   <span className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
-                    {mission.location}
+                    {formatLocation(mission.location)}
                   </span>
                 )}
                 {mission.startDate && (
@@ -262,7 +274,7 @@ iPhone: Diary, quick clips, timelapses`,
                 <div className="flex flex-wrap gap-2">
                   {mission.structuredPlan.locations.map((location, idx) => (
                     <span key={idx} className="px-3 py-1 bg-purple-600/30 text-purple-200 rounded-lg text-sm">
-                      {location}
+                      {formatLocation(location)}
                     </span>
                   ))}
                 </div>
@@ -296,7 +308,7 @@ iPhone: Diary, quick clips, timelapses`,
                           </div>
                           <div className="flex-1">
                             <h4 className="font-semibold text-white text-lg mb-1">{coreMission.title}</h4>
-                            <p className="text-sm text-purple-200 mb-3">{coreMission.location}</p>
+                            <p className="text-sm text-purple-200 mb-3">{formatLocation(coreMission.location)}</p>
                             
                             <div className="flex flex-wrap gap-2 mb-3">
                               <span className="px-2 py-1 bg-purple-600/30 text-purple-200 rounded text-xs flex items-center gap-1">
@@ -588,7 +600,7 @@ iPhone: Diary, quick clips, timelapses`,
                         </div>
                         <h3 className="text-xl font-semibold text-white">{idea.title}</h3>
                       </div>
-                      <p className="text-purple-200 text-sm mb-2">{idea.location}</p>
+                      <p className="text-purple-200 text-sm mb-2">{formatLocation(idea.location)}</p>
                       <p className="text-gray-300 mb-3">{idea.description}</p>
                       
                       <div className="flex flex-wrap gap-2 mb-3">
