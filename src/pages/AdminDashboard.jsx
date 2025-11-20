@@ -18,6 +18,7 @@ import AboutMeEditor from '../components/AboutMeEditor';
 import FujifilmRecipeGuide from '../components/FujifilmRecipeGuide';
 import GearEditor from '../components/GearEditor';
 import LightroomTest from './LightroomTest';
+import PortfolioManager from '../components/PortfolioManager';
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -181,7 +182,7 @@ function AdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 mb-6 border-b border-stone-700">
+        <div className="flex space-x-4 mb-6 border-b border-stone-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('galleries')}
             className={`px-6 py-3 font-medium transition-colors ${
@@ -211,6 +212,16 @@ function AdminDashboard() {
             }`}
           >
             About Me
+          </button>
+          <button
+            onClick={() => setActiveTab('portfolios')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'portfolios'
+                ? 'text-amber-500 border-b-2 border-amber-500'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            Portfolios
           </button>
           <button
             onClick={() => setActiveTab('gear')}
@@ -373,6 +384,11 @@ function AdminDashboard() {
             </div>
             <AboutMeEditor />
           </div>
+        )}
+
+        {/* Portfolios Tab */}
+        {activeTab === 'portfolios' && (
+          <PortfolioManager galleries={galleries} />
         )}
 
         {/* My Gear Tab */}

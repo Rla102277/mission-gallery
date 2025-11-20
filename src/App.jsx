@@ -15,6 +15,7 @@ import CreateMission from './pages/CreateMissionEnhanced';
 import MissionDetail from './pages/MissionDetailEnhanced';
 import MissionEdit from './pages/MissionEdit';
 import LightroomTest from './pages/LightroomTest';
+import PortfolioView from './pages/PortfolioView';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/galleries" element={<PublicGalleries />} />
             <Route path="/gallery/:slug" element={<PublicGallery />} />
+            <Route path="/portfolio/:slug" element={<PortfolioView />} />
             <Route path="/about" element={<AboutMe />} />
             <Route path="/gear" element={<MyGear />} />
             

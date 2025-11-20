@@ -4,6 +4,7 @@ import Mission from '../models/Mission.js';
 import Image from '../models/Image.js';
 import { ensureAuth } from '../middleware/auth.js';
 
+
 const router = express.Router();
 
 // Get all galleries for user
@@ -80,7 +81,7 @@ router.get('/:id', ensureAuth, async (req, res) => {
 // Create gallery from mission
 router.post('/', ensureAuth, async (req, res) => {
   try {
-    const { missionId, title, description, isPublic, images, layout, layoutConfig, lightroomAlbum, enablePrints, printPricing } = req.body;
+    const { missionId, title, description, isPublic, images, layout, layoutConfig, lightroomAlbum, enablePrints, printPricing, isPortfolio } = req.body;
 
     let mission = null;
     if (missionId) {
@@ -96,6 +97,7 @@ router.post('/', ensureAuth, async (req, res) => {
       title,
       description,
       isPublic,
+      isPortfolio: Boolean(isPortfolio),
       layout: layout || mission?.layout || 'grid',
       layoutConfig: layoutConfig || mission?.layoutConfig,
       lightroomAlbum: lightroomAlbum || null,
@@ -348,9 +350,10 @@ router.post('/:id/enhance-description', ensureAuth, async (req, res) => {
 // Update gallery
 router.put('/:id', ensureAuth, async (req, res) => {
   try {
+    const updates = { ...req.body, updatedAt: Date.now() };
     const gallery = await Gallery.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
-      req.body,
+      updates,
       { new: true }
     ).populate('images.imageId');
 
