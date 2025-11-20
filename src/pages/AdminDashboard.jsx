@@ -19,6 +19,7 @@ import FujifilmRecipeGuide from '../components/FujifilmRecipeGuide';
 import GearEditor from '../components/GearEditor';
 import LightroomTest from './LightroomTest';
 import PortfolioManager from '../components/PortfolioManager';
+import MentorEditManager from '../components/MentorEditManager';
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -192,6 +193,16 @@ function AdminDashboard() {
             }`}
           >
             Galleries ({galleries.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('mentor')}
+            className={`px-6 py-3 font-medium transition-colors ${
+              activeTab === 'mentor'
+                ? 'text-amber-500 border-b-2 border-amber-500'
+                : 'text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            MentorEdit
           </button>
           <button
             onClick={() => setActiveTab('missions')}
@@ -506,6 +517,9 @@ function AdminDashboard() {
             )}
           </div>
         )}
+
+        {/* MentorEdit Tab */}
+        {activeTab === 'mentor' && <MentorEditManager />}
       </div>
     </div>
   );

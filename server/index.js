@@ -21,6 +21,7 @@ import aboutRoutes from './routes/about.js';
 import adobeRoutes from './routes/adobe.js';
 import gearRoutes from './routes/gear.js';
 import portfolioRoutes from './routes/portfolios.js';
+import mentorRoutes from './routes/mentor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -101,6 +102,7 @@ app.use('/api/about', aboutRoutes);
 app.use('/api/adobe', adobeRoutes);
 app.use('/api/gear', gearRoutes);
 app.use('/api/portfolios', portfolioRoutes);
+app.use('/api/mentor', mentorRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
