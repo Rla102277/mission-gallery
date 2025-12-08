@@ -1,5 +1,54 @@
 # 🚀 Deployment Guide
 
+## ✅ Recent Changes - Cloudinary Migration Complete!
+
+**Branch:** `claude/photo-sharing-cloudinary-01HuPrs5d7ZNNWNyAALSmtWm`
+**Status:** ✅ Built and Ready to Deploy
+
+### What's New:
+- ✅ **Cloudinary is now primary storage** (switched from local uploads)
+- ✅ All frontend components updated to use Cloudinary URLs
+- ✅ Production build completed (`dist/` folder ready)
+- ✅ Automatic image optimization and CDN delivery
+- ✅ Built-in thumbnail generation
+
+### ⚠️ Important for Deployment:
+Make sure your **Cloudinary credentials** are set in production environment:
+```
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
+
+---
+
+# 🚀 Deployment Guide
+
+## Deploy to Firebase Hosting (Frontend Only)
+
+Your project is already configured for Firebase Hosting! The frontend is **built and ready** in the `dist/` folder.
+
+### Quick Deploy Steps:
+
+1. **Login to Firebase:**
+   ```bash
+   firebase login
+   ```
+
+2. **Deploy:**
+   ```bash
+   firebase deploy --only hosting
+   ```
+
+3. **Your frontend will be live at:**
+   - `https://mission-gallery-app.web.app`
+   - `https://mission-gallery-app.firebaseapp.com`
+
+### Note:
+Firebase Hosting only hosts your frontend. You'll need to deploy the backend separately (see options below).
+
+---
+
 ## Deploy to Replit (Recommended - Free Tier Available)
 
 ### Quick Deploy Steps:
