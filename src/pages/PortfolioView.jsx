@@ -122,7 +122,7 @@ export default function PortfolioView() {
                       {gallery.images.slice(0, 8).map((image) => (
                         <div key={image._id || image.imageId?._id} className="aspect-square overflow-hidden">
                           <img
-                            src={image.imageId?.thumbnailPath || image.imageId?.path}
+                            src={image.imageId?.thumbnailUrl || image.imageId?.url}
                             alt={image.imageId?.caption || 'Gallery image'}
                             className="w-full h-full object-cover"
                           />

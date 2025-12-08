@@ -175,7 +175,7 @@ export default function PublicGallery() {
                   }}
                 >
                   <img
-                    src={`/${image.path}`}
+                    src={image.thumbnailUrl || image.url}
                     alt={image.caption || 'Gallery image'}
                     className={`w-full ${
                       gallery.layout === 'masonry'
@@ -218,7 +218,7 @@ export default function PublicGallery() {
         }) : gallery?.images?.map((item) => {
           const image = item.imageId;
           return {
-            url: `/${image.path}`,
+            url: image.url,
             title: image.caption || image.filename || 'Photo',
             date: image.uploadDate ? new Date(image.uploadDate).toLocaleDateString() : null
           };

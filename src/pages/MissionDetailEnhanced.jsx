@@ -585,7 +585,7 @@ iPhone: Diary, quick clips, timelapses`,
               {images.map((image) => (
                 <div key={image._id} className="relative group">
                   <img
-                    src={image.thumbnailPath || image.path}
+                    src={image.thumbnailUrl || image.url}
                     alt={image.caption || 'Mission image'}
                     className="w-full h-48 object-cover rounded-lg"
                   />

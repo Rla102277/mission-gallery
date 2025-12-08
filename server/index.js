@@ -15,7 +15,7 @@ dotenv.config();
 import configurePassport from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import missionRoutes from './routes/missions.js';
-import imageRoutes from './routes/images.js';
+import imageRoutes from './routes/images-cloudinary.js';
 import galleryRoutes from './routes/galleries.js';
 import aboutRoutes from './routes/about.js';
 import adobeRoutes from './routes/adobe.js';
@@ -90,8 +90,8 @@ configurePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Serve uploaded files (legacy - now using Cloudinary)
+// app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes
 app.use('/auth', authRoutes);

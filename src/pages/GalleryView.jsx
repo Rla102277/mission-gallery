@@ -786,7 +786,7 @@ export default function GalleryView() {
                 }}
               >
                 <img
-                  src={`/${image.path}`}
+                  src={image.thumbnailUrl || image.url}
                   alt={image.caption || 'Gallery image'}
                   className={`w-full ${
                     layoutType === 'masonry' ? 'mb-4' : 'h-64 object-cover'
@@ -842,7 +842,7 @@ export default function GalleryView() {
         }) : gallery.images?.map((item) => {
           const image = item.imageId;
           return {
-            url: `/${image.path}`,
+            url: image.url,
             title: image.caption || image.filename || 'Photo',
             date: image.uploadDate ? new Date(image.uploadDate).toLocaleDateString() : null,
             exif: image.exif,
