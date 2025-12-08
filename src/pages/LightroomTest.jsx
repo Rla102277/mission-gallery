@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Loader, LogIn, RefreshCw, FolderOpen, ExternalLink, Link as LinkIcon } from 'lucide-react';
 import api, { getApiUrl } from '../lib/api';
+import {
+  saveLightroomAuth,
+  getValidLightroomAccessToken,
+  clearLightroomAuth,
+  getLightroomMetadata,
+  setLightroomCatalogInfo,
+  saveLightroomMetadata,
+} from '../lib/lightroomAuth';
 
 // Adobe IMS (Identity Management Services) configuration
 const ADOBE_IMS_CONFIG = {
@@ -26,13 +34,20 @@ export default function LightroomTest() {
   const [newGalleryTitle, setNewGalleryTitle] = useState('');
 
   useEffect(() => {
-    // Check if we have a token in localStorage
-    const token = localStorage.getItem('adobe_lightroom_token');
-    if (token) {
-      setAccessToken(token);
-      setIsAuthenticated(true);
-    }
-    
+    const initializeAuth = async () => {
+      const token = await getValidLightroomAccessToken();
+      if (token) {
+        setAccessToken(token);
+        setIsAuthenticated(true);
+        const metadata = getLightroomMetadata();
+        if (metadata?.catalogId) {
+          setSelectedCatalog(metadata.catalogId);
+        }
+      }
+    };
+
+    initializeAuth();
+
     // Load saved gallery links
     const savedLinks = localStorage.getItem('lightroom_gallery_links');
     if (savedLinks) {
@@ -90,7 +105,7 @@ export default function LightroomTest() {
       const data = response.data;
       console.log('Token exchange response:', data);
 
-      localStorage.setItem('adobe_lightroom_token', data.access_token);
+      saveLightroomAuth(data);
       setAccessToken(data.access_token);
       setIsAuthenticated(true);
       
@@ -105,7 +120,8 @@ export default function LightroomTest() {
   };
 
   const fetchCatalogs = async () => {
-    if (!accessToken) return;
+    const token = await getValidLightroomAccessToken();
+    if (!token) return;
     
     setLoading(true);
     setError(null);
@@ -114,7 +130,7 @@ export default function LightroomTest() {
       // Try to get account info first
       const accountResponse = await fetch('https://lr.adobe.io/v2/account', {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${token}`,
           'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
@@ -146,7 +162,7 @@ export default function LightroomTest() {
       // Now fetch the actual catalog
       const catalogResponse = await fetch('https://lr.adobe.io/v2/catalog', {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${token}`,
           'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
@@ -164,6 +180,7 @@ export default function LightroomTest() {
       console.log('Catalog data:', catalogData);
       
       if (catalogData.id) {
+        setLightroomCatalogInfo({ catalogId: catalogData.id, baseUrl: catalogData.base });
         setCatalogs([{ 
           id: catalogData.id, 
           name: catalogData.payload?.name || 'My Lightroom Catalog' 
@@ -180,7 +197,8 @@ export default function LightroomTest() {
   };
 
   const fetchAlbums = async (catalogId) => {
-    if (!accessToken) return;
+    const token = await getValidLightroomAccessToken();
+    if (!token) return;
     
     setLoading(true);
     setError(null);
@@ -189,7 +207,7 @@ export default function LightroomTest() {
       // Use the catalog-based albums endpoint
       const response = await fetch(`https://lr.adobe.io/v2/catalogs/${catalogId}/albums`, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${token}`,
           'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
@@ -219,7 +237,8 @@ export default function LightroomTest() {
   };
 
   const fetchAlbumPhotos = async (catalogId, albumId) => {
-    if (!accessToken) return;
+    const token = await getValidLightroomAccessToken();
+    if (!token) return;
     
     setLoading(true);
     setError(null);
@@ -228,7 +247,7 @@ export default function LightroomTest() {
       // Request assets with embed=asset to get full asset details including renditions
       const response = await fetch(`https://lr.adobe.io/v2/catalogs/${catalogId}/albums/${albumId}/assets?embed=asset`, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${token}`,
           'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
@@ -253,7 +272,7 @@ export default function LightroomTest() {
       setPhotos(data.resources || []);
       // Store base URL for constructing image URLs
       if (data.base) {
-        localStorage.setItem('lr_base_url', data.base);
+        saveLightroomMetadata({ baseUrl: data.base });
       }
     } catch (err) {
       setError(err.message);
@@ -264,7 +283,7 @@ export default function LightroomTest() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adobe_lightroom_token');
+    clearLightroomAuth();
     setAccessToken(null);
     setIsAuthenticated(false);
     setCatalogs([]);

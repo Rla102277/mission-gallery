@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import axios from 'axios';
 import { ensureAuth } from '../middleware/auth.js';
 import { generateImageDescription, enhanceMissionSection, generateGearList, generateGalleryDescriptions } from '../services/aiService.js';
+import cloudinary, { getThumbnailUrl } from '../config/cloudinary.js';
 
 const router = express.Router();
 
@@ -17,12 +18,31 @@ router.post('/upload', ensureAuth, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const { filename, path: tempPath } = req.file;
-    const ext = path.extname(filename).toLowerCase();
     const publicUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
     // Move file to permanent uploads location (if not already there)
     const targetPath = path.join('uploads', filename);
     await fs.rename(tempPath, targetPath);
-    res.json({ filename, url: publicUrl, path: targetPath });
+    let cloudinaryResult = null;
+    try {
+      cloudinaryResult = await cloudinary.uploader.upload(targetPath, {
+        folder: 'mission-gallery/mentor-edit',
+        use_filename: true,
+        unique_filename: false,
+        resource_type: 'image',
+      });
+    } catch (cloudErr) {
+      console.error('MentorEdit Cloudinary upload error:', cloudErr);
+    }
+
+    res.json({
+      filename,
+      url: cloudinaryResult?.secure_url || publicUrl,
+      path: targetPath,
+      cloudinaryId: cloudinaryResult?.public_id || null,
+      thumbnailUrl: cloudinaryResult?.public_id ? getThumbnailUrl(cloudinaryResult.public_id) : null,
+      width: cloudinaryResult?.width,
+      height: cloudinaryResult?.height,
+    });
   } catch (err) {
     console.error('MentorEdit upload error:', err);
     res.status(500).json({ error: 'Upload failed' });
@@ -75,7 +95,29 @@ router.post('/import-lightroom', ensureAuth, async (req, res) => {
     const targetPath = path.join('uploads', filename);
     await fs.writeFile(targetPath, imageBuffer);
     const publicUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
-    res.json({ filename, url: publicUrl, path: targetPath });
+    let cloudinaryResult = null;
+    try {
+      cloudinaryResult = await cloudinary.uploader.upload(targetPath, {
+        folder: 'mission-gallery/mentor-edit',
+        public_id: `mentor_lr_${assetId}`,
+        overwrite: true,
+        resource_type: 'image',
+      });
+    } catch (cloudErr) {
+      console.error('MentorEdit Lightroom Cloudinary upload error:', cloudErr);
+    }
+
+    res.json({
+      filename,
+      url: cloudinaryResult?.secure_url || publicUrl,
+      path: targetPath,
+      cloudinaryId: cloudinaryResult?.public_id || null,
+      thumbnailUrl: cloudinaryResult?.public_id ? getThumbnailUrl(cloudinaryResult.public_id) : null,
+      width: cloudinaryResult?.width,
+      height: cloudinaryResult?.height,
+      lightroomAssetId: assetId,
+      lightroomAlbumId: albumId,
+    });
   } catch (err) {
     console.error('MentorEdit Lightroom import error:', err);
     res.status(500).json({ error: 'Lightroom import failed' });

@@ -11,6 +11,18 @@ export default function CreateMissionEnhanced() {
   const [expandedDays, setExpandedDays] = useState({});
   const [saveAllMode, setSaveAllMode] = useState(true);
 
+  const normalizeLocations = (locations) => {
+    if (!locations) return [];
+    if (Array.isArray(locations)) return locations;
+    return [locations];
+  };
+
+  const normalizeCoreMissions = (coreMissions) => {
+    if (!coreMissions) return [];
+    if (Array.isArray(coreMissions)) return coreMissions;
+    return [coreMissions];
+  };
+
   const [aiFormData, setAiFormData] = useState({
     location: '',
     summary: '',
@@ -69,10 +81,12 @@ iPhone: Diary, quick clips, timelapses`,
   const createMissionFromDay = async (day) => {
     setLoading(true);
     try {
-      const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
+      const locations = normalizeLocations(day.locations);
+      const coreMissions = normalizeCoreMissions(day.coreMissions);
+      const locationNames = locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
       
       // Convert core missions to mission ideas format
-      const missionIdeas = day.coreMissions.map(mission => ({
+      const missionIdeas = coreMissions.map(mission => ({
         id: mission.id,
         title: mission.title,
         location: mission.location,
@@ -86,7 +100,7 @@ iPhone: Diary, quick clips, timelapses`,
       
       const missionData = {
         title: day.title,
-        description: `${locationNames} - ${day.coreMissions.length} missions planned`,
+        description: `${locationNames} - ${coreMissions.length} missions planned`,
         location: aiFormData.location,
         aiGenerated: true,
         includeDiptychs: aiFormData.includeDiptychs,
@@ -112,10 +126,12 @@ iPhone: Diary, quick clips, timelapses`,
     setLoading(true);
     try {
       // First create the mission
-      const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
+      const locations = normalizeLocations(day.locations);
+      const coreMissions = normalizeCoreMissions(day.coreMissions);
+      const locationNames = locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
       const missionData = {
         title: day.title,
-        description: `${locationNames} - ${day.coreMissions.length} missions planned`,
+        description: `${locationNames} - ${coreMissions.length} missions planned`,
         location: aiFormData.location,
         aiGenerated: true,
         includeDiptychs: aiFormData.includeDiptychs,
@@ -155,10 +171,12 @@ iPhone: Diary, quick clips, timelapses`,
     setLoading(true);
     try {
       // First create the mission
-      const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
+      const locations = normalizeLocations(day.locations);
+      const coreMissions = normalizeCoreMissions(day.coreMissions);
+      const locationNames = locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
       const missionData = {
         title: day.title,
-        description: `${locationNames} - ${day.coreMissions.length} missions planned`,
+        description: `${locationNames} - ${coreMissions.length} missions planned`,
         location: aiFormData.location,
         aiGenerated: true,
         includeDiptychs: aiFormData.includeDiptychs,
@@ -206,10 +224,12 @@ iPhone: Diary, quick clips, timelapses`,
     try {
       // Create missions for all days
       const missionPromises = aiMissionPlan.map(day => {
-        const locationNames = day.locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
+        const locations = normalizeLocations(day.locations);
+        const coreMissions = normalizeCoreMissions(day.coreMissions);
+        const locationNames = locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(', ');
         return api.post('/api/missions', {
           title: day.title,
-          description: `${locationNames} - ${day.coreMissions.length} missions planned`,
+          description: `${locationNames} - ${coreMissions.length} missions planned`,
           location: aiFormData.location,
           aiGenerated: true,
           includeDiptychs: aiFormData.includeDiptychs,
@@ -454,7 +474,12 @@ iPhone: Diary, quick clips, timelapses`,
                     )}
                   </div>
                 </div>
-                {aiMissionPlan.map((day, dayIndex) => (
+                {aiMissionPlan.map((day, dayIndex) => {
+                  const locations = normalizeLocations(day.locations);
+                  const coreMissions = normalizeCoreMissions(day.coreMissions);
+                  const locationNames = locations.map(loc => typeof loc === 'string' ? loc : loc.name).join(' • ');
+                  const coreCount = coreMissions.length;
+                  return (
                   <div
                     key={dayIndex}
                     className="bg-white/5 border border-white/10 rounded-lg overflow-hidden"
@@ -468,7 +493,7 @@ iPhone: Diary, quick clips, timelapses`,
                         <div className="text-left">
                           <h4 className="text-lg font-semibold text-white">{day.title}</h4>
                           <p className="text-sm text-purple-200">
-                            {day.locations.join(' • ')} • {day.coreMissions.length} missions
+                            {locationNames} • {coreCount} missions
                           </p>
                         </div>
                       </div>
@@ -485,7 +510,7 @@ iPhone: Diary, quick clips, timelapses`,
                         <div>
                           <h5 className="text-sm font-semibold text-purple-300 mb-3">Core Missions</h5>
                           <div className="space-y-3">
-                            {day.coreMissions.map((mission, missionIndex) => (
+                            {coreMissions.map((mission, missionIndex) => (
                               <div
                                 key={missionIndex}
                                 className="bg-white/5 rounded-lg p-4 border border-white/5"
@@ -569,7 +594,8 @@ iPhone: Diary, quick clips, timelapses`,
                       </div>
                     )}
                   </div>
-                ))}
+                );
+              })}
               </div>
             )}
         </div>

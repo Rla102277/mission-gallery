@@ -94,7 +94,7 @@ function MentorEditManager() {
         adobeToken: token,
       });
       // Set the imported image as the MentorEdit image
-      setImage({ filename: res.data.filename, path: res.data.path });
+      setImage(res.data);
       setPreviewUrl(res.data.url);
       // Reset previous results
       setCrops({});

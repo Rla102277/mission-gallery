@@ -48,6 +48,47 @@ router.post('/token', async (req, res) => {
   }
 });
 
+// Refresh an access token using a refresh token
+router.post('/refresh-token', async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token required' });
+  }
+
+  try {
+    const clientId = process.env.ADOBE_CLIENT_ID || process.env.VITE_ADOBE_CLIENT_ID;
+    const clientSecret = process.env.ADOBE_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ error: 'Adobe client credentials are not configured' });
+    }
+
+    const response = await axios.post(
+      'https://ims-na1.adobelogin.com/ims/token/v3',
+      new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('Adobe refresh token error:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: 'Failed to refresh Adobe token',
+      details: error.response?.data,
+    });
+  }
+});
+
 // Test if token is valid and has correct scopes
 router.get('/test-token', async (req, res) => {
   const token = req.query.token || req.headers.authorization?.replace('Bearer ', '');
