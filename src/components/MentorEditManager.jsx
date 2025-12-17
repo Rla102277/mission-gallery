@@ -1,5 +1,20 @@
-import { useState, useCallback } from 'react';
-import { Upload, Image as ImageIcon, ExternalLink, Crop, MessageSquare, Sliders, Download, Eye, EyeOff } from 'lucide-react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import {
+  Upload,
+  Image as ImageIcon,
+  Crop,
+  MessageSquare,
+  Sliders,
+  Download,
+  Eye,
+  EyeOff,
+  Save,
+  Folder,
+  Share2,
+  Link as LinkIcon,
+  RefreshCcw,
+  Plus,
+} from 'lucide-react';
 import api from '../lib/api';
 import { getValidLightroomAccessToken } from '../lib/lightroomAuth';
 import MentorEditSliders from './MentorEditSliders';
@@ -34,42 +49,240 @@ function MentorEditManager() {
   const [lightroomImporting, setLightroomImporting] = useState(false);
   const [crops, setCrops] = useState({});
   const [critique, setCritique] = useState('');
-  const [edits, setEdits] = useState(defaultEdits);
+  const [edits, setEdits] = useState(() => ({ ...defaultEdits }));
   const [editedPreviewUrl, setEditedPreviewUrl] = useState('');
   const [showAfter, setShowAfter] = useState(false);
   const [loading, setLoading] = useState({ crop: false, critique: false, quickedit: false });
   const [showLightroomModal, setShowLightroomModal] = useState(false);
-  const [selectedLightroomAlbum, setSelectedLightroomAlbum] = useState(null);
+  const [sessionList, setSessionList] = useState([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [sessionSaving, setSessionSaving] = useState(false);
+  const [autoStatus, setAutoStatus] = useState('idle'); // idle | saving | saved
+  const [sessionTitle, setSessionTitle] = useState('MentorEdit Session');
+  const [sessionDescription, setSessionDescription] = useState('');
+  const [session, setSession] = useState(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
-  const handleFileUpload = useCallback(async (file) => {
-    if (!file) return;
-    setUploading(true);
+  const cropSignature = useMemo(() => JSON.stringify(crops), [crops]);
+  const editsSignature = useMemo(() => JSON.stringify(edits), [edits]);
+
+  const fetchSessions = useCallback(async () => {
+    setSessionsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-      const res = await api.post('/api/mentor/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setPreviewUrl(res.data.url);
-      setImage(res.data);
-    } catch (err) {
-      console.error('Upload failed', err);
-      alert('Upload failed. Check console.');
+      const res = await api.get('/api/mentor/sessions');
+      setSessionList(res.data || []);
+    } catch (error) {
+      console.error('Failed to load sessions', error);
     } finally {
-      setUploading(false);
+      setSessionsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
+
+  const resetSessionState = useCallback(() => {
+    setSession(null);
+    setSessionTitle('MentorEdit Session');
+    setSessionDescription('');
+    setImage(null);
+    setPreviewUrl('');
+    setCrops({});
+    setCritique('');
+    setEdits({ ...defaultEdits });
+    setEditedPreviewUrl('');
+    setShowAfter(false);
+    setShareCopied(false);
+    setAutoStatus('idle');
+  }, []);
+
+  const applySessionData = useCallback((data) => {
+    if (!data) return;
+    setSession(data);
+    setSessionTitle(data.title || 'MentorEdit Session');
+    setSessionDescription(data.description || '');
+    if (data.image?.url) {
+      setImage(data.image);
+      setPreviewUrl(data.image.url);
+    } else {
+      setImage(null);
+      setPreviewUrl('');
+    }
+
+    if (Array.isArray(data.crops)) {
+      const map = {};
+      data.crops.forEach((crop) => {
+        if (crop?.name && crop?.url) map[crop.name] = crop.url;
+      });
+      setCrops(map);
+    } else {
+      setCrops({});
+    }
+
+    setEdits(data.edits ? { ...defaultEdits, ...data.edits } : { ...defaultEdits });
+    const critiqueText = typeof data.critique === 'string' ? data.critique : data.critique?.text || '';
+    setCritique(critiqueText);
+    setEditedPreviewUrl('');
+    setShowAfter(false);
+    setShareCopied(false);
+  }, []);
+
+  const handleLoadSession = useCallback(
+    async (sessionId) => {
+      if (!sessionId) return;
+      setSessionsLoading(true);
+      try {
+        const res = await api.get(`/api/mentor/sessions/${sessionId}`);
+        applySessionData(res.data);
+      } catch (error) {
+        console.error('Failed to load session', error);
+        alert('Failed to load session.');
+      } finally {
+        setSessionsLoading(false);
+      }
+    },
+    [applySessionData]
+  );
+
+  const buildCropArray = () =>
+    Object.entries(crops).map(([name, url]) => ({
+      name,
+      url,
+    }));
+
+  const saveSession = useCallback(
+    async ({ silent = false, auto = false, forceRefresh } = {}) => {
+      if (!image?.url) {
+        if (!silent) {
+          alert('Upload or import an image before saving the session.');
+        }
+        return null;
+      }
+
+      if (auto) {
+        setAutoStatus('saving');
+      } else {
+        setSessionSaving(true);
+      }
+
+      try {
+        const payload = {
+          sessionId: session?._id,
+          title: sessionTitle,
+          description: sessionDescription,
+          image,
+          crops: buildCropArray(),
+          edits,
+          critique: critique ? { text: critique } : null,
+          isPublic: session?.isPublic || false,
+        };
+
+        const res = await api.post('/api/mentor/sessions', payload);
+        applySessionData(res.data);
+
+        const shouldRefreshList =
+          typeof forceRefresh === 'boolean'
+            ? forceRefresh
+            : !silent || !session?._id;
+
+        if (shouldRefreshList) {
+          fetchSessions();
+        }
+
+        if (auto) {
+          setAutoStatus('saved');
+          setTimeout(() => setAutoStatus('idle'), 2000);
+        }
+
+        return res.data;
+      } catch (error) {
+        console.error('Failed to save session', error);
+        if (!silent) {
+          alert('Failed to save session. Check console.');
+        }
+      } finally {
+        if (!auto) {
+          setSessionSaving(false);
+        }
+      }
+      return null;
+    },
+    [applySessionData, critique, edits, fetchSessions, image, session, sessionDescription, sessionTitle]
+  );
+
+  const handleSaveSession = useCallback(() => {
+    saveSession({ silent: false });
+  }, [saveSession]);
+
+  useEffect(() => {
+    if (!image?.url) return;
+    const timeout = setTimeout(() => {
+      saveSession({ silent: true, auto: true, forceRefresh: !session?._id });
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [image, cropSignature, editsSignature, critique, sessionTitle, sessionDescription, saveSession, session?._id]);
+
+  const handleToggleShare = useCallback(async () => {
+    if (!session?._id) return;
+    setShareLoading(true);
+    try {
+      const res = await api.post(`/api/mentor/sessions/${session._id}/share`, {
+        isPublic: !session.isPublic,
+      });
+      applySessionData(res.data);
+      fetchSessions();
+    } catch (error) {
+      console.error('Failed to update sharing', error);
+      alert('Unable to update sharing state. Check console.');
+    } finally {
+      setShareLoading(false);
+    }
+  }, [applySessionData, fetchSessions, session]);
+
+  const handleCopyShareLink = useCallback(() => {
+    if (!session?.isPublic || !session?.shareId) return;
+    const shareUrl = `${window.location.origin}/mentor/share/${session.shareId}`;
+    navigator.clipboard.writeText(shareUrl);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
+  }, [session]);
+
+  const handleFileUpload = useCallback(
+    async (file) => {
+      if (!file) return;
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        const res = await api.post('/api/mentor/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setPreviewUrl(res.data.url);
+        setImage(res.data);
+        setCrops({});
+        setCritique('');
+        setEditedPreviewUrl('');
+        setShowAfter(false);
+      } catch (err) {
+        console.error('Upload failed', err);
+        alert('Upload failed. Check console.');
+      } finally {
+        setUploading(false);
+      }
+    },
+    []
+  );
 
   const handleLightroomImport = useCallback(async () => {
     setLightroomImporting(true);
     try {
       const token = await getValidLightroomAccessToken();
       if (!token) {
-        // Redirect to Lightroom OAuth flow (reuse existing LightroomTest flow)
         window.location.href = `${window.location.origin}/test/lightroom`;
         return;
       }
-      // Open album selector modal
       setShowLightroomModal(true);
     } catch (err) {
       console.error('Lightroom import failed', err);
@@ -80,7 +293,6 @@ function MentorEditManager() {
   }, []);
 
   const handleLightroomAlbumSelect = useCallback(async (album) => {
-    setSelectedLightroomAlbum(album);
     setShowLightroomModal(false);
     try {
       const token = await getValidLightroomAccessToken();
@@ -93,10 +305,8 @@ function MentorEditManager() {
         catalogId: album.catalog_id || 'default',
         adobeToken: token,
       });
-      // Set the imported image as the MentorEdit image
       setImage(res.data);
       setPreviewUrl(res.data.url);
-      // Reset previous results
       setCrops({});
       setCritique('');
       setEditedPreviewUrl('');
@@ -107,12 +317,15 @@ function MentorEditManager() {
     }
   }, []);
 
-  const onDrop = useCallback((e) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
-    const imageFile = files.find((f) => f.type.startsWith('image/'));
-    if (imageFile) handleFileUpload(imageFile);
-  }, [handleFileUpload]);
+  const onDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files);
+      const imageFile = files.find((f) => f.type.startsWith('image/'));
+      if (imageFile) handleFileUpload(imageFile);
+    },
+    [handleFileUpload]
+  );
 
   const onDragOver = (e) => e.preventDefault();
 
@@ -163,15 +376,118 @@ function MentorEditManager() {
     window.location.href = '/api/mentor/preset';
   }, []);
 
+  const currentShareUrl = session?.isPublic && session?.shareId ? `${window.location.origin}/mentor/share/${session.shareId}` : '';
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-amber-500 mb-2">MentorEdit</h2>
         <p className="text-stone-400">Upload a photo for critique, auto crops, quick edits, and XMP preset export.</p>
       </div>
 
-      {/* Upload / Import */}
+      <div className="bg-stone-900/60 border border-stone-800 rounded-xl p-4 space-y-4">
+        <div className="flex flex-col gap-4 lg:flex-row">
+          <div className="flex-1 space-y-3">
+            <div>
+              <label className="block text-sm text-stone-400 mb-1">Session Title</label>
+              <input
+                value={sessionTitle}
+                onChange={(e) => setSessionTitle(e.target.value)}
+                className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-stone-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                placeholder="MentorEdit Session"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-stone-400 mb-1">Notes / Description</label>
+              <textarea
+                value={sessionDescription}
+                onChange={(e) => setSessionDescription(e.target.value)}
+                rows={2}
+                className="w-full bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-stone-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                placeholder="What are we focusing on in this edit?"
+              />
+            </div>
+            <div className="flex flex-wrap gap-3 items-center">
+              <button
+                onClick={handleSaveSession}
+                disabled={sessionSaving || !image?.url}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white disabled:opacity-50 transition"
+              >
+                <Save className="w-4 h-4" />
+                {sessionSaving ? 'Saving...' : session ? 'Save Changes' : 'Save Session'}
+              </button>
+              <button
+                onClick={resetSessionState}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-100 transition"
+              >
+                <Plus className="w-4 h-4" />
+                New Session
+              </button>
+              {session?._id && (
+                <button
+                  onClick={handleToggleShare}
+                  disabled={shareLoading}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+                    session.isPublic ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-stone-800 hover:bg-stone-700'
+                  } text-white disabled:opacity-50`}
+                >
+                  <Share2 className="w-4 h-4" />
+                  {shareLoading ? 'Updating...' : session.isPublic ? 'Disable Sharing' : 'Share Session'}
+                </button>
+              )}
+              <span className="text-xs text-stone-500">
+                {autoStatus === 'saving' && 'Auto-saving...'}
+                {autoStatus === 'saved' && 'All changes saved'}
+              </span>
+            </div>
+            {session?.isPublic && currentShareUrl && (
+              <div className="flex items-center gap-3 bg-stone-800/70 border border-stone-700 rounded-lg px-3 py-2">
+                <LinkIcon className="w-4 h-4 text-amber-400" />
+                <div className="flex-1 text-sm text-stone-300 truncate">{currentShareUrl}</div>
+                <button onClick={handleCopyShareLink} className="text-sm text-amber-400 hover:text-amber-300 underline">
+                  {shareCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="lg:w-72 bg-stone-900 border border-stone-800 rounded-lg p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-stone-200 font-medium">
+                <Folder className="w-4 h-4 text-amber-500" />
+                Saved Sessions
+              </div>
+              <button onClick={fetchSessions} className="p-1 rounded text-stone-400 hover:text-amber-400 hover:bg-stone-800">
+                <RefreshCcw className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {sessionsLoading ? (
+                <p className="text-sm text-stone-400">Loading sessions...</p>
+              ) : sessionList.length === 0 ? (
+                <p className="text-sm text-stone-500">No saved sessions yet.</p>
+              ) : (
+                sessionList.map((item) => (
+                  <button
+                    key={item._id}
+                    onClick={() => handleLoadSession(item._id)}
+                    className={`w-full text-left px-3 py-2 rounded-lg border ${
+                      session?._id === item._id
+                        ? 'border-amber-500 bg-amber-500/10 text-amber-100'
+                        : 'border-stone-800 bg-stone-900 text-stone-300 hover:border-stone-700'
+                    }`}
+                  >
+                    <p className="text-sm font-medium truncate">{item.title || 'Untitled Session'}</p>
+                    <p className="text-xs text-stone-500">
+                      {new Date(item.updatedAt).toLocaleDateString()} · {item.isPublic ? 'Shared' : 'Private'}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {!previewUrl ? (
         <div
           className="border-2 border-dashed border-stone-600 rounded-lg p-12 text-center hover:border-stone-500 transition-colors"
@@ -268,7 +584,6 @@ function MentorEditManager() {
             )}
           </div>
 
-          {/* Before/After Preview */}
           {editedPreviewUrl && (
             <div className="space-y-2">
               <h4 className="text-amber-400 font-medium">Preview</h4>
@@ -280,10 +595,8 @@ function MentorEditManager() {
             </div>
           )}
 
-          {/* Quick Edit Sliders */}
           <MentorEditSliders edits={edits} onChange={setEdits} />
 
-          {/* Crops */}
           {crops.portrait && (
             <div className="space-y-2">
               <h4 className="text-amber-400 font-medium">Auto Crops</h4>
@@ -304,7 +617,6 @@ function MentorEditManager() {
             </div>
           )}
 
-          {/* Critique */}
           {critique && (
             <div className="space-y-2">
               <h4 className="text-amber-400 font-medium">Critique</h4>
@@ -314,14 +626,10 @@ function MentorEditManager() {
         </div>
       )}
 
-      {/* Lightroom Album Selector Modal */}
       {showLightroomModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-stone-900 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <LightroomAlbumSelector
-              onSelect={handleLightroomAlbumSelect}
-              onCancel={() => setShowLightroomModal(false)}
-            />
+            <LightroomAlbumSelector onSelect={handleLightroomAlbumSelect} onCancel={() => setShowLightroomModal(false)} />
           </div>
         </div>
       )}

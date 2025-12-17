@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
-import { 
-  Image as ImageIcon, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
+import {
+  Image as ImageIcon,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
   Plus,
   Camera,
   Grid,
   ShoppingCart,
   ExternalLink,
-  User
+  User,
+  Settings,
+  FlaskConical,
 } from 'lucide-react';
 import AboutMeEditor from '../components/AboutMeEditor';
 import FujifilmRecipeGuide from '../components/FujifilmRecipeGuide';
@@ -38,116 +40,110 @@ function AdminDashboard() {
     try {
       const [galleriesRes, missionsRes] = await Promise.all([
         api.get('/api/galleries'),
-        api.get('/api/missions')
+        api.get('/api/missions'),
       ]);
       setGalleries(galleriesRes.data);
       setMissions(missionsRes.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteGallery = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this gallery? This action cannot be undone.')) return;
-
+  const toggleGalleryVisibility = async (gallery) => {
     try {
-      await api.delete(`/api/galleries/${id}`);
-      setGalleries(galleries.filter(g => g._id !== id));
-      setSelectedGalleries(selectedGalleries.filter(gId => gId !== id));
+      await api.put(`/api/galleries/${gallery._id}/visibility`, {
+        isPublic: !gallery.isPublic,
+      });
+      setGalleries((prev) =>
+        prev.map((g) => (g._id === gallery._id ? { ...g, isPublic: !g.isPublic } : g))
+      );
+    } catch (error) {
+      console.error('Error updating gallery visibility:', error);
+    }
+  };
+
+  const handleDeleteGallery = async (galleryId) => {
+    if (!window.confirm('Are you sure you want to delete this gallery?')) return;
+    try {
+      await api.delete(`/api/galleries/${galleryId}`);
+      setGalleries((prev) => prev.filter((gallery) => gallery._id !== galleryId));
     } catch (error) {
       console.error('Error deleting gallery:', error);
-      alert('Failed to delete gallery');
+      alert('Failed to delete gallery. Please try again.');
     }
   };
 
   const handleBulkDeleteGalleries = async () => {
-    if (selectedGalleries.length === 0) return;
-    
-    if (!window.confirm(`Are you sure you want to delete ${selectedGalleries.length} ${selectedGalleries.length === 1 ? 'gallery' : 'galleries'}? This action cannot be undone.`)) return;
-
+    if (!window.confirm('Delete selected galleries?')) return;
     try {
-      await Promise.all(
-        selectedGalleries.map(id => 
-          api.delete(`/api/galleries/${id}`)
-        )
-      );
-      setGalleries(galleries.filter(g => !selectedGalleries.includes(g._id)));
+      await api.post('/api/galleries/bulk-delete', { ids: selectedGalleries });
+      setGalleries((prev) => prev.filter((gallery) => !selectedGalleries.includes(gallery._id)));
       setSelectedGalleries([]);
-      alert(`Successfully deleted ${selectedGalleries.length} ${selectedGalleries.length === 1 ? 'gallery' : 'galleries'}`);
     } catch (error) {
       console.error('Error deleting galleries:', error);
-      alert('Failed to delete some galleries');
+      alert('Failed to delete selected galleries.');
     }
   };
 
-  const handleDeleteMission = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this mission? This action cannot be undone.')) return;
-
+  const handleDeleteMission = async (missionId) => {
+    if (!window.confirm('Are you sure you want to delete this mission?')) return;
     try {
-      await api.delete(`/api/missions/${id}`);
-      setMissions(missions.filter(m => m._id !== id));
-      setSelectedMissions(selectedMissions.filter(mId => mId !== id));
+      await api.delete(`/api/missions/${missionId}`);
+      setMissions((prev) => prev.filter((mission) => mission._id !== missionId));
     } catch (error) {
       console.error('Error deleting mission:', error);
-      alert('Failed to delete mission');
+      alert('Failed to delete mission. Please try again.');
     }
   };
 
   const handleBulkDeleteMissions = async () => {
-    if (selectedMissions.length === 0) return;
-    
-    if (!window.confirm(`Are you sure you want to delete ${selectedMissions.length} ${selectedMissions.length === 1 ? 'mission' : 'missions'}? This action cannot be undone.`)) return;
-
+    if (!window.confirm('Delete selected missions?')) return;
     try {
-      await Promise.all(
-        selectedMissions.map(id => 
-          api.delete(`/api/missions/${id}`)
-        )
-      );
-      setMissions(missions.filter(m => !selectedMissions.includes(m._id)));
+      await api.post('/api/missions/bulk-delete', { ids: selectedMissions });
+      setMissions((prev) => prev.filter((mission) => !selectedMissions.includes(mission._id)));
       setSelectedMissions([]);
-      alert(`Successfully deleted ${selectedMissions.length} ${selectedMissions.length === 1 ? 'mission' : 'missions'}`);
     } catch (error) {
       console.error('Error deleting missions:', error);
-      alert('Failed to delete some missions');
-    }
-  };
-
-  const toggleGalleryVisibility = async (gallery) => {
-    try {
-      await api.put(`/api/galleries/${gallery._id}`, 
-        { isPublic: !gallery.isPublic },
-        { withCredentials: true }
-      );
-      setGalleries(galleries.map(g => 
-        g._id === gallery._id ? { ...g, isPublic: !g.isPublic } : g
-      ));
-    } catch (error) {
-      console.error('Error updating gallery:', error);
-      alert('Failed to update gallery visibility');
+      alert('Failed to delete selected missions.');
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900 flex items-center justify-center">
-        <div className="text-stone-100 text-xl">Loading...</div>
+      <div className="min-h-screen bg-stone-900 text-stone-100 flex items-center justify-center">
+        <p>Loading dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900 py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-stone-100 mb-2">Admin Dashboard</h1>
-          <p className="text-stone-300">Manage your galleries and missions</p>
+    <div className="min-h-screen bg-stone-900 text-stone-100">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <p className="text-stone-400">Manage your galleries and missions</p>
+          </div>
+          <div className="flex space-x-4">
+            <Link
+              to="/galleries/create"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Create Gallery
+            </Link>
+            <Link
+              to="/missions/create"
+              className="bg-stone-700 hover:bg-stone-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            >
+              <Camera className="w-5 h-5" />
+              Create Mission
+            </Link>
+          </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Link
             to="/galleries/create"
@@ -182,7 +178,6 @@ function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex space-x-4 mb-6 border-b border-stone-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('galleries')}
@@ -255,18 +250,18 @@ function AdminDashboard() {
             Film Recipes
           </button>
           <button
-            onClick={() => setActiveTab('lightroom')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'lightroom'
+            onClick={() => setActiveTab('experimental')}
+            className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
+              activeTab === 'experimental'
                 ? 'text-amber-500 border-b-2 border-amber-500'
                 : 'text-stone-400 hover:text-stone-200'
             }`}
           >
-            Lightroom
+            <FlaskConical className="w-4 h-4" />
+            Experimental
           </button>
         </div>
 
-        {/* Galleries Tab */}
         {activeTab === 'galleries' && (
           <div className="space-y-4">
             {selectedGalleries.length > 0 && (
@@ -297,7 +292,7 @@ function AdminDashboard() {
                 </Link>
               </div>
             ) : (
-              galleries.map(gallery => (
+              galleries.map((gallery) => (
                 <div
                   key={gallery._id}
                   className="bg-stone-800/50 backdrop-blur-sm border border-stone-700 rounded-lg p-6 hover:border-stone-600 transition-colors"
@@ -310,21 +305,19 @@ function AdminDashboard() {
                         if (e.target.checked) {
                           setSelectedGalleries([...selectedGalleries, gallery._id]);
                         } else {
-                          setSelectedGalleries(selectedGalleries.filter(id => id !== gallery._id));
+                          setSelectedGalleries(selectedGalleries.filter((id) => id !== gallery._id));
                         }
                       }}
                       className="mt-1 mr-4 w-4 h-4 rounded border-stone-600 bg-stone-700 text-amber-600 focus:ring-amber-500"
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-xl font-semibold text-stone-100">
-                          {gallery.title}
-                        </h3>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          gallery.isPublic
-                            ? 'bg-green-500/20 text-green-300'
-                            : 'bg-stone-600/50 text-stone-400'
-                        }`}>
+                        <h3 className="text-xl font-semibold text-stone-100">{gallery.title}</h3>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            gallery.isPublic ? 'bg-green-500/20 text-green-300' : 'bg-stone-600/50 text-stone-400'
+                          }`}
+                        >
                           {gallery.isPublic ? 'Public' : 'Private'}
                         </span>
                         {gallery.enablePrints && (
@@ -386,7 +379,6 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* About Me Tab */}
         {activeTab === 'about' && (
           <div>
             <div className="mb-6">
@@ -397,33 +389,40 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* Portfolios Tab */}
-        {activeTab === 'portfolios' && (
-          <PortfolioManager galleries={galleries} />
-        )}
+        {activeTab === 'portfolios' && <PortfolioManager galleries={galleries} />}
 
-        {/* My Gear Tab */}
-        {activeTab === 'gear' && (
-          <GearEditor />
-        )}
+        {activeTab === 'gear' && <GearEditor />}
 
-        {/* Film Recipes Tab */}
-        {activeTab === 'recipes' && (
-          <FujifilmRecipeGuide />
-        )}
+        {activeTab === 'recipes' && <FujifilmRecipeGuide />}
 
-        {/* Lightroom Tab */}
-        {activeTab === 'lightroom' && (
-          <div className="bg-stone-800 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Lightroom Integration</h2>
-            <p className="text-stone-300 mb-6">
-              Connect to Adobe Lightroom to sync your photos and create albums directly from your galleries.
-            </p>
-            <LightroomTest />
+        {activeTab === 'experimental' && (
+          <div className="space-y-6">
+            <div className="bg-stone-800 rounded-lg p-6 border border-stone-700">
+              <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                <FlaskConical className="w-6 h-6 text-amber-500" />
+                Lightroom Integration (Experimental)
+              </h2>
+              <p className="text-sm text-stone-400 mb-4">
+                Experimental features may require Lightroom OAuth and can change without notice.
+              </p>
+              <LightroomTest />
+            </div>
+            <div className="bg-stone-800 rounded-lg p-6 border border-stone-700">
+              <h3 className="text-xl font-semibold text-white mb-2">MentorEdit Lightroom Import</h3>
+              <p className="text-sm text-stone-400">
+                MentorEdit supports Lightroom import from here. Launch MentorEdit to try it.
+              </p>
+              <Link
+                to="/admin?tab=mentor"
+                className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg"
+              >
+                Go to MentorEdit
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         )}
 
-        {/* Missions Tab */}
         {activeTab === 'missions' && (
           <div className="space-y-4">
             {selectedMissions.length > 0 && (
@@ -454,7 +453,7 @@ function AdminDashboard() {
                 </Link>
               </div>
             ) : (
-              missions.map(mission => (
+              missions.map((mission) => (
                 <div
                   key={mission._id}
                   className="bg-stone-800/50 backdrop-blur-sm border border-stone-700 rounded-lg p-6 hover:border-stone-600 transition-colors"
@@ -467,15 +466,13 @@ function AdminDashboard() {
                         if (e.target.checked) {
                           setSelectedMissions([...selectedMissions, mission._id]);
                         } else {
-                          setSelectedMissions(selectedMissions.filter(id => id !== mission._id));
+                          setSelectedMissions(selectedMissions.filter((id) => id !== mission._id));
                         }
                       }}
                       className="mt-1 mr-4 w-4 h-4 rounded border-stone-600 bg-stone-700 text-amber-600 focus:ring-amber-500"
                     />
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-stone-100 mb-2">
-                        {mission.title}
-                      </h3>
+                      <h3 className="text-xl font-semibold text-stone-100 mb-2">{mission.title}</h3>
                       <p className="text-stone-400 mb-3">{mission.description}</p>
                       <div className="flex items-center space-x-4 text-sm text-stone-500">
                         <span>{mission.location}</span>
@@ -518,7 +515,6 @@ function AdminDashboard() {
           </div>
         )}
 
-        {/* MentorEdit Tab */}
         {activeTab === 'mentor' && <MentorEditManager />}
       </div>
     </div>

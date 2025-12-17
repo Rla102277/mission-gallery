@@ -20,6 +20,28 @@ const gallerySchema = new mongoose.Schema({
     url: String,
     publicId: String,
   },
+  heroImage: {
+    publicId: String,
+    url: String,
+    thumbnailUrl: String,
+    width: Number,
+    height: Number,
+  },
+  cloudinaryFolder: String,
+  cloudinaryAssets: [{
+    publicId: String,
+    url: String,
+    secureUrl: String,
+    thumbnailUrl: String,
+    width: Number,
+    height: Number,
+    format: String,
+    resourceType: String,
+    tags: [String],
+    bytes: Number,
+    folder: String,
+    createdAt: Date,
+  }],
   isPublic: {
     type: Boolean,
     default: false,
@@ -50,7 +72,21 @@ const gallerySchema = new mongoose.Schema({
     enum: ['grid', 'masonry', 'slideshow', 'custom'],
     default: 'grid',
   },
+  designPreset: {
+    type: String,
+    enum: ['immersive', 'masonry', 'storyboard'],
+    default: 'immersive',
+  },
+  theme: {
+    type: String,
+    enum: ['dark', 'light', 'earth'],
+    default: 'dark',
+  },
   layoutConfig: mongoose.Schema.Types.Mixed,
+  sections: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   // E-commerce fields
   enablePrints: {
     type: Boolean,

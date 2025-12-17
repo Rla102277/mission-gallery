@@ -408,6 +408,46 @@ export default function GalleryView() {
     return <div className="flex items-center justify-center min-h-screen">Gallery not found</div>;
   }
 
+  const hasCloudinaryAssets = gallery.cloudinaryAssets?.length > 0;
+  const heroImage = gallery.heroImage || (hasCloudinaryAssets ? gallery.cloudinaryAssets[0] : null);
+  const storyBlocks = Array.isArray(gallery.sections?.storyBlocks) ? gallery.sections.storyBlocks : [];
+  const heroTagline = gallery.sections?.heroTagline;
+  const heroDescription = gallery.sections?.heroDescription;
+
+  const viewerImages = lightroomPhotos.length > 0
+    ? lightroomPhotos.map((photo) => {
+        const largeHref = photo.asset?.links?.['/rels/rendition_type/2048']?.href;
+        const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery?.lightroomAlbum?.catalogId}/`;
+        const lrUrl = largeHref ? `${baseUrl}${largeHref}` : null;
+        const largeUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}`) : null;
+        const enhancedData = gallery?.metadata?.enhancedLightroomPhotos?.find((p) => p.id === photo.id);
+        return {
+          url: largeUrl,
+          title: photo.asset?.payload?.importSource?.fileName || 'Photo',
+          date: photo.asset?.payload?.captureDate ? new Date(photo.asset.payload.captureDate).toLocaleDateString() : null,
+          exif: enhancedData?.exif,
+          aiDescription: enhancedData?.aiDescription,
+        };
+      })
+    : hasCloudinaryAssets
+      ? gallery.cloudinaryAssets.map((asset) => ({
+          url: asset.secureUrl || asset.url,
+          title: asset.publicId?.split('/').pop() || 'Photo',
+          date: asset.createdAt ? new Date(asset.createdAt).toLocaleDateString() : null,
+          exif: null,
+          aiDescription: null,
+        }))
+      : gallery.images?.map((item) => {
+          const image = item.imageId;
+          return {
+            url: image?.path ? `/${image.path}` : '',
+            title: image?.caption || image?.filename || 'Photo',
+            date: image?.uploadDate ? new Date(image.uploadDate).toLocaleDateString() : null,
+            exif: image?.exif,
+            aiDescription: image?.aiDescription,
+          };
+        }).filter((img) => img?.url) || [];
+
   const getGridClass = () => {
     switch (layoutType) {
       case 'masonry':
@@ -607,88 +647,77 @@ export default function GalleryView() {
               gallery.description && <p className="text-gray-600">{gallery.description}</p>
             )}
           </div>
-          <div className="flex space-x-2">
-            {gallery.lightroomAlbum && (
-              <button
-                onClick={() => fetchLightroomPhotos(gallery.lightroomAlbum)}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200"
-                title="Refresh photos from Lightroom"
-              >
-                <RefreshCw className="h-5 w-5" />
-                <span>Refresh</span>
-              </button>
-            )}
-            {(gallery.missionId || gallery.lightroomAlbum) && (
-              <button
-                onClick={enhanceGallery}
-                disabled={enhancing}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200 disabled:opacity-50"
-                title="Extract EXIF data and generate AI descriptions"
-              >
-                <Sparkles className="h-5 w-5" />
-                <span>{enhancing ? 'Enhancing...' : 'AI Enhance'}</span>
-              </button>
-            )}
-            <button
-              onClick={togglePublic}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-                gallery.isPublic
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              {gallery.isPublic ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
-              <span>{gallery.isPublic ? 'Public' : 'Private'}</span>
-            </button>
-            {gallery.isPublic && gallery.slug && (
-              <button
-                onClick={copyPublicLink}
-                className="flex items-center space-x-2 btn-primary"
-              >
-                <Share2 className="h-5 w-5" />
-                <span>Share</span>
-              </button>
-            )}
-          </div>
         </div>
 
-        {/* Layout Controls */}
-        <div className="flex items-center space-x-4 pt-4 border-t">
-          <span className="text-sm font-medium">Layout:</span>
+        {heroImage && (
+          <div className="mt-6 overflow-hidden rounded-3xl border border-stone-100/20 bg-gradient-to-b from-stone-900 to-black text-white relative">
+            <img
+              src={heroImage.secureUrl || heroImage.url}
+              alt={gallery.title}
+              className="w-full h-[420px] object-cover opacity-80"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-8 space-y-3">
+              {heroTagline && <p className="text-sm uppercase tracking-[0.3em] text-amber-200">{heroTagline}</p>}
+              <h3 className="text-3xl font-semibold">{gallery.title}</h3>
+              {heroDescription && <p className="text-lg text-stone-200 max-w-3xl">{heroDescription}</p>}
+            </div>
+          </div>
+        )}
+
+        {storyBlocks.length > 0 && (
+          <div className="mt-6 grid md:grid-cols-2 gap-6">
+            {storyBlocks.map((block) => (
+              <div key={block.id} className="rounded-2xl border border-stone-100/20 bg-white/5 p-5 shadow-inner">
+                <p className="text-xs uppercase tracking-[0.3em] text-stone-500">Story</p>
+                <h4 className="text-xl font-semibold text-stone-100 mt-1">{block.title}</h4>
+                {block.accent && <p className="text-sm text-amber-300 mt-1">{block.accent}</p>}
+                {block.body && <p className="text-stone-300 mt-3 whitespace-pre-line">{block.body}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex space-x-2">
+          {gallery.lightroomAlbum && (
+            <button
+              onClick={() => fetchLightroomPhotos(gallery.lightroomAlbum)}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200"
+              title="Refresh photos from Lightroom"
+            >
+              <RefreshCw className="h-5 w-5" />
+              <span>Refresh</span>
+            </button>
+          )}
+          {(gallery.missionId || gallery.lightroomAlbum) && (
+            <button
+              onClick={enhanceGallery}
+              disabled={enhancing}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200 disabled:opacity-50"
+              title="Extract EXIF data and generate AI descriptions"
+            >
+              <Sparkles className="h-5 w-5" />
+              <span>{enhancing ? 'Enhancing...' : 'AI Enhance'}</span>
+            </button>
+          )}
           <button
-            onClick={() => {
-              setLayoutType('grid');
-              setEditMode(true);
-            }}
-            className={`p-2 rounded ${layoutType === 'grid' ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-100'}`}
-            title="Grid"
+            onClick={togglePublic}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+              gallery.isPublic
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-700'
+            }`}
           >
-            <Grid className="h-5 w-5" />
+            {gallery.isPublic ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+            <span>{gallery.isPublic ? 'Public' : 'Private'}</span>
           </button>
-          <button
-            onClick={() => {
-              setLayoutType('masonry');
-              setEditMode(true);
-            }}
-            className={`p-2 rounded ${layoutType === 'masonry' ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-100'}`}
-            title="Masonry"
-          >
-            <Columns className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => {
-              setLayoutType('slideshow');
-              setEditMode(true);
-            }}
-            className={`p-2 rounded ${layoutType === 'slideshow' ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-100'}`}
-            title="Slideshow"
-          >
-            <Layout className="h-5 w-5" />
-          </button>
-          {editMode && (
-            <button onClick={updateLayout} className="btn-primary flex items-center space-x-2">
-              <Save className="h-4 w-4" />
-              <span>Save Layout</span>
+          {gallery.isPublic && gallery.slug && (
+            <button
+              onClick={copyPublicLink}
+              className="flex items-center space-x-2 btn-primary"
+            >
+              <Share2 className="h-5 w-5" />
+              <span>Share</span>
             </button>
           )}
         </div>
@@ -770,6 +799,26 @@ export default function GalleryView() {
             })}
           </div>
         </div>
+      ) : hasCloudinaryAssets ? (
+        <div className={getGridClass()}>
+          {gallery.cloudinaryAssets.map((asset, index) => (
+            <div
+              key={asset.publicId}
+              className="relative group cursor-pointer"
+              onClick={() => {
+                setCurrentImageIndex(index);
+                setViewerOpen(true);
+              }}
+            >
+              <img
+                src={asset.thumbnailUrl || asset.secureUrl || asset.url}
+                alt={asset.publicId}
+                className={`w-full ${layoutType === 'masonry' ? 'mb-4' : 'h-64 object-cover'} rounded-lg`}
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition rounded-lg" />
+            </div>
+          ))}
+        </div>
       ) : gallery.images && gallery.images.length > 0 ? (
         <div className={getGridClass()}>
           {gallery.images.map((item) => {
@@ -822,33 +871,7 @@ export default function GalleryView() {
       <ImageViewer
         isOpen={viewerOpen}
         onClose={() => setViewerOpen(false)}
-        images={lightroomPhotos.length > 0 ? lightroomPhotos.map((photo) => {
-          // Use larger 2048px rendition for viewer
-          const largeHref = photo.asset?.links?.['/rels/rendition_type/2048']?.href;
-          const baseUrl = localStorage.getItem('lr_base_url') || `https://lr.adobe.io/v2/catalogs/${gallery?.lightroomAlbum?.catalogId}/`;
-          const lrUrl = largeHref ? `${baseUrl}${largeHref}` : null;
-          const largeUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${localStorage.getItem('adobe_lightroom_token')}`) : null;
-          
-          // Get enhanced data if available
-          const enhancedData = gallery?.metadata?.enhancedLightroomPhotos?.find(p => p.id === photo.id);
-          
-          return {
-            url: largeUrl,
-            title: photo.asset?.payload?.importSource?.fileName || 'Photo',
-            date: photo.asset?.payload?.captureDate ? new Date(photo.asset.payload.captureDate).toLocaleDateString() : null,
-            exif: enhancedData?.exif,
-            aiDescription: enhancedData?.aiDescription
-          };
-        }) : gallery.images?.map((item) => {
-          const image = item.imageId;
-          return {
-            url: `/${image.path}`,
-            title: image.caption || image.filename || 'Photo',
-            date: image.uploadDate ? new Date(image.uploadDate).toLocaleDateString() : null,
-            exif: image.exif,
-            aiDescription: image.aiDescription
-          };
-        }) || []}
+        images={viewerImages}
         currentIndex={currentImageIndex}
         onNavigate={setCurrentImageIndex}
       />

@@ -4,9 +4,11 @@ import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import axios from 'axios';
+import crypto from 'crypto';
 import { ensureAuth } from '../middleware/auth.js';
-import { generateImageDescription, enhanceMissionSection, generateGearList, generateGalleryDescriptions } from '../services/aiService.js';
+import { generateImageDescription } from '../services/aiService.js';
 import cloudinary, { getThumbnailUrl } from '../config/cloudinary.js';
+import MentorSession from '../models/MentorSession.js';
 
 const router = express.Router();
 
@@ -238,6 +240,8 @@ router.post('/critique', ensureAuth, async (req, res) => {
   }
 });
 
+const generateShareId = (length = 12) => crypto.randomBytes(Math.ceil(length)).toString('base64url').slice(0, length);
+
 // GET /api/mentor/preset
 router.get('/preset', ensureAuth, async (req, res) => {
   try {
@@ -266,6 +270,114 @@ router.get('/preset', ensureAuth, async (req, res) => {
   } catch (err) {
     console.error('MentorEdit preset error:', err);
     res.status(500).json({ error: 'Preset generation failed' });
+  }
+});
+
+// ----- Mentor Sessions -----
+
+const sanitizeSession = (session) => {
+  if (!session) return null;
+  const json = session.toObject({ versionKey: false });
+  if (json.user?._id) {
+    json.user = {
+      _id: json.user._id,
+      name: json.user.name,
+      email: json.user.email,
+    };
+  }
+  return json;
+};
+
+// List sessions for current user
+router.get('/sessions', ensureAuth, async (req, res) => {
+  try {
+    const sessions = await MentorSession.find({ user: req.user._id }).sort({ updatedAt: -1 });
+    res.json(sessions.map(sanitizeSession));
+  } catch (error) {
+    console.error('MentorEdit list sessions error:', error);
+    res.status(500).json({ error: 'Failed to load sessions' });
+  }
+});
+
+// Get single session for owner
+router.get('/sessions/:id', ensureAuth, async (req, res) => {
+  try {
+    const session = await MentorSession.findOne({ _id: req.params.id, user: req.user._id });
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    res.json(sanitizeSession(session));
+  } catch (error) {
+    console.error('MentorEdit get session error:', error);
+    res.status(500).json({ error: 'Failed to load session' });
+  }
+});
+
+// Create or update session
+router.post('/sessions', ensureAuth, async (req, res) => {
+  try {
+    const { sessionId, ...payload } = req.body || {};
+
+    // Ensure shareId exists if user marks session public
+    const ensureShareId = (sessionDoc) => {
+      if (sessionDoc.isPublic && !sessionDoc.shareId) {
+        let shareId = generateShareId();
+        sessionDoc.shareId = shareId;
+      }
+    };
+
+    let session;
+    if (sessionId) {
+      session = await MentorSession.findOne({ _id: sessionId, user: req.user._id });
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+      Object.assign(session, payload);
+      ensureShareId(session);
+      await session.save();
+    } else {
+      session = new MentorSession({
+        user: req.user._id,
+        ...payload,
+      });
+      ensureShareId(session);
+      await session.save();
+    }
+
+    res.json(sanitizeSession(session));
+  } catch (error) {
+    console.error('MentorEdit save session error:', error);
+    res.status(500).json({ error: 'Failed to save session' });
+  }
+});
+
+// Toggle share/public status
+router.post('/sessions/:id/share', ensureAuth, async (req, res) => {
+  try {
+    const { isPublic } = req.body;
+    const session = await MentorSession.findOne({ _id: req.params.id, user: req.user._id });
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    session.isPublic = !!isPublic;
+    if (session.isPublic && !session.shareId) {
+      session.shareId = generateShareId();
+    }
+    await session.save();
+
+    res.json(sanitizeSession(session));
+  } catch (error) {
+    console.error('MentorEdit share session error:', error);
+    res.status(500).json({ error: 'Failed to update sharing' });
+  }
+});
+
+// Public share endpoint
+router.get('/share/:shareId', async (req, res) => {
+  try {
+    const session = await MentorSession.findOne({ shareId: req.params.shareId, isPublic: true });
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    res.json(sanitizeSession(session));
+  } catch (error) {
+    console.error('MentorEdit public share error:', error);
+    res.status(500).json({ error: 'Failed to load shared session' });
   }
 });
 

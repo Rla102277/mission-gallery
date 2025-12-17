@@ -81,7 +81,25 @@ router.get('/:id', ensureAuth, async (req, res) => {
 // Create gallery from mission
 router.post('/', ensureAuth, async (req, res) => {
   try {
-    const { missionId, title, description, isPublic, images, layout, layoutConfig, lightroomAlbum, enablePrints, printPricing, isPortfolio } = req.body;
+    const {
+      missionId,
+      title,
+      description,
+      isPublic,
+      images,
+      layout,
+      layoutConfig,
+      lightroomAlbum,
+      enablePrints,
+      printPricing,
+      isPortfolio,
+      designPreset,
+      theme,
+      sections,
+      heroImage,
+      cloudinaryFolder,
+      cloudinaryAssets,
+    } = req.body;
 
     let mission = null;
     if (missionId) {
@@ -102,12 +120,20 @@ router.post('/', ensureAuth, async (req, res) => {
       layoutConfig: layoutConfig || mission?.layoutConfig,
       lightroomAlbum: lightroomAlbum || null,
       enablePrints: enablePrints || false,
-      printPricing: printPricing || undefined,
-      images: images ? images.map((id, index) => ({
-        imageId: id,
-        order: index,
-        layoutType: 'single',
-      })) : [],
+      printPricing: enablePrints ? printPricing : undefined,
+      images: images
+        ? images.map((id, index) => ({
+            imageId: id,
+            order: index,
+            layoutType: 'single',
+          }))
+        : [],
+      designPreset: designPreset || 'immersive',
+      theme: theme || 'dark',
+      sections: sections || {},
+      heroImage: heroImage || null,
+      cloudinaryFolder: cloudinaryFolder || null,
+      cloudinaryAssets: Array.isArray(cloudinaryAssets) ? cloudinaryAssets : [],
     });
 
     res.status(201).json(gallery);
