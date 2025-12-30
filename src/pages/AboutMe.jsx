@@ -27,19 +27,19 @@ export default function AboutMe() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <Loader className="w-8 h-8 text-purple-400 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-700 to-primary-900 flex items-center justify-center">
+        <Loader className="w-8 h-8 text-primary-400 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-700 to-primary-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {about ? (
           <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-white/20">
             <div className="flex items-center gap-3 mb-6">
-              <User className="w-8 h-8 text-purple-400" />
+              <User className="w-8 h-8 text-primary-400" />
               <h1 className="text-3xl font-bold text-white">About Me</h1>
             </div>
             <div className="prose prose-invert prose-lg max-w-none">
@@ -50,9 +50,9 @@ export default function AboutMe() {
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-lg rounded-xl p-12 shadow-2xl border border-white/20 text-center">
-            <User className="w-16 h-16 text-purple-400/50 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">No About Page Yet</h2>
-            <p className="text-purple-200">The photographer hasn't published their story yet.</p>
+            <User className="w-16 h-16 text-primary-400/50 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-2">No Profile Yet</h2>
+            <p className="text-primary-200">The photographer hasn't published their profile yet.</p>
           </div>
         )}
       </div>

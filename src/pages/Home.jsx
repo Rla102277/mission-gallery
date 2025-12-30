@@ -8,9 +8,9 @@ export default function Home() {
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-5xl font-bold mb-6">Mission Gallery</h1>
+            <h1 className="text-5xl font-bold mb-6">Infinite Arch</h1>
             <p className="text-xl mb-8 text-primary-100">
-              Organize your photography adventures with mission-based galleries
+              Beyond the Daydream
             </p>
             <Link to="/login" className="inline-block bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Get Started
@@ -37,9 +37,9 @@ export default function Home() {
             <div className="flex justify-center mb-4">
               <Sparkles className="h-12 w-12 text-primary-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">AI-Powered</h3>
+            <h3 className="text-xl font-semibold mb-2">Dream Exploration</h3>
             <p className="text-gray-600">
-              Generate missions and gear lists automatically based on your trip details
+              Discover the world beyond your daydreams through captivating photography
             </p>
           </div>
 
@@ -57,9 +57,9 @@ export default function Home() {
             <div className="flex justify-center mb-4">
               <Camera className="h-12 w-12 text-primary-600" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Public & Private</h3>
+            <h3 className="text-xl font-semibold mb-2">Infinite Perspectives</h3>
             <p className="text-gray-600">
-              Control visibility of images between mission galleries and public galleries
+              Capture moments that transcend ordinary reality and explore infinite possibilities
             </p>
           </div>
         </div>
@@ -68,9 +68,9 @@ export default function Home() {
       {/* CTA */}
       <div className="bg-gray-100 py-16">
         <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl font-bold mb-4">Ready to organize your photography?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to go beyond the daydream?</h2>
           <p className="text-xl text-gray-600 mb-8">
-            Start creating mission-based galleries today
+            Start creating your photographic journeys with Infinite Arch
           </p>
           <Link to="/login" className="btn-primary text-lg px-8 py-3">
             Sign In with Google

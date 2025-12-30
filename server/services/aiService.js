@@ -711,6 +711,36 @@ Format the output as flowing prose with clear paragraphs. Make it informative ye
   });
 }
 
+export async function generateImageDescription(imagePath, prompt = '') {
+  try {
+    // Create a prompt based on the image path
+    const enhancedPrompt = `Analyze this architectural photograph (${imagePath}): ${prompt}`;
+    
+    return await retryWithBackoff(async () => {
+      const completion = await getGroq().chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert architectural photography critic who provides insightful analysis and constructive feedback on architectural photographs.'
+          },
+          {
+            role: 'user',
+            content: enhancedPrompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      });
+
+      return completion.choices[0].message.content.trim();
+    });
+  } catch (error) {
+    console.error('Error generating image description:', error);
+    return 'Unable to generate image description at this time.';
+  }
+}
+
 export async function generatePhotoDescription(exifData, caption = '') {
   const technicalDetails = [];
   

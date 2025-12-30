@@ -12,7 +12,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <Camera className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">Mission Gallery</span>
+              <span className="text-xl font-bold text-gray-900">Infinite Arch</span>
             </Link>
           </div>
 

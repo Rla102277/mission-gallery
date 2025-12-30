@@ -41,10 +41,10 @@ export default function PublicGalleries() {
         <div className="max-w-7xl mx-auto text-center">
           <Camera className="w-16 h-16 text-amber-500 mx-auto mb-6" />
           <h1 className="text-5xl md:text-6xl font-bold text-stone-100 mb-4">
-            Photo Galleries
+            Beyond the Daydream
           </h1>
           <p className="text-xl text-stone-300 max-w-2xl mx-auto">
-            Explore curated collections from my photography adventures
+            Explore galleries that capture the infinite perspectives of our world
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function PublicGalleries() {
       <div className="max-w-7xl mx-auto px-4 pb-20">
         {galleries.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-stone-400 text-lg">No public galleries yet. Check back soon!</p>
+            <p className="text-stone-400 text-lg">No galleries published yet. Check back soon!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

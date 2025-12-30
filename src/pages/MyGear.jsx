@@ -42,7 +42,7 @@ export default function MyGear() {
             My Gear
           </h1>
           <p className="text-2xl text-stone-300 max-w-2xl mx-auto leading-relaxed">
-            The tools that help me capture the world
+            The tools that help me capture beyond the daydream
           </p>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function MyGear() {
                 })}</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-                The Gear Behind the Shots
+                The Gear Behind the Magic
               </h2>
             </div>
 
@@ -95,7 +95,7 @@ export default function MyGear() {
               Gear Information Coming Soon
             </h2>
             <p className="text-stone-600 text-lg">
-              Check back later to learn about the equipment I use to capture my photographs.
+              Check back later to learn about the equipment I use to capture beyond the daydream.
             </p>
           </div>
         )}

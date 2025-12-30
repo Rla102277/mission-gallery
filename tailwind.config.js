@@ -7,10 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Heritage color palette inspired by Orvis, Fjällräven, and Filson
-        heritage: {
-          // Warm earth tones
-          sand: {
+        // Dream-inspired color palette for Infinite Arch
+        dream: {
+          // Dreamy sky tones
+          sky: {
             50: '#faf8f5',
             100: '#f5f1ea',
             200: '#e8dfd0',
@@ -35,8 +35,8 @@ export default {
             800: '#233d31',
             900: '#172821',
           },
-          // Rich leather browns
-          leather: {
+          // Rich earth tones
+          earth: {
             50: '#f9f7f4',
             100: '#f0ebe3',
             200: '#ddd0bd',
@@ -48,8 +48,8 @@ export default {
             800: '#42331d',
             900: '#2a2013',
           },
-          // Canvas/Natural
-          canvas: {
+          // Misty haze
+          mist: {
             50: '#fdfcfb',
             100: '#f9f7f4',
             200: '#f0ebe3',
@@ -61,8 +61,8 @@ export default {
             800: '#5d5242',
             900: '#3d362c',
           },
-          // Accent copper/brass
-          brass: {
+          // Dream gold
+          gold: {
             50: '#fdf8f3',
             100: '#faeee0',
             200: '#f3d9b8',
@@ -75,18 +75,18 @@ export default {
             900: '#432810',
           },
         },
-        // Keep primary for backwards compatibility
+        // Updated primary with deep purple-blue tones for the Infinite Arch theme
         primary: {
-          50: '#f3f6f4',
-          100: '#e1ebe5',
-          200: '#c3d7cb',
-          300: '#9bb8a5',
-          400: '#6d9680',
-          500: '#4a7c5e',
-          600: '#3d6850',
-          700: '#2f5240',
-          800: '#233d31',
-          900: '#172821',
+          50: '#f3f4fa',
+          100: '#e9eaf5',
+          200: '#d3d5eb',
+          300: '#b6b8db',
+          400: '#9294c6',
+          500: '#7577b5',
+          600: '#5c5e96',
+          700: '#4b4d79',
+          800: '#3a3b5c',
+          900: '#292a3f',
         },
       },
       fontFamily: {
