@@ -3,12 +3,431 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Static Site</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="The Infinite Arch — Fine Art Landscape Photography by Randy. Beyond the Daydream.">
+  <title>The Infinite Arch — Beyond the Daydream</title>
+  <link rel="stylesheet" href="/assets/css/tia.css">
+  <style>
+    /* ── HERO ── */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(201,162,39,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 20% 80%, rgba(30,50,90,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 60%, rgba(20,30,20,0.3) 0%, transparent 50%),
+        linear-gradient(160deg, #080c12 0%, #0d0d0d 40%, #0a0c09 100%);
+      padding: 0 40px;
+      overflow: hidden;
+    }
+
+    /* Atmospheric horizontal light band */
+    .hero::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: 38%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,162,39,0.08), rgba(245,240,232,0.06), rgba(201,162,39,0.08), transparent);
+      pointer-events: none;
+    }
+
+    .hero-wordmark {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 52px;
+    }
+    .hw-rule-top { width: 320px; height: 3px; background: var(--cream); margin-bottom: 10px; }
+    .hw-rule-thin { width: 320px; height: 1px; background: var(--cream); opacity: 0.25; margin-bottom: 18px; }
+    .hw-the {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-weight: 300;
+      font-size: 16px;
+      letter-spacing: 14px;
+      opacity: 0.4;
+      margin-bottom: 2px;
+    }
+    .hw-infinite {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 42px;
+      letter-spacing: 8px;
+      opacity: 0.68;
+      line-height: 1;
+    }
+    .hw-arch {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(100px, 14vw, 160px);
+      letter-spacing: -6px;
+      line-height: 0.85;
+    }
+    .hw-rule-thin-bot { width: 320px; height: 1px; background: var(--cream); opacity: 0.25; margin-top: 6px; margin-bottom: 14px; }
+    .hw-tagline {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-weight: 300;
+      font-size: 20px;
+      letter-spacing: 10px;
+      opacity: 0.88;
+      margin-bottom: 14px;
+    }
+    .hw-rule-bot { width: 320px; height: 3px; background: var(--cream); }
+
+    .hero-sub {
+      font-size: 10px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      opacity: 0.25;
+      margin-top: 40px;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.2;
+      animation: scrollPulse 2.5s ease-in-out infinite;
+    }
+    .hero-scroll span { font-size: 8.5px; letter-spacing: 5px; text-transform: uppercase; }
+    .scroll-line { width: 1px; height: 44px; background: var(--cream); }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ── STATEMENT STRIP ── */
+    .statement-strip {
+      padding: 120px 60px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .statement-strip .opener {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.35;
+      opacity: 0.88;
+      margin-bottom: 32px;
+    }
+    .statement-strip .body {
+      font-size: 17px;
+      line-height: 1.8;
+      opacity: 0.45;
+      max-width: 640px;
+      margin: 0 auto 40px;
+    }
+    .statement-strip .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      opacity: 0.4;
+      transition: opacity 0.3s ease;
+    }
+    .statement-strip .cta-link:hover { opacity: 0.9; }
+    .cta-line { width: 32px; height: 1px; background: var(--cream); transition: width 0.4s ease; }
+    .statement-strip .cta-link:hover .cta-line { width: 56px; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 60px;
+      margin: 0 auto;
+      max-width: var(--page-max);
+    }
+    .divider-rule { flex: 1; height: 1px; background: var(--rule-dark); }
+    .divider-mark {
+      font-family: var(--font-body);
+      font-size: 16px;
+      opacity: 0.15;
+      letter-spacing: 8px;
+    }
+
+    /* ── PORTFOLIO PREVIEW ── */
+    .portfolio-preview {
+      padding: 80px 0 0;
+    }
+    .preview-header {
+      padding: 0 60px;
+      margin-bottom: 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .preview-header h2 {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(28px, 3vw, 42px);
+      opacity: 0.8;
+    }
+    .preview-header a {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .preview-header a:hover { opacity: 0.8; }
+    .preview-header a:hover .cta-line { width: 48px; }
+
+    /* 2-col grid preview */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+    }
+
+    .preview-tile {
+      position: relative;
+      height: 480px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .preview-tile .tile-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.9s var(--ease);
+    }
+    .preview-tile:hover .tile-bg { transform: scale(1.04); }
+
+    /* Individual tile backgrounds */
+    .pt-1 .tile-bg {
+      background: radial-gradient(ellipse at 30% 60%, rgba(40,55,80,0.8) 0%, transparent 60%),
+        linear-gradient(160deg, #0a1020 0%, #050810 50%, #080c18 100%);
+    }
+    .pt-2 .tile-bg {
+      background: radial-gradient(ellipse at 60% 70%, rgba(80,55,20,0.7) 0%, transparent 55%),
+        linear-gradient(150deg, #120e06 0%, #1a1208 50%, #0e0a04 100%);
+    }
+    .pt-3 .tile-bg {
+      background: radial-gradient(ellipse at 40% 50%, rgba(60,40,30,0.6) 0%, transparent 55%),
+        linear-gradient(140deg, #100c0a 0%, #18120e 60%, #0c0908 100%);
+    }
+    .pt-4 .tile-bg {
+      background: radial-gradient(ellipse at 50% 40%, rgba(50,50,55,0.7) 0%, transparent 60%),
+        linear-gradient(155deg, #0e0e10 0%, #141418 50%, #0a0a0c 100%);
+    }
+
+    .preview-tile .tile-vignette {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.1) 60%);
+    }
+    .preview-tile .tile-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 40px 44px;
+    }
+    .tile-eyebrow {
+      font-size: 9px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      opacity: 0.35;
+      margin-bottom: 8px;
+      transition: opacity 0.4s;
+    }
+    .preview-tile:hover .tile-eyebrow { opacity: 0.65; }
+    .tile-rule-sm {
+      width: 28px; height: 1px;
+      background: var(--cream);
+      opacity: 0.25;
+      margin-bottom: 12px;
+      transition: width 0.5s ease, opacity 0.4s;
+    }
+    .preview-tile:hover .tile-rule-sm { width: 52px; opacity: 0.5; }
+    .pt-1 .tile-rule-sm { background: var(--gold); opacity: 0.45; }
+    .preview-tile .tile-title {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: clamp(28px, 3vw, 44px);
+      letter-spacing: -1px;
+      line-height: 0.9;
+      margin-bottom: 6px;
+      transition: transform 0.5s ease;
+    }
+    .preview-tile:hover .tile-title { transform: translateY(-3px); }
+    .preview-tile .tile-sub {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(14px, 1.5vw, 18px);
+      opacity: 0.45;
+      transition: transform 0.5s ease, opacity 0.4s;
+    }
+    .preview-tile:hover .tile-sub { transform: translateY(-3px); opacity: 0.7; }
+
+    /* ── QUOTE STRIP ── */
+    .quote-strip {
+      padding: 100px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+    }
+    .qs-rule { flex: 1; max-width: 100px; height: 1px; background: var(--rule-dark); }
+    .qs-content { text-align: center; }
+    .qs-text {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: 18px;
+      letter-spacing: 2px;
+      opacity: 0.38;
+      line-height: 1.6;
+      max-width: 480px;
+    }
+    .qs-attr {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      opacity: 0.2;
+      margin-top: 14px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hw-rule-top, .hw-rule-thin, .hw-rule-thin-bot, .hw-rule-bot { width: 240px; }
+      .hw-tagline { font-size: 15px; letter-spacing: 7px; }
+      .statement-strip { padding: 80px 28px; }
+      .divider { padding: 0 28px; }
+      .preview-header { padding: 0 28px; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .preview-grid { grid-template-columns: 1fr; }
+      .preview-tile { height: 380px; }
+      .quote-strip { padding: 60px 28px; flex-direction: column; }
+      .qs-rule { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to your blank HTML project!</h1>
-  <p>You can upload your own HTML, CSS, and JS files to the <code>public</code> directory to host them.</p>
-  <script src="script.js"></script>
+  <div class="page-content">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-wordmark fade-up">
+        <div class="hw-rule-top"></div>
+        <div class="hw-rule-thin"></div>
+        <span class="hw-the">the</span>
+        <span class="hw-infinite">Infinite</span>
+        <span class="hw-arch">ARCH</span>
+        <div class="hw-rule-thin-bot"></div>
+        <span class="hw-tagline">Beyond the Daydream</span>
+        <div class="hw-rule-bot"></div>
+      </div>
+      <p class="hero-sub fade-up delay-3">Fine Art Landscape Photography</p>
+      <div class="hero-scroll">
+        <div class="scroll-line"></div>
+        <span>Enter</span>
+      </div>
+    </section>
+
+    <!-- STATEMENT STRIP -->
+    <div class="statement-strip" data-reveal="0">
+      <p class="opener">Most of us spend our lives just outside the frame.</p>
+      <p class="body">I started chasing the places that couldn't be scrolled past. The Infinite Arch is built on a belief that the most honest photographs aren't taken — they're waited for.</p>
+      <a href="/pages/about.html" class="cta-link">
+        <div class="cta-line"></div>
+        Read the Statement
+      </a>
+    </div>
+
+    <div class="divider" data-reveal="0">
+      <div class="divider-rule"></div>
+      <span class="divider-mark">&#x2736;</span>
+      <div class="divider-rule"></div>
+    </div>
+
+    <!-- PORTFOLIO PREVIEW -->
+    <section class="portfolio-preview">
+      <div class="preview-header" data-reveal="0">
+        <h2>Four bodies of work.<br>One way of seeing.</h2>
+        <a href="/pages/portfolio.html">
+          <div class="cta-line"></div>
+          View All
+        </a>
+      </div>
+
+      <div class="preview-grid">
+        <a href="/pages/portfolio.html" class="preview-tile pt-1">
+          <div class="tile-bg"></div>
+          <div class="tile-vignette"></div>
+          <div class="tile-content">
+            <span class="tile-eyebrow">Expeditions</span>
+            <div class="tile-rule-sm"></div>
+            <h3 class="tile-title">Beyond the<br>Daydream</h3>
+            <p class="tile-sub">Iceland · Guadalupe Peak · and beyond</p>
+          </div>
+        </a>
+        <a href="/pages/portfolio.html" class="preview-tile pt-2">
+          <div class="tile-bg"></div>
+          <div class="tile-vignette"></div>
+          <div class="tile-content">
+            <span class="tile-eyebrow">Home Terrain</span>
+            <div class="tile-rule-sm"></div>
+            <h3 class="tile-title">Beyond the<br>Frame</h3>
+            <p class="tile-sub">The near distance</p>
+          </div>
+        </a>
+        <a href="/pages/portfolio.html" class="preview-tile pt-3">
+          <div class="tile-bg"></div>
+          <div class="tile-vignette"></div>
+          <div class="tile-content">
+            <span class="tile-eyebrow">Figures in the Threshold</span>
+            <div class="tile-rule-sm"></div>
+            <h3 class="tile-title">Beyond the<br>Moment</h3>
+            <p class="tile-sub">The ones who also chose to be out there</p>
+          </div>
+        </a>
+        <a href="/pages/portfolio.html" class="preview-tile pt-4">
+          <div class="tile-bg"></div>
+          <div class="tile-vignette"></div>
+          <div class="tile-content">
+            <span class="tile-eyebrow">Film · Konica Hexar</span>
+            <div class="tile-rule-sm"></div>
+            <h3 class="tile-title">Beyond the<br>Shutter</h3>
+            <p class="tile-sub">The slower eye</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- QUOTE STRIP -->
+    <div class="quote-strip" data-reveal="0">
+      <div class="qs-rule"></div>
+      <div class="qs-content">
+        <p class="qs-text">&ldquo;Beautiful things don&rsquo;t ask for attention.&rdquo;</p>
+        <span class="qs-attr">&mdash; Sean O&rsquo;Connell</span>
+      </div>
+      <div class="qs-rule"></div>
+    </div>
+
+  </div><!-- end page-content -->
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/tia.js"></script>
 </body>
 </html>
