@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Infinite Arch — Artist Statement</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap');
+
+  :root {
+    --ink:    #0d0d0d;
+    --cream:  #f5f0e8;
+    --warm:   #ede8de;
+    --gold:   #b5922a;
+    --muted:  #7a7468;
+    --rule:   #c8c0b4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  /* ── PAGE LAYOUT ── */
+  .page {
+    width: 860px;
+    margin: 0 auto;
+    padding: 100px 80px 120px;
+    position: relative;
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 72px;
+  }
+
+  .rule-heavy {
+    width: 100%;
+    height: 3px;
+    background: var(--ink);
+    margin-bottom: 10px;
+  }
+  .rule-thin {
+    width: 100%;
+    height: 1px;
+    background: var(--ink);
+    opacity: 0.25;
+    margin-bottom: 20px;
+  }
+
+  .masthead-the {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 10px;
+    color: var(--ink);
+    opacity: 0.45;
+    margin-bottom: 2px;
+  }
+
+  .masthead-infinite {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 30px;
+    letter-spacing: 5px;
+    color: var(--ink);
+    opacity: 0.72;
+    line-height: 1;
+    margin-bottom: 0px;
+  }
+
+  .masthead-arch {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 96px;
+    letter-spacing: -3px;
+    color: var(--ink);
+    line-height: 0.85;
+    margin-bottom: 4px;
+  }
+
+  .rule-thin-bot {
+    width: 100%;
+    height: 1px;
+    background: var(--ink);
+    opacity: 0.25;
+    margin-bottom: 12px;
+    margin-top: 2px;
+  }
+
+  .masthead-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 16px;
+    letter-spacing: 7px;
+    color: var(--ink);
+    opacity: 0.85;
+    margin-bottom: 12px;
+  }
+
+  .rule-heavy-bot {
+    width: 100%;
+    height: 3px;
+    background: var(--ink);
+  }
+
+  /* ── LABEL ── */
+  .section-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 36px;
+    margin-bottom: 52px;
+  }
+
+  /* ── OPENING QUOTE (large pull) ── */
+  .opening {
+    margin-bottom: 52px;
+    padding: 0 20px;
+    border-left: 2px solid var(--ink);
+    border-left-color: rgba(13,13,13,0.12);
+  }
+
+  .opener-line-1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 28px;
+    line-height: 1.38;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .opener-line-2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink);
+    opacity: 0.75;
+  }
+
+  /* ── BODY TEXT ── */
+  .body-block {
+    margin-bottom: 0;
+  }
+
+  .body-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 19px;
+    line-height: 1.72;
+    color: var(--ink);
+    letter-spacing: 0.15px;
+  }
+
+  .body-text p {
+    margin-bottom: 28px;
+  }
+  .body-text p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Inline em — the key phrases */
+  .body-text em {
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* The closing line gets special treatment */
+  .closing-line {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--ink);
+    letter-spacing: 0.2px;
+    margin-top: 44px;
+    padding-top: 36px;
+    border-top: 1px solid rgba(13,13,13,0.15);
+  }
+
+  /* ── ORNAMENTAL DIVIDER ── */
+  .ornament {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 52px 0;
+  }
+  .ornament-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .ornament-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--rule);
+    letter-spacing: 6px;
+  }
+
+  /* ── FOOTER QUOTE ── */
+  .footer-quote {
+    text-align: center;
+    padding-top: 52px;
+    border-top: 1px solid rgba(13,13,13,0.12);
+    margin-top: 60px;
+  }
+
+  .fq-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--ink);
+    opacity: 0.55;
+    margin-bottom: 10px;
+  }
+
+  .fq-attr {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 10px;
+    letter-spacing: 5px;
+    color: var(--muted);
+    opacity: 0.6;
+    text-transform: uppercase;
+  }
+
+  /* ── CORNER MARKS ── */
+  .corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+  }
+  .corner.tl { top: 40px; left: 40px; border-top: 2px solid var(--rule); border-left: 2px solid var(--rule); }
+  .corner.tr { top: 40px; right: 40px; border-top: 2px solid var(--rule); border-right: 2px solid var(--rule); }
+  .corner.bl { bottom: 60px; left: 40px; border-bottom: 2px solid var(--rule); border-left: 2px solid var(--rule); }
+  .corner.br { bottom: 60px; right: 40px; border-bottom: 2px solid var(--rule); border-right: 2px solid var(--rule); }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background: white; }
+    .page { padding: 0.5in 0.75in; width: 8.5in; }
+  }
+
+  /* ── DARK VERSION (toggle class on body) ── */
+  body.dark {
+    background: #0d0d0d;
+    color: #f5f0e8;
+    --ink: #f5f0e8;
+    --cream: #0d0d0d;
+    --warm: #111;
+    --muted: #5a5650;
+    --rule: #2a2820;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .page { width: 100%; padding: 60px 40px 80px; }
+    .masthead-arch { font-size: 72px; }
+    .opener-line-1 { font-size: 22px; }
+    .body-text { font-size: 17px; }
+  }
+
+</style>
+  <link rel="stylesheet" href="/assets/css/tia.css">
+</head>
+<body>
+<div class="page-content">
+
+<div class="page">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <!-- WORDMARK -->
+  <div class="masthead">
+    <div class="rule-heavy"></div>
+    <div class="rule-thin"></div>
+    <span class="masthead-the">the</span>
+    <span class="masthead-infinite">Infinite</span>
+    <span class="masthead-arch">ARCH</span>
+    <div class="rule-thin-bot"></div>
+    <span class="masthead-tagline">Beyond the Daydream</span>
+    <div class="rule-heavy-bot"></div>
+  </div>
+
+  <p class="section-label">Artist Statement &nbsp;·&nbsp; Fine Art Landscape Photography</p>
+
+  <!-- OPENING — large italic pull -->
+  <div class="opening">
+    <p class="opener-line-1">Most of us spend our lives just outside the frame.</p>
+    <p class="opener-line-2">We scroll past the image, save it for later, and move on. The daydream is the beautiful moment we never quite inhabit.</p>
+  </div>
+
+  <!-- PIVOT LINE -->
+  <div class="ornament">
+    <div class="ornament-rule"></div>
+    <div class="ornament-mark">&#x2736;</div>
+    <div class="ornament-rule"></div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-block">
+    <div class="body-text">
+      <p>I started chasing the places that couldn't be scrolled past.</p>
+
+      <p>The Infinite Arch is built on a belief that the most honest photographs aren't taken — they're <em>waited for</em>. They come to the photographer who arrives early, stays late, and returns when the light changes. Who understands that the arch in the rock and the arch of a life are describing the same passage: a threshold between what was and what's possible.</p>
+
+      <p>I shoot with Fujifilm's GFX medium format system because the format demands presence. You can't spray and pray at 102 megapixels. You choose your moment, and you mean it. My kit is the GFX 100RF, the GFX 50R, the X-E5, and a Konica Hexar — each one chosen for what it sees, not what it proves.</p>
+
+      <p>This is photography as contemplation. Landscape as mirror. Light as metaphor.</p>
+
+      <p>Sean O'Connell didn't say <em>number 25 is technically perfect</em> or <em>compositionally superior</em>. He said it was the quintessence of life. The difference matters to me. He was talking about the photograph that captured something true — not flawless, but undeniably alive. That's the standard I'm chasing. Not the image that impresses, but the one that's irreplaceable. The one I had to be cold for, had to wait for, had to raise the camera toward the impossible light and believe something was there before I could see it. This is what I came for. This is the quintessence of life.</p>
+    </div>
+  </div>
+
+  <!-- CLOSING LINE -->
+  <p class="closing-line">Welcome to the other side of the daydream.</p>
+
+  <!-- SEAN QUOTE FOOTER -->
+  <div class="footer-quote">
+    <p class="fq-text">&ldquo;Beautiful things don&rsquo;t ask for attention.&rdquo;</p>
+    <p class="fq-attr">&mdash; Sean O&rsquo;Connell</p>
+  </div>
+
+</div>
+
+  <script src="/assets/js/components.js"></script>
+  <script src="/assets/js/tia.js"></script>
+</div><!-- end page-content -->
+</body>
+</html>
