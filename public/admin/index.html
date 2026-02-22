@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TIA Admin — Photo Manager</title>
+  <!-- Netlify Identity Widget -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#141612; --surface:#1c1f1a; --border:rgba(255,255,255,0.07);
+      --cream:#f0ede8; --muted:rgba(255,255,255,0.35); --dim:rgba(255,255,255,0.18);
+      --gold:#c9a227; --green:#5a9e6f; --red:#a05050; --sage:#3d4039;
+      --font:'Helvetica Neue',Arial,sans-serif;
+    }
+    html,body { height:100%; background:var(--bg); color:var(--cream); font-family:var(--font); font-size:13px; line-height:1.5; overflow:hidden; }
+
+    /* ── AUTH GATE ── */
+    #authGate {
+      position:fixed; inset:0; z-index:9999; background:var(--bg);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;
+    }
+    #authGate.hidden { display:none; }
+    .auth-logo { font-size:10px; letter-spacing:6px; text-transform:uppercase; opacity:0.3; margin-bottom:8px; }
+    .auth-title { font-size:22px; font-weight:300; opacity:0.7; }
+    .auth-btn {
+      padding:12px 32px; font-size:9px; letter-spacing:5px; text-transform:uppercase;
+      border:1px solid rgba(255,255,255,0.2); background:transparent; color:var(--cream);
+      cursor:pointer; transition:all 0.2s;
+    }
+    .auth-btn:hover { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.4); }
+
+    /* ── LAYOUT ── */
+    #app { display:grid; grid-template-rows:56px 1fr; height:100vh; }
+    #app.hidden { display:none; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 28px; border-bottom:1px solid var(--border);
+      background:var(--surface);
+    }
+    .tb-left { display:flex; align-items:center; gap:20px; }
+    .tb-logo { font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.3; }
+    .tb-logo strong { color:var(--cream); opacity:1; }
+    .tb-cloud { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); opacity:0.7; }
+    .tb-right { display:flex; align-items:center; gap:16px; }
+    .tb-user { font-size:10px; opacity:0.3; letter-spacing:2px; }
+    .tb-signout { font-size:9px; letter-spacing:3px; text-transform:uppercase; opacity:0.25; cursor:pointer; transition:opacity 0.2s; border:none; background:none; color:var(--cream); padding:4px 8px; }
+    .tb-signout:hover { opacity:0.6; }
+    .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--dim); display:inline-block; margin-right:6px; transition:background 0.3s; }
+    .sync-dot.syncing { background:var(--gold); animation:pulse 1s infinite; }
+    .sync-dot.ok { background:var(--green); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ── BODY GRID ── */
+    .body { display:grid; grid-template-columns:240px 1fr; overflow:hidden; height:100%; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+    .sb-scroll { overflow-y:auto; flex:1; padding:16px 0; }
+    .sb-section { padding:0 16px; margin-bottom:20px; }
+    .sb-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); display:block; margin-bottom:10px; padding:0 4px; }
+
+    .series-btn {
+      width:100%; display:flex; align-items:center; gap:10px;
+      padding:9px 12px; border:1px solid transparent;
+      background:transparent; color:var(--muted); cursor:pointer;
+      text-align:left; font-family:var(--font); font-size:12px;
+      transition:all 0.15s; border-radius:3px; margin-bottom:2px;
+    }
+    .series-btn:hover { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.65); }
+    .series-btn.active { background:rgba(255,255,255,0.07); border-color:var(--border); color:var(--cream); }
+    .sb-num { font-size:8px; letter-spacing:3px; color:var(--dim); width:20px; flex-shrink:0; }
+    .sb-name { flex:1; line-height:1.3; }
+    .sb-badge {
+      font-size:9px; padding:1px 7px; border-radius:10px;
+      background:rgba(255,255,255,0.06); color:var(--dim);
+      min-width:22px; text-align:center;
+    }
+    .sb-badge.has { background:rgba(90,158,111,0.18); color:var(--green); }
+
+    .sb-divider { height:1px; background:var(--border); margin:8px 16px 16px; }
+
+    /* ── MAIN PANEL ── */
+    .main { display:flex; flex-direction:column; overflow:hidden; }
+
+    /* header bar */
+    .panel-header {
+      padding:20px 28px 16px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+    }
+    .ph-left {}
+    .ph-series { font-size:9px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); margin-bottom:4px; }
+    .ph-title { font-size:18px; font-weight:300; color:var(--cream); }
+    .ph-right { display:flex; gap:10px; align-items:center; }
+
+    /* action buttons */
+    .btn {
+      padding:7px 18px; font-size:8px; letter-spacing:4px; text-transform:uppercase;
+      border:1px solid var(--border); background:transparent; color:var(--muted);
+      cursor:pointer; font-family:var(--font); transition:all 0.2s; white-space:nowrap;
+    }
+    .btn:hover { border-color:rgba(255,255,255,0.25); color:var(--cream); }
+    .btn.primary { background:var(--sage); border-color:var(--sage); color:var(--cream); }
+    .btn.primary:hover { background:#4a4e44; }
+    .btn.danger { border-color:rgba(160,80,80,0.3); color:var(--red); }
+    .btn.danger:hover { background:rgba(160,80,80,0.08); border-color:var(--red); }
+    .btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+    /* panel content scrolls */
+    .panel-body { flex:1; overflow-y:auto; padding:24px 28px; }
+
+    /* ── DROP ZONE ── */
+    .drop-zone {
+      border:1px dashed rgba(255,255,255,0.1); border-radius:3px;
+      padding:36px 24px; text-align:center; cursor:pointer;
+      transition:all 0.25s; position:relative; margin-bottom:24px;
+    }
+    .drop-zone:hover,.drop-zone.drag-over {
+      border-color:rgba(201,162,39,0.5); background:rgba(201,162,39,0.03);
+    }
+    .drop-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .dz-icon { font-size:28px; opacity:0.2; margin-bottom:8px; }
+    .dz-title { font-size:13px; opacity:0.4; margin-bottom:4px; }
+    .dz-hint { font-size:10px; letter-spacing:3px; text-transform:uppercase; opacity:0.2; }
+
+    /* ── UPLOAD QUEUE ── */
+    .queue-wrap { margin-bottom:24px; }
+    .section-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+    .section-label button { font-size:8px; letter-spacing:3px; text-transform:uppercase; border:none; background:none; color:var(--dim); cursor:pointer; padding:2px 6px; }
+    .section-label button:hover { color:var(--muted); }
+
+    .queue-list { display:flex; flex-direction:column; gap:6px; }
+    .queue-item {
+      display:grid; grid-template-columns:48px 1fr 90px;
+      gap:14px; align-items:center;
+      padding:10px 14px; background:var(--surface);
+      border:1px solid var(--border); border-radius:2px;
+    }
+    .qi-thumb { width:48px; height:34px; object-fit:cover; border-radius:1px; background:#2a2e28; display:block; }
+    .qi-name { font-size:12px; opacity:0.6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .qi-size { font-size:9px; letter-spacing:2px; opacity:0.28; }
+    .qi-status { font-size:9px; letter-spacing:3px; text-transform:uppercase; text-align:right; }
+    .qi-status.pending { color:var(--dim); }
+    .qi-status.uploading { color:var(--gold); }
+    .qi-status.done { color:var(--green); }
+    .qi-status.error { color:var(--red); }
+
+    /* progress */
+    .upload-progress { height:2px; background:var(--border); border-radius:1px; overflow:hidden; margin-bottom:24px; }
+    .upload-progress-bar { height:100%; background:var(--gold); width:0%; transition:width 0.4s; }
+
+    /* ── PHOTO GRID ── */
+    .photo-grid-wrap {}
+    .photo-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:6px;
+    }
+    .pg-cell {
+      position:relative; aspect-ratio:3/2; background:var(--surface);
+      border:1px solid var(--border); border-radius:2px; overflow:hidden; cursor:pointer;
+    }
+    .pg-cell img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity 0.25s; }
+    .pg-cell:hover img { opacity:0.55; }
+    .pg-actions {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      gap:6px; opacity:0; transition:opacity 0.2s;
+    }
+    .pg-cell:hover .pg-actions { opacity:1; }
+    .pg-act-btn {
+      padding:4px 10px; font-size:8px; letter-spacing:3px; text-transform:uppercase;
+      border:1px solid rgba(255,255,255,0.35); background:rgba(0,0,0,0.75);
+      color:rgba(255,255,255,0.8); cursor:pointer; transition:all 0.15s;
+    }
+    .pg-act-btn:hover { background:rgba(0,0,0,0.95); color:#fff; }
+    .pg-act-btn.del { border-color:rgba(160,80,80,0.5); color:var(--red); }
+    .pg-act-btn.del:hover { background:rgba(160,80,80,0.15); }
+    .pg-label {
+      position:absolute; bottom:0; left:0; right:0; padding:4px 6px;
+      background:linear-gradient(to top,rgba(0,0,0,0.85),transparent);
+      font-size:9px; opacity:0.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .pg-cover-star { position:absolute; top:6px; left:6px; font-size:14px; line-height:1; filter:drop-shadow(0 0 3px rgba(0,0,0,0.8)); }
+
+    /* empty state */
+    .empty-state { padding:48px 0; text-align:center; opacity:0.25; }
+    .empty-state p { font-size:10px; letter-spacing:4px; text-transform:uppercase; }
+
+    /* loading shimmer */
+    .shimmer { animation:shimmer 1.4s infinite; background:linear-gradient(90deg,var(--surface) 0%,rgba(255,255,255,0.04) 50%,var(--surface) 100%); background-size:200% 100%; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .shimmer-cell { aspect-ratio:3/2; border-radius:2px; border:1px solid var(--border); }
+
+    /* ── TOAST ── */
+    .toast {
+      position:fixed; bottom:24px; right:24px; z-index:9000;
+      padding:10px 22px; background:var(--sage); border:1px solid rgba(255,255,255,0.08);
+      font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--cream);
+      opacity:0; transform:translateY(6px); transition:all 0.3s; pointer-events:none; border-radius:2px;
+    }
+    .toast.show { opacity:1; transform:translateY(0); }
+    .toast.error { background:var(--red); }
+
+    /* ── LIGHTBOX ── */
+    .lb { position:fixed; inset:0; z-index:8000; background:rgba(0,0,0,0.93); display:none; align-items:center; justify-content:center; }
+    .lb.open { display:flex; }
+    .lb-img { max-width:90vw; max-height:85vh; object-fit:contain; border-radius:1px; }
+    .lb-close { position:fixed; top:20px; right:28px; font-size:24px; color:var(--muted); cursor:pointer; transition:color 0.2s; }
+    .lb-close:hover { color:var(--cream); }
+    .lb-meta { position:fixed; bottom:0; left:0; right:0; padding:16px 28px; text-align:center; }
+    .lb-url { font-size:10px; letter-spacing:2px; color:var(--dim); word-break:break-all; }
+
+    /* responsive */
+    @media(max-width:700px) {
+      .body { grid-template-columns:1fr; }
+      .sidebar { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── AUTH GATE ── -->
+<div id="authGate">
+  <p class="auth-logo">The Infinite Arch &nbsp;·&nbsp; <strong>Admin</strong></p>
+  <h1 class="auth-title">Photo Manager</h1>
+  <button class="auth-btn" onclick="netlifyIdentity.open()">Sign In</button>
+</div>
+
+<!-- ── APP (shown after auth) ── -->
+<div id="app" class="hidden">
+
+  <div class="topbar">
+    <div class="tb-left">
+      <span class="tb-logo">TIA &nbsp;·&nbsp; <strong>Photo Manager</strong></span>
+      <span class="tb-cloud">duxiir9lv</span>
+      <span><span class="sync-dot" id="syncDot"></span><span id="syncLabel" style="font-size:9px;letter-spacing:2px;opacity:0.3">—</span></span>
+    </div>
+    <div class="tb-right">
+      <span class="tb-user" id="tbUser"></span>
+      <button class="tb-signout" onclick="netlifyIdentity.logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <aside class="sidebar">
+      <div class="sb-scroll">
+        <div class="sb-section">
+          <span class="sb-label">Collections</span>
+          <div id="seriesList"></div>
+        </div>
+        <div class="sb-divider"></div>
+        <div class="sb-section">
+          <button class="series-btn" onclick="selectSeries('covers')">
+            <span class="sb-num">★</span>
+            <span class="sb-name">Cover Images</span>
+          </button>
+          <button class="series-btn" onclick="selectSeries('home')">
+            <span class="sb-num">⌂</span>
+            <span class="sb-name">Homepage Photos</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="panel-header">
+        <div class="ph-left">
+          <div class="ph-series" id="panelEyebrow">Select a collection</div>
+          <div class="ph-title" id="panelTitle">Photo Manager</div>
+        </div>
+        <div class="ph-right">
+          <button class="btn" onclick="refreshCurrent()" id="refreshBtn">↻ Refresh</button>
+          <button class="btn primary" onclick="uploadAll()" id="uploadBtn" disabled>Upload All</button>
+        </div>
+      </div>
+
+      <div class="panel-body" id="panelBody">
+        <div class="empty-state"><p>Choose a collection from the left</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb">
+  <span class="lb-close" onclick="closeLb()">✕</span>
+  <img class="lb-img" id="lbImg" src="" alt="">
+  <div class="lb-meta">
+    <div class="lb-url" id="lbUrl"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const CLOUD   = 'duxiir9lv';
+const PRESET  = 'tia_unsigned'; // Create unsigned preset in Cloudinary dashboard
+const FOLDER  = 'tia';
+const CLD_API = `https://api.cloudinary.com/v1_1/${CLOUD}`;
+
+// ── Series definitions ────────────────────────────────────
+const SERIES = [
+  { id:'s1', num:'01', title:'Solitude & Scale',       folder:'s1-solitude-scale',      photoIds:['s1-01','s1-02','s1-03'] },
+  { id:'s2', num:'02', title:'Glacial Contrasts',       folder:'s2-glacial-contrasts',   photoIds:['s2-01','s2-02'] },
+  { id:'s3', num:'03', title:'Blue Trilogy',            folder:'s3-blue-trilogy',        photoIds:['s3-01','s3-02','s3-03'] },
+  { id:'s4', num:'04', title:'Coastal Contrasts',       folder:'s4-coastal-contrasts',   photoIds:['s4-01','s4-02'] },
+  { id:'s5', num:'05', title:'The Human Element',       folder:'s5-human-element',       photoIds:['s5-01','s5-02'] },
+  { id:'s6', num:'06', title:'Arnarstapi Geometry',     folder:'s6-arnarstapi-geometry', photoIds:['s6-01','s6-02','s6-03'] },
+  { id:'s7', num:'07', title:'Peninsular Panorama',     folder:'s7-peninsular-panorama', photoIds:['s7-01','s7-02','s7-03'] },
+  { id:'s8', num:'08', title:'Urban Odyssey',           folder:'s8-urban-odyssey',       photoIds:['s8-01','s8-02','s8-03'] },
+];
+
+const HOME_SLOTS = [
+  { id:'hero',      label:'Hero Background' },
+  { id:'carousel1', label:'Carousel Slide 1' },
+  { id:'carousel2', label:'Carousel Slide 2' },
+  { id:'carousel3', label:'Carousel Slide 3' },
+  { id:'mountain',  label:'Full-width Mountain' },
+  { id:'qrow1',     label:'Quote Row 1 (Number 25)' },
+  { id:'qrow2',     label:'Quote Row 2 (Vonnegut)' },
+  { id:'qrow3',     label:'Quote Row 3 (Muir)' },
+  { id:'qrow4',     label:'Quote Row 4 (Thoreau)' },
+  { id:'portrait',  label:'Contact Portrait' },
+];
+
+// ── State ─────────────────────────────────────────────────
+let activeSeries = null;
+let cloudPhotos  = {};   // { folderId: [{url, publicId, filename, width, height}] }
+let queue        = [];   // pending uploads
+let currentUser  = null;
+
+// ═══════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════
+netlifyIdentity.on('init', user => {
+  if (user) showApp(user);
+});
+netlifyIdentity.on('login', user => {
+  netlifyIdentity.close();
+  showApp(user);
+});
+netlifyIdentity.on('logout', () => {
+  currentUser = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('authGate').classList.remove('hidden');
+});
+
+function showApp(user) {
+  currentUser = user;
+  document.getElementById('authGate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('tbUser').textContent = user.email;
+  renderSidebar();
+  fetchAllFromCloudinary();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CLOUDINARY — fetch existing photos via Search API
+// Uses unsigned listing (enabled by default on free plans)
+// ═══════════════════════════════════════════════════════════
+async function fetchAllFromCloudinary() {
+  setSyncState('syncing', 'Fetching from Cloudinary…');
+
+  try {
+    // Fetch each series folder in parallel
+    const results = await Promise.all(
+      [...SERIES, {id:'covers',folder:'covers'}, {id:'home',folder:'home'}]
+        .map(s => fetchFolder(`${FOLDER}/${s.folder}`).then(photos => ({id:s.id, photos})))
+    );
+
+    results.forEach(({id, photos}) => { cloudPhotos[id] = photos; });
+    renderSidebar();
+    setSyncState('ok', 'Synced');
+
+    // Refresh current view
+    if (activeSeries) showSeries(activeSeries);
+
+  } catch(err) {
+    console.error(err);
+    setSyncState('', 'Sync failed');
+    toast('Could not reach Cloudinary', true);
+  }
+}
+
+async function fetchFolder(folder) {
+  // Use Cloudinary's list API (works without auth for public clouds reading their own folders)
+  const url = `https://res.cloudinary.com/${CLOUD}/image/list/${folder}.json`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.resources || []).map(r => ({
+    publicId: r.public_id,
+    url: `https://res.cloudinary.com/${CLOUD}/image/upload/${r.public_id}`,
+    secureUrl: `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto/${r.public_id}`,
+    thumbUrl: `https://res.cloudinary.com/${CLOUD}/image/upload/w_300,q_auto,f_auto/${r.public_id}`,
+    width: r.width,
+    height: r.height,
+    filename: r.public_id.split('/').pop(),
+  }));
+}
+
+function setSyncState(state, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot' + (state ? ' '+state : '');
+  lbl.textContent = label;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function renderSidebar() {
+  const el = document.getElementById('seriesList');
+  el.innerHTML = SERIES.map(s => {
+    const count = (cloudPhotos[s.id] || []).length;
+    return `
+      <button class="series-btn ${activeSeries === s.id ? 'active' : ''}" onclick="selectSeries('${s.id}')">
+        <span class="sb-num">${s.num}</span>
+        <span class="sb-name">${s.title}</span>
+        <span class="sb-badge ${count > 0 ? 'has' : ''}">${count || ''}</span>
+      </button>`;
+  }).join('');
+}
+
+function selectSeries(id) {
+  activeSeries = id;
+  queue = [];
+  renderSidebar();
+  showSeries(id);
+}
+
+async function refreshCurrent() {
+  if (!activeSeries) return;
+  const s = SERIES.find(x => x.id === activeSeries) || {id:activeSeries, folder:activeSeries};
+  setSyncState('syncing', 'Refreshing…');
+  const photos = await fetchFolder(`${FOLDER}/${s.folder || activeSeries}`);
+  cloudPhotos[activeSeries] = photos;
+  setSyncState('ok', 'Synced');
+  showSeries(activeSeries);
+  renderSidebar();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHOW SERIES PANEL
+// ═══════════════════════════════════════════════════════════
+function showSeries(id) {
+  const s = SERIES.find(x => x.id === id);
+  const isHome = id === 'home';
+  const isCovers = id === 'covers';
+
+  // Update header
+  if (s) {
+    document.getElementById('panelEyebrow').textContent = `Series ${s.num} · ${(cloudPhotos[id]||[]).length} uploaded`;
+    document.getElementById('panelTitle').textContent = s.title;
+  } else if (isCovers) {
+    document.getElementById('panelEyebrow').textContent = 'One cover image per series';
+    document.getElementById('panelTitle').textContent = 'Cover Images';
+  } else if (isHome) {
+    document.getElementById('panelEyebrow').textContent = 'Background & section photos';
+    document.getElementById('panelTitle').textContent = 'Homepage Photos';
+  }
+
+  document.getElementById('uploadBtn').disabled = false;
+
+  const body = document.getElementById('panelBody');
+  const photos = cloudPhotos[id] || [];
+
+  let html = '';
+
+  // Drop zone
+  html += `
+    <div class="drop-zone" id="dz">
+      <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
+      <div class="dz-icon">📷</div>
+      <p class="dz-title">Drop photos here or click to select</p>
+      <p class="dz-hint">JPG · TIFF · PNG — any file size</p>
+    </div>`;
+
+  // Queue
+  html += `<div class="queue-wrap" id="queueWrap" style="display:none">
+    <div class="section-label">
+      <span>Upload Queue (<span id="queueCount">0</span>)</span>
+      <button onclick="clearQueue()">Clear pending</button>
+    </div>
+    <div class="upload-progress"><div class="upload-progress-bar" id="progressBar"></div></div>
+    <div class="queue-list" id="queueList"></div>
+  </div>`;
+
+  // Uploaded photos
+  html += `<div class="photo-grid-wrap">
+    <div class="section-label" style="margin-top:8px">
+      <span>In Cloudinary — <span id="photoCount">${photos.length}</span></span>
+    </div>`;
+
+  if (photos.length === 0) {
+    html += `<div class="empty-state"><p>No photos uploaded yet</p></div>`;
+  } else {
+    html += `<div class="photo-grid" id="photoGrid">`;
+    photos.forEach((p, i) => {
+      const isCover = i === 0; // first photo is implicitly the cover
+      html += `
+        <div class="pg-cell">
+          <img src="${p.thumbUrl}" loading="lazy" alt="${p.filename}" onclick="openLb('${p.secureUrl}','${p.url}')">
+          ${isCover ? `<div class="pg-cover-star" title="Used as series cover">★</div>` : ''}
+          <div class="pg-actions">
+            <button class="pg-act-btn" onclick="copyUrl('${p.url}')">Copy URL</button>
+            <button class="pg-act-btn" onclick="setAsCover('${id}','${p.publicId}')">Set Cover</button>
+            <button class="pg-act-btn del" onclick="deletePhoto('${id}','${p.publicId}',${i})">Del</button>
+          </div>
+          <div class="pg-label">${p.filename}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  body.innerHTML = html;
+
+  // Re-attach drop zone events
+  setupDropZone();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DROP ZONE
+// ═══════════════════════════════════════════════════════════
+function setupDropZone() {
+  const dz = document.getElementById('dz');
+  if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+}
+
+function handleFiles(files) {
+  if (!activeSeries) { toast('Select a series first'); return; }
+  Array.from(files).forEach(f => {
+    queue.push({ file:f, status:'pending', previewUrl: URL.createObjectURL(f) });
+  });
+  renderQueue();
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUEUE RENDER
+// ═══════════════════════════════════════════════════════════
+function renderQueue() {
+  const wrap = document.getElementById('queueWrap');
+  const list = document.getElementById('queueList');
+  const countEl = document.getElementById('queueCount');
+  if (!wrap || !list) return;
+
+  if (queue.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  if (countEl) countEl.textContent = queue.filter(i => i.status === 'pending').length;
+
+  list.innerHTML = queue.map((item, i) => {
+    const kb = item.file.size > 1024*1024
+      ? (item.file.size/1024/1024).toFixed(1)+'MB'
+      : Math.round(item.file.size/1024)+'KB';
+    return `
+      <div class="queue-item" id="qi${i}">
+        <img class="qi-thumb" src="${item.previewUrl}" alt="">
+        <div>
+          <div class="qi-name">${item.file.name}</div>
+          <div class="qi-size">${kb}</div>
+        </div>
+        <span class="qi-status ${item.status}" id="qis${i}">${item.status}</span>
+      </div>`;
+  }).join('');
+}
+
+function clearQueue() {
+  queue = queue.filter(i => i.status !== 'pending');
+  renderQueue();
+}
+
+// ═══════════════════════════════════════════════════════════
+// UPLOAD
+// ═══════════════════════════════════════════════════════════
+async function uploadAll() {
+  const pending = queue.filter(i => i.status === 'pending');
+  if (pending.length === 0) { toast('Nothing to upload'); return; }
+
+  document.getElementById('uploadBtn').disabled = true;
+
+  const s = SERIES.find(x => x.id === activeSeries) || { folder: activeSeries };
+  const folder = `${FOLDER}/${s.folder || activeSeries}`;
+
+  for (let i = 0; i < queue.length; i++) {
+    const item = queue[i];
+    if (item.status !== 'pending') continue;
+
+    item.status = 'uploading';
+    setQueueStatus(i, 'uploading');
+
+    try {
+      const fd = new FormData();
+      fd.append('file', item.file);
+      fd.append('upload_preset', PRESET);
+      fd.append('folder', folder);
+
+      const res = await fetch(`${CLD_API}/image/upload`, { method:'POST', body:fd });
+      if (!res.ok) throw new Error(`HTTP ${res.status} — ${await res.text()}`);
+
+      item.status = 'done';
+      setQueueStatus(i, 'done');
+
+    } catch(err) {
+      console.error(err);
+      item.status = 'error';
+      setQueueStatus(i, 'error');
+      toast(`Upload failed: ${item.file.name}`, true);
+    }
+
+    // Update progress bar
+    const done = queue.filter(x => x.status !== 'pending').length;
+    const bar = document.getElementById('progressBar');
+    if (bar) bar.style.width = (done / queue.length * 100) + '%';
+  }
+
+  document.getElementById('uploadBtn').disabled = false;
+  toast('Upload complete — refreshing…');
+
+  // Re-fetch this series from Cloudinary so grid updates immediately
+  setTimeout(() => refreshCurrent(), 1200);
+}
+
+function setQueueStatus(i, status) {
+  const el = document.getElementById(`qis${i}`);
+  if (el) { el.className = `qi-status ${status}`; el.textContent = status; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHOTO ACTIONS
+// ═══════════════════════════════════════════════════════════
+function copyUrl(url) {
+  // Build an optimized web URL automatically
+  const optimized = url.replace('/upload/', '/upload/q_auto,f_auto/');
+  navigator.clipboard.writeText(optimized)
+    .then(() => toast('URL copied'))
+    .catch(() => {
+      // Fallback for non-https / Firefox
+      const ta = document.createElement('textarea');
+      ta.value = optimized; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      ta.remove(); toast('URL copied');
+    });
+}
+
+function setAsCover(seriesId, publicId) {
+  // Move this photo to position 0 in the local array so the star shows on it
+  const photos = cloudPhotos[seriesId] || [];
+  const idx = photos.findIndex(p => p.publicId === publicId);
+  if (idx > 0) {
+    const [photo] = photos.splice(idx, 1);
+    photos.unshift(photo);
+    cloudPhotos[seriesId] = photos;
+  }
+  toast('Set as cover — re-upload to persist order');
+  showSeries(seriesId);
+}
+
+async function deletePhoto(seriesId, publicId, idx) {
+  if (!confirm(`Delete "${publicId.split('/').pop()}"? This cannot be undone.`)) return;
+
+  // Note: Cloudinary deletion requires signed requests (server-side).
+  // We show instructions instead.
+  toast('To delete: go to cloudinary.com/console → Media Library → find & delete there', true);
+}
+
+// ═══════════════════════════════════════════════════════════
+// LIGHTBOX
+// ═══════════════════════════════════════════════════════════
+function openLb(src, rawUrl) {
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lbUrl').textContent = rawUrl;
+  document.getElementById('lb').classList.add('open');
+}
+function closeLb() { document.getElementById('lb').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLb(); });
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function toast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function refreshAll() { fetchAllFromCloudinary(); }
+</script>
+</body>
+</html>

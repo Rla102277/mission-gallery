@@ -315,7 +315,7 @@
 // ═══════════════════════════════════════════════════════════════
 const COLLECTIONS = [
   {
-    id: 's1',
+    id: 's1', folder: 's1-solitude-scale',
     series: 'Series 01',
     title: 'Solitude & Scale',
     subtitle: 'The Secret Lagoon',
@@ -334,7 +334,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's2',
+    id: 's2', folder: 's2-glacial-contrasts',
     series: 'Series 02',
     title: 'Glacial Contrasts',
     subtitle: 'Ice in Two Realms',
@@ -351,7 +351,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's3',
+    id: 's3', folder: 's3-blue-trilogy',
     series: 'Series 03',
     title: 'Blue Trilogy',
     subtitle: 'The Impossible Blues of Iceland Ice',
@@ -369,7 +369,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's4',
+    id: 's4', folder: 's4-coastal-contrasts',
     series: 'Series 04',
     title: 'Coastal Contrasts',
     subtitle: 'Black Sand Drama vs Blue Water Serenity',
@@ -386,7 +386,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's5',
+    id: 's5', folder: 's5-human-element',
     series: 'Series 05',
     title: 'The Human Element',
     subtitle: 'Presence at the Edge of the World',
@@ -403,7 +403,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's6',
+    id: 's6', folder: 's6-arnarstapi-geometry',
     series: 'Series 06',
     title: 'Arnarstapi Geometry',
     subtitle: 'The Architecture of Erosion',
@@ -421,7 +421,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's7',
+    id: 's7', folder: 's7-peninsular-panorama',
     series: 'Series 07',
     title: 'Peninsular Panorama',
     subtitle: 'Snæfellsnes in Three Moods',
@@ -439,7 +439,7 @@ const COLLECTIONS = [
     ]
   },
   {
-    id: 's8',
+    id: 's8', folder: 's8-urban-odyssey',
     series: 'Series 08',
     title: 'Urban Odyssey',
     subtitle: 'Reykjavík as Coda',
@@ -614,27 +614,104 @@ document.addEventListener('keydown', e => {
 renderCards();
 </script>
 
-<script src="../assets/js/cloudinary.config.js"></script>
+
+
+
 <script>
-// Auto-apply Cloudinary URLs from config into COLLECTIONS after page loads
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof PHOTO_URLS === 'undefined') return;
+// ═══════════════════════════════════════════════════════════
+// LIVE CLOUDINARY LOADER
+// Fetches real photo URLs from Cloudinary on page load.
+// No config file needed — always current with what's uploaded.
+// ═══════════════════════════════════════════════════════════
+const CLOUD = 'duxiir9lv';
+const FOLDER = 'tia';
 
-  COLLECTIONS.forEach(coll => {
-    const urls = PHOTO_URLS[coll.id] || [];
-    const coverUrl = COVER_URLS?.[coll.id] || urls[0] || '';
+function cldThumb(publicId)  { return `https://res.cloudinary.com/${CLOUD}/image/upload/w_800,q_auto,f_auto/${publicId}`; }
+function cldFull(publicId)   { return `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto/${publicId}`; }
+function cldCover(publicId)  { return `https://res.cloudinary.com/${CLOUD}/image/upload/w_1600,q_auto,f_auto/${publicId}`; }
 
-    // Apply cover
-    if (coverUrl) coll.coverUrl = coverUrl;
+async function fetchSeriesPhotos(folder) {
+  try {
+    const url = `https://res.cloudinary.com/${CLOUD}/image/list/${FOLDER}/${folder}.json`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.resources || []).map(r => ({
+      publicId: r.public_id,
+      url: cldThumb(r.public_id),
+      fullUrl: cldFull(r.public_id),
+      coverUrl: cldCover(r.public_id),
+    }));
+  } catch { return []; }
+}
 
-    // Apply per-photo URLs
+async function loadCloudinaryPhotos() {
+  const results = await Promise.all(
+    COLLECTIONS.map(c => fetchSeriesPhotos(c.folder || c.id).then(photos => ({ id: c.id, photos })))
+  );
+
+  results.forEach(({ id, photos }) => {
+    if (photos.length === 0) return;
+    const coll = COLLECTIONS.find(c => c.id === id);
+    if (!coll) return;
+
+    // Cover = first photo in folder
+    coll.coverUrl = photos[0].coverUrl;
+
+    // Map photos to existing slots (by index) — extra photos are appended
     coll.photos.forEach((p, i) => {
-      if (urls[i]) p.url = urls[i];
+      if (photos[i]) {
+        p.url = photos[i].url;
+        p.fullUrl = photos[i].fullUrl;
+      }
     });
+
+    // If more photos uploaded than slots defined, add extras
+    if (photos.length > coll.photos.length) {
+      for (let i = coll.photos.length; i < photos.length; i++) {
+        coll.photos.push({
+          id: `${id}-${String(i+1).padStart(2,'0')}`,
+          title: photos[i].publicId.split('/').pop(),
+          detail: '',
+          orientation: 'landscape',
+          bg: 'linear-gradient(145deg,#1a1a1a,#0a0a0a)',
+          url: photos[i].url,
+          fullUrl: photos[i].fullUrl,
+        });
+      }
+    }
   });
 
-  // Re-render cards with real images
   renderCards();
+}
+
+// Patch openLightbox to use fullUrl if available
+const _origRenderLightbox = renderLightbox;
+renderLightbox = function() {
+  if (!activeSeries) return;
+  const p = activeSeries.photos[lbIndex];
+  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${activeSeries.photos.length}`;
+  document.getElementById('lbTitle').textContent = p.title;
+  document.getElementById('lbDetails').textContent = `${activeSeries.series} · ${p.detail}`;
+
+  const wrap = document.getElementById('lbImgWrap');
+  const src = p.fullUrl || p.url;
+  if (src) {
+    wrap.innerHTML = `<img class="lb-img" src="${src}" alt="${p.title}">`;
+  } else {
+    wrap.innerHTML = `
+      <div class="lb-placeholder" style="background:${p.bg}">
+        <span>📷 Replace with photo</span>
+        <span>${p.id}</span>
+        <span style="font-size:9px;margin-top:8px">${p.detail}</span>
+      </div>`;
+  }
+};
+
+// Load on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  renderCards(); // show placeholders immediately
+  loadCloudinaryPhotos(); // then replace with real photos
 });
 </script>
 
