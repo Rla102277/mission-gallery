@@ -314,5 +314,37 @@
   }, { threshold:0.06, rootMargin:'0px 0px -40px 0px' });
   els.forEach(el => obs.observe(el));
 </script>
+
+<script src="../assets/js/cloudinary.config.js"></script>
+<script>
+// Auto-apply Cloudinary portfolio cover images from config
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof PORTFOLIO_COVERS === 'undefined') return;
+
+  const mappings = [
+    { seriesId:'s1', selector:'.work-block:nth-child(1) .work-visual' },
+    { seriesId:'s3', selector:'.work-block:nth-child(2) .work-visual' },
+    { seriesId:'s2', selector:'.work-block:nth-child(3) .work-visual' },
+    { seriesId:'s5', selector:'.work-block:nth-child(4) .work-visual' },
+    { seriesId:'s7', selector:'.work-block:nth-child(5) .work-visual' },
+  ];
+
+  mappings.forEach(({ seriesId, selector }) => {
+    const url = PORTFOLIO_COVERS[seriesId] || COVER_URLS?.[seriesId] || PHOTO_URLS?.[seriesId]?.[0];
+    if (!url) return;
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    // Replace placeholder with real image
+    const img = document.createElement('img');
+    img.className = 'wv-img';
+    img.src = typeof cldUrl === 'function' ? cldUrl(url, 'w_1200,q_auto,f_auto') : url;
+    img.alt = '';
+    el.querySelector('.wv-placeholder')?.remove();
+    el.insertBefore(img, el.firstChild);
+  });
+});
+</script>
+
 </body>
 </html>
