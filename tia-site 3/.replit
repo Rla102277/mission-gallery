@@ -1,0 +1,10 @@
+run = "npx serve . -p 3000"
+entrypoint = "index.html"
+language = "html"
+
+[nix]
+channel = "stable-23_11"
+
+[deployment]
+deploymentTarget = "static"
+publicDir = "."

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TIA — Cloudinary Upload Tool</title>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --ink:#0d0d0d; --cream:#f5f0e8; --sage:#3d4039; --sage-light:#e8e6e0;
+      --green:#4a7c59; --red:#8b3a3a; --gold:#c9a227;
+    }
+    body { background:#1a1c18; color:var(--cream); font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; line-height:1.6; min-height:100vh; }
+    header { padding:28px 40px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-size:11px; letter-spacing:5px; text-transform:uppercase; opacity:0.4; }
+    .logo strong { opacity:1; color:var(--cream); }
+    .cloud-info { font-size:10px; letter-spacing:3px; text-transform:uppercase; opacity:0.3; }
+    .cloud-info span { color:var(--gold); opacity:1; }
+
+    .main { display:grid; grid-template-columns:280px 1fr; min-height:calc(100vh - 73px); }
+
+    /* SIDEBAR */
+    .sidebar { border-right:1px solid rgba(255,255,255,0.06); padding:32px 24px; }
+    .sb-title { font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.3; margin-bottom:20px; display:block; }
+    .series-list { display:flex; flex-direction:column; gap:4px; }
+    .series-btn {
+      display:flex; align-items:center; gap:12px; padding:10px 14px;
+      border:1px solid transparent; background:transparent;
+      color:rgba(255,255,255,0.45); cursor:pointer; text-align:left;
+      font-size:12px; transition:all 0.2s; border-radius:2px;
+    }
+    .series-btn:hover { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7); }
+    .series-btn.active { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--cream); }
+    .sb-num { font-size:8px; letter-spacing:3px; opacity:0.35; width:24px; flex-shrink:0; }
+    .sb-name { flex:1; }
+    .sb-count { font-size:9px; opacity:0.3; }
+    .sb-count.has { color:var(--green); opacity:1; }
+    .sb-divider { height:1px; background:rgba(255,255,255,0.06); margin:16px 0; }
+    .sb-all { display:flex; align-items:center; gap:12px; padding:10px 14px; color:rgba(255,255,255,0.3); font-size:11px; letter-spacing:3px; text-transform:uppercase; cursor:pointer; }
+    .sb-all:hover { color:rgba(255,255,255,0.6); }
+
+    /* CONTENT */
+    .content { padding:32px 40px; }
+    .content-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; }
+    .ch-title { font-size:22px; font-weight:300; color:var(--cream); margin-bottom:4px; }
+    .ch-sub { font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.3; }
+    .ch-actions { display:flex; gap:12px; }
+    .btn { padding:8px 20px; font-size:9px; letter-spacing:4px; text-transform:uppercase; border:1px solid rgba(255,255,255,0.15); background:transparent; color:rgba(255,255,255,0.5); cursor:pointer; transition:all 0.2s; }
+    .btn:hover { background:rgba(255,255,255,0.06); color:var(--cream); border-color:rgba(255,255,255,0.3); }
+    .btn.primary { background:var(--sage); border-color:var(--sage); color:var(--cream); }
+    .btn.primary:hover { background:#4a4e44; }
+
+    /* DROP ZONE */
+    .drop-zone {
+      border:1px dashed rgba(255,255,255,0.12); border-radius:2px;
+      padding:48px; text-align:center; cursor:pointer; margin-bottom:28px;
+      transition:all 0.3s; position:relative;
+    }
+    .drop-zone.drag-over { border-color:var(--gold); background:rgba(201,162,39,0.04); }
+    .drop-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+    .dz-icon { font-size:36px; opacity:0.2; margin-bottom:12px; }
+    .dz-title { font-size:14px; opacity:0.5; margin-bottom:6px; }
+    .dz-sub { font-size:11px; letter-spacing:3px; text-transform:uppercase; opacity:0.25; }
+
+    /* UPLOAD QUEUE */
+    .queue-title { font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.3; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+    .queue-list { display:flex; flex-direction:column; gap:8px; margin-bottom:28px; }
+    .queue-item { display:grid; grid-template-columns:56px 1fr auto; gap:16px; align-items:center; padding:12px 16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
+    .qi-thumb { width:56px; height:40px; object-fit:cover; background:#2a2e28; display:block; }
+    .qi-info { overflow:hidden; }
+    .qi-name { font-size:12px; opacity:0.7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .qi-meta { font-size:10px; letter-spacing:2px; opacity:0.3; }
+    .qi-status { font-size:10px; letter-spacing:3px; text-transform:uppercase; }
+    .qi-status.pending { opacity:0.3; }
+    .qi-status.uploading { color:var(--gold); }
+    .qi-status.done { color:var(--green); }
+    .qi-status.error { color:var(--red); }
+
+    /* PROGRESS */
+    .progress-bar-wrap { height:2px; background:rgba(255,255,255,0.06); margin-bottom:4px; border-radius:1px; overflow:hidden; }
+    .progress-bar { height:100%; background:var(--gold); width:0%; transition:width 0.3s; border-radius:1px; }
+
+    /* UPLOADED GALLERY */
+    .uploaded-section { margin-top:32px; }
+    .uploaded-title { font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.3; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+    .uploaded-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:8px; }
+    .up-cell { position:relative; aspect-ratio:3/2; background:#2a2e28; overflow:hidden; cursor:pointer; group:true; }
+    .up-cell img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity 0.3s; }
+    .up-cell:hover img { opacity:0.6; }
+    .up-actions { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:8px; opacity:0; transition:opacity 0.3s; }
+    .up-cell:hover .up-actions { opacity:1; }
+    .up-action-btn { padding:4px 10px; font-size:9px; letter-spacing:3px; text-transform:uppercase; border:1px solid rgba(255,255,255,0.4); background:rgba(0,0,0,0.7); color:rgba(255,255,255,0.8); cursor:pointer; }
+    .up-action-btn:hover { background:rgba(0,0,0,0.9); color:#fff; }
+    .up-label { position:absolute; bottom:0; left:0; right:0; padding:6px 8px; background:linear-gradient(to top,rgba(0,0,0,0.8) 0%,transparent 100%); font-size:9px; opacity:0.6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* CONFIG OUTPUT */
+    .config-section { margin-top:32px; }
+    .config-box { background:#0d0e0b; border:1px solid rgba(255,255,255,0.06); padding:24px; border-radius:2px; position:relative; overflow:hidden; max-height:320px; overflow-y:auto; }
+    .config-box pre { font-family:'Menlo',monospace; font-size:11px; line-height:1.7; color:rgba(255,255,255,0.6); white-space:pre-wrap; }
+    .copy-btn { position:sticky; top:0; float:right; padding:4px 12px; font-size:9px; letter-spacing:3px; text-transform:uppercase; border:1px solid rgba(255,255,255,0.15); background:rgba(13,14,11,0.95); color:rgba(255,255,255,0.4); cursor:pointer; }
+    .copy-btn:hover { color:var(--cream); border-color:rgba(255,255,255,0.4); }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:28px; right:28px; padding:12px 24px; background:var(--sage); font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--cream); opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:100; }
+    .toast.show { opacity:1; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align:center; padding:60px 0; opacity:0.3; }
+    .empty-state p { font-size:11px; letter-spacing:3px; text-transform:uppercase; }
+
+    /* SERIES TAG on upload items */
+    .qi-series-tag { font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); opacity:0.7; background:rgba(201,162,39,0.1); padding:2px 8px; border:1px solid rgba(201,162,39,0.2); display:inline-block; margin-top:3px; }
+
+    /* Select series dropdown for queue item */
+    select.qi-series-select { background:#1a1c18; border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); padding:3px 8px; font-size:10px; letter-spacing:2px; cursor:pointer; }
+    select.qi-series-select:focus { outline:none; border-color:rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">The Infinite Arch &nbsp;&middot;&nbsp; <strong>Upload Tool</strong></div>
+  <div class="cloud-info">Cloud: <span>duxiir9lv</span> &nbsp;&middot;&nbsp; Folder: <span>tia/</span></div>
+</header>
+
+<div class="main">
+
+  <!-- SIDEBAR: series list -->
+  <aside class="sidebar">
+    <span class="sb-title">Series</span>
+    <div class="series-list" id="seriesList">
+      <!-- populated by JS -->
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-all" onclick="selectSeries('all')">&#9632; &nbsp;View All Uploaded</div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+    <div class="content-header">
+      <div>
+        <h1 class="ch-title" id="contentTitle">Select a series to upload</h1>
+        <p class="ch-sub" id="contentSub">Choose a series from the left panel first</p>
+      </div>
+      <div class="ch-actions">
+        <button class="btn" onclick="generateConfig()">Generate Config</button>
+        <button class="btn primary" onclick="uploadAll()">Upload All</button>
+      </div>
+    </div>
+
+    <!-- DROP ZONE -->
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
+      <div class="dz-icon">&#x1F4F7;</div>
+      <p class="dz-title">Drop photos here or click to browse</p>
+      <p class="dz-sub">JPG · TIFF · PNG &nbsp;&middot;&nbsp; Any size</p>
+    </div>
+
+    <!-- QUEUE -->
+    <div id="queueSection" style="display:none">
+      <div class="queue-title">
+        <span>Upload Queue</span>
+        <button class="btn" onclick="clearQueue()" style="padding:4px 12px;font-size:9px">Clear</button>
+      </div>
+      <div class="queue-list" id="queueList"></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
+    <!-- UPLOADED PHOTOS -->
+    <div class="uploaded-section" id="uploadedSection" style="display:none">
+      <div class="uploaded-title">
+        <span id="uploadedLabel">Uploaded Photos</span>
+        <button class="btn" onclick="generateConfig()" style="padding:4px 12px;font-size:9px">&#x2194; Generate Config File</button>
+      </div>
+      <div class="uploaded-grid" id="uploadedGrid"></div>
+    </div>
+
+    <!-- CONFIG OUTPUT -->
+    <div class="config-section" id="configSection" style="display:none">
+      <div class="uploaded-title"><span>cloudinary.config.js</span><span style="font-size:10px;opacity:0.3;letter-spacing:2px">Copy this into /assets/js/ in your site</span></div>
+      <div class="config-box">
+        <button class="copy-btn" onclick="copyConfig()">Copy</button>
+        <pre id="configOutput"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIGURATION ──────────────────────────────────────────────
+const CLOUD_NAME = 'duxiir9lv';
+const UPLOAD_PRESET = 'tia_unsigned'; // Create this in Cloudinary dashboard (unsigned preset)
+const BASE_FOLDER = 'tia';
+
+// ── SERIES DEFINITIONS ────────────────────────────────────────
+const SERIES = [
+  { id:'s1', num:'01', title:'Solitude & Scale',        folder:'s1-solitude-scale',       photos:[] },
+  { id:'s2', num:'02', title:'Glacial Contrasts',        folder:'s2-glacial-contrasts',    photos:[] },
+  { id:'s3', num:'03', title:'Blue Trilogy',             folder:'s3-blue-trilogy',         photos:[] },
+  { id:'s4', num:'04', title:'Coastal Contrasts',        folder:'s4-coastal-contrasts',    photos:[] },
+  { id:'s5', num:'05', title:'The Human Element',        folder:'s5-human-element',        photos:[] },
+  { id:'s6', num:'06', title:'Arnarstapi Geometry',      folder:'s6-arnarstapi-geometry',  photos:[] },
+  { id:'s7', num:'07', title:'Peninsular Panorama',      folder:'s7-peninsular-panorama',  photos:[] },
+  { id:'s8', num:'08', title:'Urban Odyssey',            folder:'s8-urban-odyssey',        photos:[] },
+];
+
+// In-memory store: { seriesId: [{publicId, url, secureUrl, filename, width, height}] }
+const uploadedPhotos = {};
+SERIES.forEach(s => uploadedPhotos[s.id] = []);
+
+let activeSeries = null;
+let queue = []; // [{file, seriesId, status:'pending'|'uploading'|'done'|'error', url}]
+
+// ── INIT ──────────────────────────────────────────────────────
+function init() {
+  renderSidebar();
+  // Load previously saved uploads from localStorage
+  const saved = localStorage.getItem('tia_uploads');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    Object.keys(parsed).forEach(sid => {
+      uploadedPhotos[sid] = parsed[sid] || [];
+    });
+    renderSidebar();
+  }
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────
+function renderSidebar() {
+  const el = document.getElementById('seriesList');
+  el.innerHTML = SERIES.map(s => {
+    const count = uploadedPhotos[s.id]?.length || 0;
+    return `
+      <button class="series-btn ${activeSeries === s.id ? 'active' : ''}" onclick="selectSeries('${s.id}')">
+        <span class="sb-num">${s.num}</span>
+        <span class="sb-name">${s.title}</span>
+        <span class="sb-count ${count > 0 ? 'has' : ''}">${count > 0 ? count : ''}</span>
+      </button>`;
+  }).join('');
+}
+
+function selectSeries(id) {
+  activeSeries = id;
+  renderSidebar();
+  if (id === 'all') {
+    document.getElementById('contentTitle').textContent = 'All Uploaded Photos';
+    document.getElementById('contentSub').textContent = 'All series combined';
+    showAllUploaded();
+  } else {
+    const s = SERIES.find(x => x.id === id);
+    document.getElementById('contentTitle').textContent = `S${s.num} — ${s.title}`;
+    document.getElementById('contentSub').textContent = `Folder: ${BASE_FOLDER}/${s.folder}/`;
+    showSeriesUploaded(id);
+  }
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────────
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+  if (!activeSeries || activeSeries === 'all') {
+    showToast('Select a series first');
+    return;
+  }
+  const newItems = Array.from(files).map(f => ({ file:f, seriesId:activeSeries, status:'pending', url:null, previewUrl: URL.createObjectURL(f) }));
+  queue.push(...newItems);
+  renderQueue();
+}
+
+// ── QUEUE ─────────────────────────────────────────────────────
+function renderQueue() {
+  const section = document.getElementById('queueSection');
+  const list = document.getElementById('queueList');
+  if (queue.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  list.innerHTML = queue.map((item, i) => {
+    const s = SERIES.find(x => x.id === item.seriesId);
+    const size = item.file.size > 1024*1024 ? (item.file.size/(1024*1024)).toFixed(1)+'MB' : Math.round(item.file.size/1024)+'KB';
+    return `
+      <div class="queue-item" id="qi-${i}">
+        <img class="qi-thumb" src="${item.previewUrl}" alt="">
+        <div class="qi-info">
+          <div class="qi-name">${item.file.name}</div>
+          <div class="qi-meta">${size}</div>
+          <span class="qi-series-tag">${s ? s.num + ' · ' + s.title : ''}</span>
+        </div>
+        <span class="qi-status ${item.status}" id="qis-${i}">${item.status}</span>
+      </div>`;
+  }).join('');
+}
+
+function clearQueue() {
+  queue = queue.filter(i => i.status !== 'pending');
+  renderQueue();
+}
+
+// ── UPLOAD ────────────────────────────────────────────────────
+async function uploadAll() {
+  const pending = queue.filter(i => i.status === 'pending');
+  if (pending.length === 0) { showToast('Nothing to upload'); return; }
+
+  for (let i = 0; i < queue.length; i++) {
+    const item = queue[i];
+    if (item.status !== 'pending') continue;
+    item.status = 'uploading';
+    updateQueueStatus(i, 'uploading');
+
+    try {
+      const result = await uploadToCloudinary(item);
+      item.status = 'done';
+      item.url = result.secure_url;
+
+      // Save to memory + localStorage
+      const s = SERIES.find(x => x.id === item.seriesId);
+      uploadedPhotos[item.seriesId].push({
+        publicId: result.public_id,
+        url: result.secure_url,
+        filename: item.file.name.replace(/\.[^/.]+$/,''),
+        width: result.width,
+        height: result.height,
+        seriesId: item.seriesId,
+        seriesTitle: s?.title || ''
+      });
+      saveUploads();
+      renderSidebar();
+      updateQueueStatus(i, 'done');
+
+      // Update progress
+      const done = queue.filter(x => x.status === 'done').length;
+      document.getElementById('progressBar').style.width = (done/queue.length*100) + '%';
+
+    } catch(err) {
+      item.status = 'error';
+      updateQueueStatus(i, 'error');
+      console.error('Upload failed:', err);
+    }
+  }
+
+  showToast('Upload complete!');
+  if (activeSeries) showSeriesUploaded(activeSeries);
+}
+
+function updateQueueStatus(i, status) {
+  const el = document.getElementById(`qis-${i}`);
+  if (el) { el.className = `qi-status ${status}`; el.textContent = status; }
+}
+
+async function uploadToCloudinary(item) {
+  const s = SERIES.find(x => x.id === item.seriesId);
+  const folder = `${BASE_FOLDER}/${s.folder}`;
+  const formData = new FormData();
+  formData.append('file', item.file);
+  formData.append('upload_preset', UPLOAD_PRESET);
+  formData.append('folder', folder);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method:'POST', body:formData
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── DISPLAY UPLOADED ─────────────────────────────────────────
+function showSeriesUploaded(sid) {
+  const photos = uploadedPhotos[sid] || [];
+  const section = document.getElementById('uploadedSection');
+  const grid = document.getElementById('uploadedGrid');
+  document.getElementById('uploadedLabel').textContent = `Uploaded — ${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
+
+  if (photos.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>No photos uploaded yet</p></div>';
+  } else {
+    grid.innerHTML = photos.map((p, i) => `
+      <div class="up-cell">
+        <img src="${transformUrl(p.url, 'w_320,q_auto,f_auto')}" loading="lazy" alt="${p.filename}">
+        <div class="up-actions">
+          <button class="up-action-btn" onclick="copyUrl('${p.url}')">Copy URL</button>
+          <button class="up-action-btn" onclick="removePhoto('${sid}',${i})">Remove</button>
+        </div>
+        <div class="up-label">${p.filename}</div>
+      </div>`).join('');
+  }
+
+  section.style.display = 'block';
+}
+
+function showAllUploaded() {
+  const all = SERIES.flatMap(s => (uploadedPhotos[s.id]||[]).map(p => ({...p, seriesId:s.id})));
+  const section = document.getElementById('uploadedSection');
+  const grid = document.getElementById('uploadedGrid');
+  document.getElementById('uploadedLabel').textContent = `All Uploaded — ${all.length} photos`;
+  if (all.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>No photos uploaded yet</p></div>';
+  } else {
+    grid.innerHTML = all.map((p, i) => `
+      <div class="up-cell">
+        <img src="${transformUrl(p.url, 'w_320,q_auto,f_auto')}" loading="lazy" alt="${p.filename}">
+        <div class="up-actions"><button class="up-action-btn" onclick="copyUrl('${p.url}')">Copy URL</button></div>
+        <div class="up-label">${p.filename}</div>
+      </div>`).join('');
+  }
+  section.style.display = 'block';
+}
+
+// ── CLOUDINARY URL TRANSFORMER ────────────────────────────────
+function transformUrl(url, transforms) {
+  // Insert transforms into the URL path
+  return url.replace('/upload/', `/upload/${transforms}/`);
+}
+
+// ── CONFIG GENERATOR ─────────────────────────────────────────
+function generateConfig() {
+  const lines = ['// ═══════════════════════════════════════════════════════════',
+    '// THE INFINITE ARCH — Cloudinary Photo Configuration',
+    `// Cloud: ${CLOUD_NAME}  |  Auto-generated ${new Date().toLocaleDateString()}`,
+    '// ═══════════════════════════════════════════════════════════',
+    '',
+    `const CLOUDINARY_CLOUD = '${CLOUD_NAME}';`,
+    '',
+    '// Helper: transform URL with Cloudinary params',
+    'function cldUrl(publicIdOrUrl, transforms = "q_auto,f_auto") {',
+    `  if (!publicIdOrUrl) return '';`,
+    `  if (publicIdOrUrl.startsWith('http')) {`,
+    `    return publicIdOrUrl.replace('/upload/', \`/upload/\${transforms}/\`);`,
+    `  }`,
+    `  return \`https://res.cloudinary.com/${CLOUD_NAME}/image/upload/\${transforms}/\${publicIdOrUrl}\`;`,
+    '}',
+    '',
+    '// Photo URLs organized by series',
+    '// Usage in gallery.html: set photo.url = PHOTO_URLS.s1[0] etc.',
+    'const PHOTO_URLS = {',
+  ];
+
+  SERIES.forEach(s => {
+    const photos = uploadedPhotos[s.id] || [];
+    lines.push(`  // Series ${s.num}: ${s.title}`);
+    lines.push(`  ${s.id}: [`);
+    if (photos.length === 0) {
+      lines.push(`    // No photos uploaded yet — paste URLs here`);
+      lines.push(`    // '', '', '',`);
+    } else {
+      photos.forEach((p, i) => {
+        lines.push(`    '${p.url}', // ${p.filename}`);
+      });
+    }
+    lines.push(`  ],`);
+  });
+
+  lines.push('};');
+  lines.push('');
+  lines.push('// Cover images (first photo of each series by default)');
+  lines.push('const COVER_URLS = {');
+  SERIES.forEach(s => {
+    const first = uploadedPhotos[s.id]?.[0];
+    lines.push(`  ${s.id}: '${first ? first.url : ''}', // ${s.title}`);
+  });
+  lines.push('};');
+  lines.push('');
+  lines.push('// Export for use in gallery.html and portfolio.html');
+  lines.push('if (typeof module !== "undefined") module.exports = { PHOTO_URLS, COVER_URLS, cldUrl };');
+
+  const output = lines.join('\n');
+  document.getElementById('configOutput').textContent = output;
+  document.getElementById('configSection').style.display = 'block';
+  document.getElementById('configSection').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────
+function copyUrl(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('URL copied'));
+}
+
+function copyConfig() {
+  const text = document.getElementById('configOutput').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Config copied!'));
+}
+
+function removePhoto(sid, i) {
+  uploadedPhotos[sid].splice(i, 1);
+  saveUploads();
+  renderSidebar();
+  showSeriesUploaded(sid);
+}
+
+function saveUploads() {
+  localStorage.setItem('tia_uploads', JSON.stringify(uploadedPhotos));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── START ─────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "the-infinite-arch",
+  "version": "1.0.0",
+  "description": "The Infinite Arch — Fine Art Photography",
+  "private": true,
+  "scripts": {
+    "start": "npx serve . -p 3000"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
