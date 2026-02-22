@@ -613,5 +613,30 @@ document.addEventListener('keydown', e => {
 // Init
 renderCards();
 </script>
+
+<script src="../assets/js/cloudinary.config.js"></script>
+<script>
+// Auto-apply Cloudinary URLs from config into COLLECTIONS after page loads
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof PHOTO_URLS === 'undefined') return;
+
+  COLLECTIONS.forEach(coll => {
+    const urls = PHOTO_URLS[coll.id] || [];
+    const coverUrl = COVER_URLS?.[coll.id] || urls[0] || '';
+
+    // Apply cover
+    if (coverUrl) coll.coverUrl = coverUrl;
+
+    // Apply per-photo URLs
+    coll.photos.forEach((p, i) => {
+      if (urls[i]) p.url = urls[i];
+    });
+  });
+
+  // Re-render cards with real images
+  renderCards();
+});
+</script>
+
 </body>
 </html>
