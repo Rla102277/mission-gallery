@@ -144,10 +144,9 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
   <div class="auth-box">
     <span class="auth-logo">The Infinite Arch &middot; Admin</span>
     <h1 class="auth-h">Photo Manager</h1>
-    <div class="auth-field"><label>Username</label><input type="text" id="authUser" autocomplete="username" autofocus onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="auth-field"><label>Password</label><input type="password" id="authPass" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="auth-btn" onclick="doLogin()">Sign In</button>
-    <div class="auth-err" id="authErr">Incorrect credentials</div>
+    <div class="auth-field"><label>Access Code</label><input type="password" id="authPass" autocomplete="off" autofocus onkeydown="if(event.key==='Enter')doLogin()" placeholder="Enter access code"></div>
+    <button class="auth-btn" onclick="doLogin()">Enter</button>
+    <div class="auth-err" id="authErr">Incorrect code</div>
   </div>
 </div>
 
@@ -367,15 +366,13 @@ const TIA = {
 
 
 // AUTH
-// AUTH — credentials checked character by character to avoid any escaping issues
-const _U = ["r","l","a","1","0","2","2"].join("");
-const _P = ["!","1","!","6","8","0","3","0","0","R","a","!","1","!"].join("");
+// AUTH
 let authed = sessionStorage.getItem("tia_auth") === "1";
 
 function doLogin() {
-  const u = document.getElementById("authUser").value;
   const p = document.getElementById("authPass").value;
-  if (u === _U && p === _P) {
+  // PIN: tia2026
+  if (p === "tia2026") {
     sessionStorage.setItem("tia_auth","1");
     authed = true;
     document.getElementById("authScreen").style.display = "none";
@@ -384,6 +381,7 @@ function doLogin() {
   } else {
     document.getElementById("authErr").classList.add("show");
     document.getElementById("authPass").value = "";
+    document.getElementById("authPass").focus();
   }
 }
 
