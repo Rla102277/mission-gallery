@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TIA Admin</title>
-  <script src="../assets/js/tia-data.js"></script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
@@ -306,7 +305,7 @@
 <!-- ─── APP ──────────────────────────────────────── -->
 <div id="app">
   <div class="topbar">
-    <span class="tb-brand">TIA · <strong>Admin</strong></span><span id="syncStatus" style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-left:16px">—</span>
+    <span class="tb-brand">TIA · <strong>Admin</strong></span>
     <div class="tb-nav">
       <button class="tb-tab active" data-tab="galleries" onclick="switchTab('galleries')">Galleries</button>
       <button class="tb-tab" data-tab="upload" onclick="switchTab('upload')">Upload</button>
@@ -472,32 +471,16 @@ let pickerSlotId  = null;
 let pickerSlotCtx = null; // 'home' | 'portfolio' | 'cover'
 let pickerActive  = null; // selected publicId in picker
 
-async function loadState() {
-  STATE = await TIA.load();
+function loadState() {
+  try { STATE = JSON.parse(localStorage.getItem('tia_admin') || '{}'); } catch {}
   STATE.series    = STATE.series    || {};
   STATE.home      = STATE.home      || {};
   STATE.portfolio = STATE.portfolio || {};
-  STATE.photos    = STATE.photos    || {};
-  STATE.lightroom = STATE.lightroom || {};
 }
 
-async function saveAll() {
-  setSaving(true);
-  try {
-    await TIA.save(STATE);
-    toast('Saved & synced to site ✓');
-  } catch(err) {
-    // localStorage already written by TIA.save, Cloudinary push failed
-    toast('Saved locally — cloud sync failed: ' + err.message, true);
-    console.error(err);
-  }
-  setSaving(false);
-}
-
-function setSaving(on) {
-  const btn = document.querySelector('.tb-save-all');
-  if (btn) btn.textContent = on ? 'Saving…' : 'Save All';
-  if (btn) btn.disabled = on;
+function saveAll() {
+  localStorage.setItem('tia_admin', JSON.stringify(STATE));
+  toast('Saved ✓');
 }
 
 function getSeries() {
@@ -562,8 +545,7 @@ function persistPhoto(seriesId, publicId) {
   if (!STATE.photos[seriesId].includes(publicId)) {
     STATE.photos[seriesId].push(publicId);
   }
-  // Fire-and-forget push to Cloudinary — don't block upload loop
-  TIA.save(STATE).catch(err => console.warn('Config sync failed:', err));
+  saveAll();
 }
 
 function loadPhotosFromState() {
@@ -580,13 +562,9 @@ function loadPhotosFromState() {
 // ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
-async function init() {
-  setSaving(true);
-  document.getElementById('syncStatus').textContent = 'Loading…';
-  await loadState();
-  setSaving(false);
-  document.getElementById('syncStatus').textContent = TIA._state ? '✓ Synced' : 'Offline';
-  loadPhotosFromState();
+function init() {
+  loadState();
+  loadPhotosFromState();  // load from localStorage first — instant, no API call
   renderSidebar();
 }
 
@@ -1549,13 +1527,6 @@ document.addEventListener('keydown', e => {
 // BOOT
 // ════════════════════════════════════════════════════════════
 if (sessionStorage.getItem('tia_auth') === '1') init();
-
-// Also init when app is shown after login
-const _origShowApp = showApp;
-showApp = async function(user) {
-  _origShowApp(user);
-  await init();
-};
 </script>
 </body>
 </html>

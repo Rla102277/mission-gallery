@@ -462,7 +462,10 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Boot ───────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', renderCards);
+document.addEventListener('DOMContentLoaded', async () => {
+  await TIA.load();   // fetch config from Cloudinary
+  renderCards();
+});
 </script>
 </body>
 </html>
