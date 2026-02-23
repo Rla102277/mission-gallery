@@ -1,60 +1,59 @@
-# Netlify configuration for The Infinite Arch
-# theinfinitearch.com
+# The Infinite Arch — Netlify Config
+# Static HTML site — no build step
 
 [build]
   publish = "."
+  # No build command — pure static HTML
 
-# Clean URLs — /about instead of /pages/about.html
+# ── CLEAN URLS ──────────────────────────────────────
 [[redirects]]
   from = "/about"
-  to = "/pages/about.html"
+  to   = "/pages/about.html"
   status = 200
 
 [[redirects]]
   from = "/portfolio"
-  to = "/pages/portfolio.html"
+  to   = "/pages/portfolio.html"
+  status = 200
+
+[[redirects]]
+  from = "/gallery"
+  to   = "/pages/gallery.html"
   status = 200
 
 [[redirects]]
   from = "/prints"
-  to = "/pages/prints.html"
+  to   = "/pages/prints.html"
   status = 200
 
 [[redirects]]
   from = "/hope-hike"
-  to = "/pages/hope-hike.html"
+  to   = "/pages/hope-hike.html"
   status = 200
 
 [[redirects]]
   from = "/contact"
-  to = "/pages/contact.html"
-  status = 200
-
-# Gallery routes
-[[redirects]]
-  from = "/gallery/iceland"
-  to = "/gallery/iceland.html"
+  to   = "/pages/contact.html"
   status = 200
 
 [[redirects]]
-  from = "/gallery/*"
-  to = "/gallery/:splat.html"
+  from = "/admin"
+  to   = "/admin/index.html"
   status = 200
 
-# 404
+# ── 404 FALLBACK ─────────────────────────────────────
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to   = "/index.html"
   status = 404
 
-# Security + performance headers
+# ── HEADERS ──────────────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
+    X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Cache-Control = "public, max-age=3600"
 
 [[headers]]
   for = "/assets/*"

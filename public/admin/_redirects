@@ -1,2 +1,0 @@
-# This file protects the admin folder via Netlify Identity
-# Netlify reads this alongside netlify.toml

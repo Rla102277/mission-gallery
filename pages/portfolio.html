@@ -317,7 +317,8 @@
 
 <script>
 // Auto-apply Cloudinary portfolio cover images from config
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await TIA.load();   // fetch config from Cloudinary
   if (typeof PORTFOLIO_COVERS === 'undefined') return;
 
   const mappings = [
