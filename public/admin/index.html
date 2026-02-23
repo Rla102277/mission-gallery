@@ -771,6 +771,16 @@ function clearPending() {
   renderQueueUI();
 }
 
+// Convert File to base64 data URI — avoids FormData cloning issues
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('FileReader failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadAll() {
   if (!uploadTarget) { toast('Select a series first', true); return; }
   const pending = queue.filter(i => i.status === 'pending');
@@ -781,6 +791,11 @@ async function uploadAll() {
   const btn = document.getElementById('uploadAllBtn');
   if (btn) btn.disabled = true;
 
+  // ── Pre-flight: test one small request to catch preset/cloud errors early
+  showUploadStatus('Connecting to Cloudinary…', 'info');
+
+  let firstError = null;
+
   for (let i = 0; i < queue.length; i++) {
     const item = queue[i];
     if (item.status !== 'pending') continue;
@@ -789,33 +804,119 @@ async function uploadAll() {
     if (el) { el.className='q-status uploading'; el.textContent='uploading'; }
 
     try {
+      // Use base64 data URI instead of raw File object in FormData
+      // — avoids "FormData could not be cloned" postMessage error
+      const dataUri = await fileToBase64(item.file);
       const fd = new FormData();
-      fd.append('file', item.file);
+      fd.append('file', dataUri);
       fd.append('upload_preset', PRESET);
       fd.append('folder', folder);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, { method:'POST', body:fd });
-      if (!res.ok) throw new Error(await res.text());
+      fd.append('public_id', item.file.name.replace(/\.[^/.]+$/, ''));
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,
+        { method:'POST', body:fd }
+      );
+
+      if (!res.ok) {
+        const body = await res.text();
+        let msg = `HTTP ${res.status}`;
+        try {
+          const json = JSON.parse(body);
+          msg = json.error?.message || msg;
+        } catch {}
+        throw new Error(msg);
+      }
+
       item.status = 'done';
       if (el) { el.className='q-status done'; el.textContent='done'; }
+
     } catch(err) {
       item.status = 'error';
-      if (el) { el.className='q-status error'; el.textContent='error'; }
-      console.error(err);
+      const errMsg = err.message || String(err);
+      if (el) {
+        el.className='q-status error';
+        el.textContent='error';
+        el.title = errMsg; // hover to see detail
+      }
+      console.error('Upload error:', errMsg);
+      if (!firstError) firstError = errMsg;
     }
 
-    const done = queue.filter(x => x.status!=='pending').length;
+    const done = queue.filter(x => x.status !== 'pending').length;
     const pbar = document.getElementById('pbar');
-    if (pbar) pbar.style.width = (done/queue.length*100)+'%';
+    if (pbar) pbar.style.width = (done / queue.length * 100) + '%';
     const cnt = document.getElementById('qCount');
-    if (cnt) cnt.textContent = queue.filter(i => i.status==='pending').length;
+    if (cnt) cnt.textContent = queue.filter(i => i.status === 'pending').length;
   }
 
-  // Invalidate cache and refresh
-  delete PHOTOS[uploadTarget];
-  await ensurePhotos(uploadTarget, s.folder);
-  renderSidebar();
   if (btn) btn.disabled = false;
-  toast('Upload complete ✓');
+  hideUploadStatus();
+
+  const errors = queue.filter(i => i.status === 'error').length;
+  const doneCount = queue.filter(i => i.status === 'done').length;
+
+  if (errors > 0 && doneCount === 0) {
+    // All failed — show diagnostic
+    showUploadError(firstError);
+  } else if (errors > 0) {
+    toast(`${doneCount} uploaded, ${errors} failed — hover red items for details`, true);
+  } else {
+    toast('Upload complete ✓');
+    // Refresh photos
+    delete PHOTOS[uploadTarget];
+    await ensurePhotos(uploadTarget, s.folder);
+    renderSidebar();
+  }
+}
+
+function showUploadStatus(msg, type) {
+  let el = document.getElementById('uploadStatusMsg');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'uploadStatusMsg';
+    el.style.cssText = 'padding:10px 14px;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;border-radius:1px;';
+    const wrap = document.getElementById('queueWrap');
+    if (wrap) wrap.insertBefore(el, wrap.firstChild);
+  }
+  el.style.background = type === 'error' ? 'rgba(160,80,80,0.15)' : 'rgba(201,162,39,0.1)';
+  el.style.color = type === 'error' ? 'var(--red)' : 'var(--gold)';
+  el.style.border = `1px solid ${type === 'error' ? 'rgba(160,80,80,0.3)' : 'rgba(201,162,39,0.3)'}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideUploadStatus() {
+  const el = document.getElementById('uploadStatusMsg');
+  if (el) el.style.display = 'none';
+}
+
+function showUploadError(errMsg) {
+  let diagnosis = errMsg;
+
+  // Translate common Cloudinary error messages into plain English
+  if (errMsg?.includes('preset') || errMsg?.includes('upload_preset')) {
+    diagnosis = `Upload preset "${PRESET}" not found or not set to Unsigned.\n\nFix: Go to cloudinary.com/console → Settings → Upload → Upload Presets → create preset named "${PRESET}" with Mode = Unsigned.`;
+  } else if (errMsg?.includes('401') || errMsg?.includes('unauthorized')) {
+    diagnosis = `Cloud name "${CLOUD}" may be incorrect, or the preset requires authentication.\n\nFix: Check your Cloudinary cloud name at cloudinary.com/console.`;
+  } else if (errMsg?.includes('Failed to fetch') || errMsg?.includes('NetworkError')) {
+    diagnosis = `Network error — cannot reach Cloudinary.\n\nFix: Check your internet connection, or try opening admin on a real server (not file://).`;
+  } else if (errMsg?.includes('format') || errMsg?.includes('invalid')) {
+    diagnosis = `File format issue: ${errMsg}\n\nTry a standard JPG first to test.`;
+  }
+
+  showUploadStatus('Upload failed — see details below', 'error');
+
+  const wrap = document.getElementById('queueWrap');
+  let diagEl = document.getElementById('uploadDiag');
+  if (!diagEl) {
+    diagEl = document.createElement('div');
+    diagEl.id = 'uploadDiag';
+    diagEl.style.cssText = 'background:rgba(160,80,80,0.08);border:1px solid rgba(160,80,80,0.2);padding:16px;margin-bottom:16px;font-size:12px;line-height:1.7;white-space:pre-wrap;color:rgba(237,233,226,0.6);';
+    if (wrap) wrap.insertBefore(diagEl, wrap.children[1] || null);
+  }
+  diagEl.textContent = diagnosis;
+  diagEl.style.display = 'block';
 }
 
 // ════════════════════════════════════════════════════════════
