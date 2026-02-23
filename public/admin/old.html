@@ -311,7 +311,6 @@
       <button class="tb-tab" data-tab="upload" onclick="switchTab('upload')">Upload</button>
       <button class="tb-tab" data-tab="homepage" onclick="switchTab('homepage')">Homepage</button>
       <button class="tb-tab" data-tab="portfolio" onclick="switchTab('portfolio')">Portfolio</button>
-      <button class="tb-tab" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
       <button class="tb-tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
@@ -497,28 +496,16 @@ async function fetchFolder(folder) {
   try {
     const url = `https://res.cloudinary.com/${CLOUD}/image/list/${FOLDER}/${folder}.json`;
     const res = await fetch(url + '?t=' + Date.now());
-    if (!res.ok) {
-      console.warn(`fetchFolder ${folder}: HTTP ${res.status} — Resource list may be disabled in Cloudinary settings`);
-      return [];
-    }
+    if (!res.ok) return [];
     const data = await res.json();
-    const resources = data.resources || [];
-    console.log(`fetchFolder ${folder}: found ${resources.length} photos`);
-    return resources.map(r => makePhotoObj(r.public_id));
-  } catch(err) {
-    console.warn(`fetchFolder ${folder} error:`, err);
-    return [];
-  }
-}
-
-function makePhotoObj(publicId) {
-  return {
-    publicId,
-    url:      `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto/${publicId}`,
-    thumb:    `https://res.cloudinary.com/${CLOUD}/image/upload/w_280,q_auto,f_auto/${publicId}`,
-    large:    `https://res.cloudinary.com/${CLOUD}/image/upload/w_1600,q_auto,f_auto/${publicId}`,
-    filename: publicId.split('/').pop(),
-  };
+    return (data.resources || []).map(r => ({
+      publicId: r.public_id,
+      url:   `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto/${r.public_id}`,
+      thumb: `https://res.cloudinary.com/${CLOUD}/image/upload/w_280,q_auto,f_auto/${r.public_id}`,
+      large: `https://res.cloudinary.com/${CLOUD}/image/upload/w_1600,q_auto,f_auto/${r.public_id}`,
+      filename: r.public_id.split('/').pop(),
+    }));
+  } catch { return []; }
 }
 
 async function ensurePhotos(folderId, folderPath) {
@@ -536,36 +523,17 @@ function allPhotos() {
 }
 
 // ════════════════════════════════════════════════════════════
-// PHOTO PERSISTENCE — write/read from tia_admin localStorage
-// This is what gallery.html reads — the single source of truth
-// ════════════════════════════════════════════════════════════
-function persistPhoto(seriesId, publicId) {
-  if (!STATE.photos) STATE.photos = {};
-  if (!STATE.photos[seriesId]) STATE.photos[seriesId] = [];
-  if (!STATE.photos[seriesId].includes(publicId)) {
-    STATE.photos[seriesId].push(publicId);
-  }
-  saveAll();
-}
-
-function loadPhotosFromState() {
-  // Build PHOTOS cache from what's stored in localStorage
-  // so admin shows what was previously uploaded without needing Cloudinary list API
-  if (!STATE.photos) return;
-  Object.entries(STATE.photos).forEach(([sid, pids]) => {
-    if (!PHOTOS[sid]) {
-      PHOTOS[sid] = pids.map(pid => makePhotoObj(pid));
-    }
-  });
-}
-
-// ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 function init() {
   loadState();
-  loadPhotosFromState();  // load from localStorage first — instant, no API call
   renderSidebar();
+  if (sessionStorage.getItem('tia_auth') === '1') {
+    // preload all series photos in background
+    getSeries().forEach(s => ensurePhotos(s.id, s.folder));
+    // also load home/covers folder
+    ensurePhotos('covers', 'covers');
+  }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -594,11 +562,10 @@ function switchTab(tab) {
   const sidebar = document.getElementById('sidebar');
   sidebar.style.display = ['galleries','upload','settings'].includes(tab) ? '' : 'none';
 
-  if (tab === 'homepage')    showHomeSlots();
-  else if (tab === 'portfolio')  showPortfolioSlots();
-  else if (tab === 'settings')   showSettingsPanel();
-  else if (tab === 'upload')     showUploadPanel();
-  else if (tab === 'lightroom')  showLightroomPanel();
+  if (tab === 'homepage')  showHomeSlots();
+  else if (tab === 'portfolio') showPortfolioSlots();
+  else if (tab === 'settings') showSettingsPanel();
+  else if (tab === 'upload') showUploadPanel();
   else { setPanel('','Photo Manager'); document.getElementById('panelBody').innerHTML = '<div class="empty"><p>Choose a collection from the left</p></div>'; }
 }
 
@@ -661,14 +628,7 @@ async function showSeriesView(sid) {
     </div>`;
 
   if (photos.length === 0) {
-    html += `
-      <div style="background:rgba(201,162,39,0.07);border:1px solid rgba(201,162,39,0.2);padding:16px 18px;margin-bottom:16px;font-size:12px;line-height:1.8;color:rgba(237,233,226,0.55);">
-        <strong style="color:var(--gold);font-size:9px;letter-spacing:4px;text-transform:uppercase;">No photos showing?</strong><br>
-        If you just uploaded, Cloudinary's folder listing may be disabled.<br>
-        Fix: <strong>cloudinary.com/console → Settings → Security → Resource list → Enable</strong><br>
-        Then refresh this page. Your photos are safely uploaded — they just can't be listed yet.
-      </div>
-      <div class="empty"><p>No photos found — upload some or enable Resource list in Cloudinary</p></div>`;
+    html += `<div class="empty"><p>No photos uploaded yet — click "+ Upload Photos"</p></div>`;
   } else {
     html += `<div class="sec-label"><span>${photos.length} photos in Cloudinary — click ★ to set cover</span></div>`;
     html += `<div class="photo-grid">`;
@@ -868,21 +828,8 @@ async function uploadAll() {
         throw new Error(msg);
       }
 
-      const result = await res.json();
       item.status = 'done';
-      item.publicId = result.public_id;
-      if (el) { el.className='q-status done'; el.textContent='done ✓'; }
-
-      // Store publicId in localStorage via TIA data layer
-      // This is what the gallery/portfolio/homepage reads
-      persistPhoto(uploadTarget, result.public_id);
-
-      // Also add to local PHOTOS cache for immediate display in admin
-      if (!PHOTOS[uploadTarget]) PHOTOS[uploadTarget] = [];
-      if (Array.isArray(PHOTOS[uploadTarget])) {
-        const already = PHOTOS[uploadTarget].find(p => p.publicId === result.public_id);
-        if (!already) PHOTOS[uploadTarget].push(makePhotoObj(result.public_id));
-      }
+      if (el) { el.className='q-status done'; el.textContent='done'; }
 
     } catch(err) {
       item.status = 'error';
@@ -916,16 +863,10 @@ async function uploadAll() {
     toast(`${doneCount} uploaded, ${errors} failed — hover red items for details`, true);
   } else {
     toast('Upload complete ✓');
-    // Try to refresh from Cloudinary, but photos already in cache from upload response
-    // so grid will show immediately regardless of whether list API works
-    const freshPhotos = await fetchFolder(s.folder);
-    if (freshPhotos.length > 0) {
-      PHOTOS[uploadTarget] = freshPhotos;
-    }
-    // Either way, render what we have
+    // Refresh photos
+    delete PHOTOS[uploadTarget];
+    await ensurePhotos(uploadTarget, s.folder);
     renderSidebar();
-    // Switch to the gallery view so user can see the uploaded photos
-    setView(uploadTarget);
   }
 }
 
@@ -1160,360 +1101,6 @@ function toast(msg, isErr=false) {
   clearTimeout(t._tid);
   t._tid = setTimeout(() => t.classList.remove('show'), 3000);
 }
-
-
-// ════════════════════════════════════════════════════════════
-// LIGHTROOM PANEL
-// Adobe Lightroom API — pull albums → push to Cloudinary
-// Requires: Adobe OAuth client_id (free developer account)
-// ════════════════════════════════════════════════════════════
-function showLightroomPanel() {
-  setPanel('Adobe Lightroom', 'Import Albums to Cloudinary', '');
-  const state = TIA.getState();
-  const lrState = state.lightroom || {};
-
-  document.getElementById('panelBody').innerHTML = `
-    <div style="max-width:640px">
-
-      <!-- Step 1: OAuth setup -->
-      <div style="background:var(--surface2);border:1px solid var(--border);padding:20px;margin-bottom:16px;">
-        <div class="sec-label" style="margin-bottom:12px"><span>Step 1 — Adobe OAuth Client ID</span></div>
-        <p style="font-size:12px;opacity:0.5;margin-bottom:14px;line-height:1.7;">
-          Get a free Client ID at
-          <a href="https://developer.adobe.com/console" target="_blank"
-             style="color:var(--gold);opacity:1">developer.adobe.com/console</a>
-          → Create project → Add API → Lightroom → OAuth Web App.
-          Set redirect URI to: <code style="font-size:10px;background:rgba(255,255,255,0.05);padding:2px 6px">${location.origin}/admin/</code>
-        </p>
-        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
-          <div>
-            <div class="sec-label" style="margin-bottom:6px"><span>Client ID (API Key)</span></div>
-            <input id="lrClientId" class="sc-name-input" value="${lrState.clientId||''}"
-                   placeholder="e.g. abc123def456..." style="margin-bottom:0">
-          </div>
-          <button class="btn primary" onclick="saveLrClientId()">Save</button>
-        </div>
-      </div>
-
-      <!-- Step 2: Authorize -->
-      <div style="background:var(--surface2);border:1px solid var(--border);padding:20px;margin-bottom:16px;">
-        <div class="sec-label" style="margin-bottom:12px"><span>Step 2 — Connect to Lightroom</span></div>
-        ${lrState.accessToken
-          ? `<div style="display:flex;align-items:center;gap:12px;">
-               <span style="color:var(--green);font-size:10px;letter-spacing:3px;text-transform:uppercase;">✓ Connected</span>
-               <button class="btn danger" onclick="lrDisconnect()" style="padding:5px 14px">Disconnect</button>
-             </div>`
-          : `<button class="btn primary" onclick="lrAuthorize()" ${lrState.clientId?'':'disabled'}>
-               Authorize with Adobe
-             </button>
-             ${!lrState.clientId ? '<p style="font-size:10px;opacity:0.3;margin-top:8px">Save your Client ID first</p>' : ''}`
-        }
-      </div>
-
-      <!-- Step 3: Pick album and import -->
-      <div style="background:var(--surface2);border:1px solid var(--border);padding:20px;margin-bottom:16px;">
-        <div class="sec-label" style="margin-bottom:12px">
-          <span>Step 3 — Import Album to Series</span>
-          ${lrState.accessToken
-            ? `<button onclick="lrLoadAlbums()" style="font-size:8px;letter-spacing:3px;text-transform:uppercase;border:none;background:none;color:var(--gold);cursor:pointer">↻ Load Albums</button>`
-            : ''}
-        </div>
-
-        ${!lrState.accessToken
-          ? `<p style="font-size:11px;opacity:0.3">Connect to Lightroom first</p>`
-          : `<div id="lrAlbumList" style="margin-bottom:16px">
-               <p style="font-size:11px;opacity:0.3">Click "Load Albums" to fetch your Lightroom albums</p>
-             </div>
-             <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
-               <div>
-                 <div class="sec-label" style="margin-bottom:6px"><span>Selected Album</span></div>
-                 <input id="lrSelectedAlbum" class="sc-name-input" style="margin-bottom:0" readonly
-                        placeholder="Click an album above" value="${lrState.selectedAlbumName||''}">
-               </div>
-               <div>
-                 <div class="sec-label" style="margin-bottom:6px"><span>Import to Series</span></div>
-                 <select id="lrTargetSeries" class="sc-name-input" style="margin-bottom:0;cursor:pointer">
-                   ${TIA.getSeries().map(s =>
-                     `<option value="${s.id}" ${lrState.targetSeries===s.id?'selected':''}>${s.num} — ${s.title}</option>`
-                   ).join('')}
-                 </select>
-               </div>
-               <button class="btn primary" id="lrImportBtn" onclick="lrImport()"
-                       ${lrState.selectedAlbumId?'':'disabled'}>
-                 Import
-               </button>
-             </div>`
-        }
-      </div>
-
-      <!-- Import log -->
-      <div id="lrLog" style="display:none;background:var(--surface2);border:1px solid var(--border);padding:16px;">
-        <div class="sec-label" style="margin-bottom:8px"><span>Import Log</span></div>
-        <div id="lrLogContent" style="font-size:11px;line-height:2;opacity:0.6;font-family:monospace"></div>
-      </div>
-
-    </div>`;
-}
-
-function saveLrClientId() {
-  const id = document.getElementById('lrClientId')?.value?.trim();
-  if (!id) return;
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-  state.lightroom.clientId = id;
-  TIA.setState(state);
-  toast('Client ID saved');
-  showLightroomPanel();
-}
-
-function lrAuthorize() {
-  const state = TIA.getState();
-  const clientId = state.lightroom?.clientId;
-  if (!clientId) { toast('Save Client ID first', true); return; }
-
-  const redirectUri = encodeURIComponent(location.origin + '/admin/');
-  const scope = encodeURIComponent('lr_partner_apis openid');
-  const url = `https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`;
-
-  // Store state so we can complete exchange on return
-  sessionStorage.setItem('lr_oauth_pending', '1');
-  window.location.href = url;
-}
-
-function lrDisconnect() {
-  const state = TIA.getState();
-  if (state.lightroom) {
-    delete state.lightroom.accessToken;
-    delete state.lightroom.selectedAlbumId;
-    delete state.lightroom.selectedAlbumName;
-  }
-  TIA.setState(state);
-  toast('Disconnected from Lightroom');
-  showLightroomPanel();
-}
-
-async function lrExchangeCode(code) {
-  // NOTE: Token exchange requires a server-side call (client_secret must not be in browser JS)
-  // For now we store the code and show instructions
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-
-  lrLog(`OAuth code received: ${code.substring(0,8)}...`);
-  lrLog('⚠ Token exchange requires server-side call — paste your access token manually below for now.');
-
-  // Show manual token input
-  const panel = document.getElementById('panelBody');
-  if (!panel) return;
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
-  div.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border2);padding:28px;width:500px;border-radius:2px">
-      <div class="sec-label" style="margin-bottom:12px"><span>Paste Access Token</span></div>
-      <p style="font-size:11px;opacity:0.5;margin-bottom:14px;line-height:1.7">
-        Complete the exchange at
-        <a href="https://developer.adobe.com/console" target="_blank" style="color:var(--gold)">Adobe Console</a>
-        and paste your access token here.
-      </p>
-      <textarea id="lrTokenInput" style="width:100%;height:80px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);padding:8px;font-size:11px;font-family:monospace;resize:none" placeholder="Bearer eyJ..."></textarea>
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">
-        <button class="btn" onclick="this.closest('div[style]').remove()">Cancel</button>
-        <button class="btn primary" onclick="saveLrToken(this)">Save Token</button>
-      </div>
-    </div>`;
-  document.body.appendChild(div);
-}
-
-function saveLrToken(btn) {
-  const token = document.getElementById('lrTokenInput')?.value?.trim();
-  if (!token) return;
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-  state.lightroom.accessToken = token.replace(/^Bearer /i,'');
-  TIA.setState(state);
-  btn.closest('div[style*="position:fixed"]').remove();
-  toast('Token saved — loading albums…');
-  showLightroomPanel();
-  setTimeout(lrLoadAlbums, 300);
-}
-
-async function lrLoadAlbums() {
-  const state = TIA.getState();
-  const token = state.lightroom?.accessToken;
-  if (!token) { toast('Not connected', true); return; }
-
-  const listEl = document.getElementById('lrAlbumList');
-  if (listEl) listEl.innerHTML = '<p style="font-size:11px;opacity:0.4">Loading…</p>';
-
-  try {
-    const res = await fetch('https://lr.adobe.io/v2/albums', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-API-Key': state.lightroom.clientId,
-      }
-    });
-
-    if (res.status === 401) {
-      lrLog('Token expired — re-authorize to get a new token');
-      if (listEl) listEl.innerHTML = '<p style="font-size:11px;color:var(--red)">Token expired — reconnect</p>';
-      return;
-    }
-
-    const data = await res.json();
-    const albums = data.resources || [];
-
-    if (!listEl) return;
-    if (albums.length === 0) {
-      listEl.innerHTML = '<p style="font-size:11px;opacity:0.3">No albums found in your Lightroom catalog</p>';
-      return;
-    }
-
-    listEl.innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto;padding:2px">
-        ${albums.map(a => `
-          <button class="pf-btn ${state.lightroom?.selectedAlbumId===a.id?'active':''}"
-                  onclick="selectLrAlbum('${a.id}','${(a.payload?.name||'Album').replace(/'/g,'')}')"
-                  style="font-size:10px">
-            ${a.payload?.name || 'Untitled'} (${a.payload?.userUpdated||''})
-          </button>`).join('')}
-      </div>`;
-
-  } catch(err) {
-    lrLog('Error fetching albums: ' + err.message);
-    if (listEl) listEl.innerHTML = `<p style="font-size:11px;color:var(--red)">${err.message}</p>`;
-  }
-}
-
-function selectLrAlbum(id, name) {
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-  state.lightroom.selectedAlbumId   = id;
-  state.lightroom.selectedAlbumName = name;
-  TIA.setState(state);
-
-  const inp = document.getElementById('lrSelectedAlbum');
-  if (inp) inp.value = name;
-  const btn = document.getElementById('lrImportBtn');
-  if (btn) btn.disabled = false;
-
-  // Highlight selected
-  document.querySelectorAll('#lrAlbumList .pf-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim().startsWith(name));
-  });
-}
-
-async function lrImport() {
-  const state  = TIA.getState();
-  const token  = state.lightroom?.accessToken;
-  const albumId= state.lightroom?.selectedAlbumId;
-  const sid    = document.getElementById('lrTargetSeries')?.value;
-
-  if (!token || !albumId || !sid) { toast('Select album and series first', true); return; }
-
-  const s = TIA.getSeries().find(x => x.id === sid);
-  if (!s) return;
-
-  const logEl = document.getElementById('lrLog');
-  const logContent = document.getElementById('lrLogContent');
-  if (logEl) logEl.style.display = 'block';
-
-  lrLog(`Starting import from album: ${state.lightroom.selectedAlbumName}`);
-  lrLog(`Destination: Cloudinary → tia/${s.folder}/`);
-
-  try {
-    // 1. Get assets from the album
-    const res = await fetch(`https://lr.adobe.io/v2/albums/${albumId}/assets?subtype=image&limit=100`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-API-Key': state.lightroom.clientId,
-      }
-    });
-
-    if (!res.ok) throw new Error(`Lightroom API: ${res.status}`);
-    const data   = await res.json();
-    const assets = data.resources || [];
-    lrLog(`Found ${assets.length} photos in album`);
-
-    let imported = 0;
-    for (const asset of assets) {
-      const assetId = asset.id;
-      const name    = asset.payload?.importSource?.fileName || assetId;
-
-      lrLog(`Downloading: ${name}…`);
-
-      // 2. Get rendition URL (largest available)
-      const rendRes = await fetch(`https://lr.adobe.io/v2/assets/${assetId}/renditions/2048`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-API-Key': state.lightroom.clientId,
-        }
-      });
-
-      if (!rendRes.ok) {
-        lrLog(`  ✗ Could not get rendition for ${name} (${rendRes.status})`);
-        continue;
-      }
-
-      const blob = await rendRes.blob();
-      const file = new File([blob], name, { type: blob.type });
-
-      // 3. Upload to Cloudinary
-      const dataUri = await fileToBase64(file);
-      const fd = new FormData();
-      fd.append('file', dataUri);
-      fd.append('upload_preset', PRESET);
-      fd.append('folder', `${FOLDER}/${s.folder}`);
-      fd.append('public_id', name.replace(/\.[^.]+$/, ''));
-
-      const upRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, {
-        method: 'POST', body: fd
-      });
-
-      if (!upRes.ok) {
-        lrLog(`  ✗ Upload failed for ${name}`);
-        continue;
-      }
-
-      const result = await upRes.json();
-      persistPhoto(sid, result.public_id);
-      imported++;
-      lrLog(`  ✓ ${name} → ${result.public_id}`);
-    }
-
-    lrLog(`─────────────────────`);
-    lrLog(`Import complete: ${imported}/${assets.length} photos`);
-    lrLog(`Now visible in gallery at /gallery`);
-    renderSidebar();
-    toast(`Imported ${imported} photos from Lightroom ✓`);
-
-  } catch(err) {
-    lrLog('Error: ' + err.message);
-    toast('Import failed — see log', true);
-  }
-}
-
-function lrLog(msg) {
-  const el = document.getElementById('lrLogContent');
-  if (el) el.innerHTML += msg + '<br>';
-  const log = document.getElementById('lrLog');
-  if (log) log.style.display = 'block';
-}
-
-// ── Handle OAuth redirect callback ────────────────────────
-// If URL has ?code= param, we just came back from Adobe auth
-(function handleOAuthReturn() {
-  const params = new URLSearchParams(window.location.search);
-  const code   = params.get('code');
-  if (!code) return;
-  // Clean URL
-  history.replaceState({}, document.title, location.pathname);
-  // Wait for app to init, then handle
-  setTimeout(() => {
-    if (sessionStorage.getItem('tia_auth') === '1') {
-      switchTab('lightroom');
-      setTimeout(() => lrExchangeCode(code), 400);
-    }
-  }, 500);
-})();
 
 // ════════════════════════════════════════════════════════════
 // KEYBOARD

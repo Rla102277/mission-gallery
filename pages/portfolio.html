@@ -314,5 +314,84 @@
   }, { threshold:0.06, rootMargin:'0px 0px -40px 0px' });
   els.forEach(el => obs.observe(el));
 </script>
+
+<script>
+// Auto-apply Cloudinary portfolio cover images from config
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof PORTFOLIO_COVERS === 'undefined') return;
+
+  const mappings = [
+    { seriesId:'s1', selector:'.work-block:nth-child(1) .work-visual' },
+    { seriesId:'s3', selector:'.work-block:nth-child(2) .work-visual' },
+    { seriesId:'s2', selector:'.work-block:nth-child(3) .work-visual' },
+    { seriesId:'s5', selector:'.work-block:nth-child(4) .work-visual' },
+    { seriesId:'s7', selector:'.work-block:nth-child(5) .work-visual' },
+  ];
+
+  mappings.forEach(({ seriesId, selector }) => {
+    const url = PORTFOLIO_COVERS[seriesId] || COVER_URLS?.[seriesId] || PHOTO_URLS?.[seriesId]?.[0];
+    if (!url) return;
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    // Replace placeholder with real image
+    const img = document.createElement('img');
+    img.className = 'wv-img';
+    img.src = typeof cldUrl === 'function' ? cldUrl(url, 'w_1200,q_auto,f_auto') : url;
+    img.alt = '';
+    el.querySelector('.wv-placeholder')?.remove();
+    el.insertBefore(img, el.firstChild);
+  });
+});
+</script>
+
+<script src="../assets/js/tia-data.js"></script>
+<script src="../assets/js/tia-data.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Map work blocks to series
+  const map = [
+    { block: 0, seriesId: 's1', pfKey: 'pf-s1' },
+    { block: 1, seriesId: 's3', pfKey: 'pf-s3' },
+    { block: 2, seriesId: 's2', pfKey: 'pf-s2' },
+    { block: 3, seriesId: 's5', pfKey: 'pf-s5' },
+    { block: 4, seriesId: 's7', pfKey: 'pf-s7' },
+  ];
+
+  const blocks  = document.querySelectorAll('.work-block');
+  const series  = TIA.getSeries();
+
+  map.forEach(({ block, seriesId, pfKey }) => {
+    const el = blocks[block];
+    if (!el) return;
+
+    // Update title/subtitle from admin settings
+    const s = series.find(x => x.id === seriesId);
+    if (s) {
+      const t = el.querySelector('.wt-title, h2, h3');
+      const u = el.querySelector('.wt-sub,  .subtitle, .work-subtitle');
+      const d = el.querySelector('.wt-body, .work-body, p');
+      if (t && s.title)       t.textContent = s.title;
+      if (u && s.subtitle)    u.textContent = s.subtitle;
+      if (d && s.description) d.textContent = s.description;
+    }
+
+    // Apply cover photo — portfolio slot → series cover → first photo
+    const visual = el.querySelector('.work-visual, .work-photo, .wv-photo, [class*="visual"], [class*="photo"]');
+    if (!visual) return;
+
+    const url = TIA.getPortfolioUrl(pfKey, 'cover')
+             || TIA.getCoverUrl(seriesId, 'cover');
+
+    if (url) {
+      visual.style.backgroundImage    = `url('${url}')`;
+      visual.style.backgroundSize     = 'cover';
+      visual.style.backgroundPosition = 'center';
+      const ph = visual.querySelector('[class*="placeholder"], [class*="ph-"]');
+      if (ph) ph.style.display = 'none';
+    }
+  });
+});
+</script>
 </body>
 </html>

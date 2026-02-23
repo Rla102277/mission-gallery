@@ -306,167 +306,58 @@
   </div>
 </footer>
 
+<script src="../assets/js/tia-data.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  COLLECTIONS DATA
-//  To add real photos: replace coverUrl and each photo's url
-//  with actual image paths or Cloudinary URLs.
-//  e.g. url: 'https://res.cloudinary.com/YOUR_CLOUD/image/upload/v1234/iceland/s1-01.jpg'
-// ═══════════════════════════════════════════════════════════════
-const COLLECTIONS = [
-  {
-    id: 's1',
-    series: 'Series 01',
-    title: 'Solitude & Scale',
-    subtitle: 'The Secret Lagoon',
-    type: 'Triptych',
-    featured: true,                     // makes this card span full width
-    coverBg: 'c-s1',                    // CSS class for placeholder gradient
-    coverUrl: '',                       // ← PASTE cover image URL here
-    description: 'Three frames that ask the same question from different distances: how do you hold something this vast? A progression from immensity to intimacy — wide, medium, close — B&W to warm color to golden signature.',
-    printSpec: 'Three 16×24″ prints side by side (48×24″ total)',
-    camera: 'GFX 100S II + 32–64mm',
-    location: 'Fjallsárlón Glacier Lagoon',
-    photos: [
-      { id: 's1-01', title: 'The Immensity', detail: 'GFX · f/11 · ISO 800 · Aurea', orientation: 'landscape', bg: 'linear-gradient(145deg,#0d1828 0%,#060e1a 100%)', url: '' },
-      { id: 's1-02', title: 'Floating Giants', detail: 'GFX · f/11 · ISO 1600 · Crepuscolo', orientation: 'landscape', bg: 'linear-gradient(145deg,#101a2a 0%,#0a1220 100%)', url: '' },
-      { id: 's1-03', title: 'The Signature', detail: 'GFX · f/8 · ISO 400 · Aurea', orientation: 'landscape', bg: 'linear-gradient(145deg,#1a1206 0%,#120e04 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's2',
-    series: 'Series 02',
-    title: 'Glacial Contrasts',
-    subtitle: 'Ice in Two Realms',
-    type: 'Diptych',
-    coverBg: 'c-s2',
-    coverUrl: '',
-    description: 'Same glacial ice, two states — floating serenity vs grounded drama. Diamond Beach and Jökulsárlón: the ice moves between worlds.',
-    printSpec: 'Two 24×36″ prints (48×36″ total)',
-    camera: 'GFX 100S II + 100–200mm',
-    location: 'Jökulsárlón & Diamond Beach',
-    photos: [
-      { id: 's2-01', title: 'Floating Giants', detail: 'GFX · f/11 · ISO 1600 · Crepuscolo', orientation: 'landscape', bg: 'linear-gradient(145deg,#0a1828 0%,#060e1a 100%)', url: '' },
-      { id: 's2-02', title: 'Grounded Jewels', detail: 'GFX 100–200mm · f/11 · ISO 800 · Provia Punch', orientation: 'landscape', bg: 'linear-gradient(145deg,#161008 0%,#0e0c06 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's3',
-    series: 'Series 03',
-    title: 'Blue Trilogy',
-    subtitle: 'The Impossible Blues of Iceland Ice',
-    type: 'Triptych',
-    coverBg: 'c-s3',
-    coverUrl: '',
-    description: 'Three blues — cave darkness, golden translucence, twilight atmosphere. Interior → exterior → dusk. The color exists nowhere else on Earth.',
-    printSpec: 'Three 20×30″ prints',
-    camera: 'X-E5 + GFX 100S II',
-    location: 'Ice Cave · Diamond Beach · Jökulsárlón',
-    photos: [
-      { id: 's3-01', title: 'Blue Abyss', detail: 'X-E5 · f/4 · ISO 6400 · Reala Neutral', orientation: 'portrait', bg: 'linear-gradient(145deg,#061020 0%,#04080e 100%)', url: '' },
-      { id: 's3-02', title: 'Blue Diamond', detail: 'GFX · f/8 · ISO 400 · Provia Punch', orientation: 'portrait', bg: 'linear-gradient(145deg,#081828 0%,#060e18 100%)', url: '' },
-      { id: 's3-03', title: 'Blue Hour', detail: 'GFX · f/11 · ISO 1600 · Crepuscolo', orientation: 'portrait', bg: 'linear-gradient(145deg,#0a1020 0%,#060c18 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's4',
-    series: 'Series 04',
-    title: 'Coastal Contrasts',
-    subtitle: 'Black Sand Drama vs Blue Water Serenity',
-    type: 'Diptych',
-    coverBg: 'c-s4',
-    coverUrl: '',
-    description: 'Volcanic violence frozen in basalt vs geothermal healing. B&W geometry confronts color serenity. Reynisfjara and the Blue Lagoon — the same island, two temperaments.',
-    printSpec: 'Two 24×36″ prints',
-    camera: 'GFX 100S II · Instax Mini Evo',
-    location: 'Reynisfjara · Blue Lagoon',
-    photos: [
-      { id: 's4-01', title: 'Volcanic Geometry', detail: 'GFX · f/16 · ISO 800 · Zone B&W', orientation: 'landscape', bg: 'linear-gradient(145deg,#1a1a1a 0%,#101010 100%)', url: '' },
-      { id: 's4-02', title: 'Geothermal Serenity', detail: 'Instax Mini Evo · Film', orientation: 'square', bg: 'linear-gradient(145deg,#06181e 0%,#041014 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's5',
-    series: 'Series 05',
-    title: 'The Human Element',
-    subtitle: 'Presence at the Edge of the World',
-    type: 'Diptych',
-    coverBg: 'c-s5',
-    coverUrl: '',
-    description: 'Two frames where the photographer becomes part of the landscape. Scale is only understood when there is a human to measure it against. Sunset and wild horse — Iceland reveals itself through witness.',
-    printSpec: 'Two 24×36″ prints',
-    camera: 'GFX 100S II',
-    location: 'South Iceland Plains',
-    photos: [
-      { id: 's5-01', title: 'Photographer at Sunset', detail: 'GFX · f/8 · ISO 400 · Aurea', orientation: 'landscape', bg: 'linear-gradient(145deg,#281a04 0%,#1a1002 100%)', url: '' },
-      { id: 's5-02', title: 'The Companion', detail: 'GFX · f/11 · ISO 800 · Crepuscolo', orientation: 'landscape', bg: 'linear-gradient(145deg,#201408 0%,#160e04 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's6',
-    series: 'Series 06',
-    title: 'Arnarstapi Geometry',
-    subtitle: 'The Architecture of Erosion',
-    type: 'Triptych',
-    coverBg: 'c-s6',
-    coverUrl: '',
-    description: 'Basalt columns. Natural arches. Coastal power. Shot as abstract form — geometry as subject. The rock has been sculpted by water for ten thousand years. The camera just finally arrived.',
-    printSpec: 'Three 16×20″ prints',
-    camera: 'GFX 100S II + 32–64mm',
-    location: 'Arnarstapi, Snæfellsnes Peninsula',
-    photos: [
-      { id: 's6-01', title: 'Gatklettur Arch', detail: 'GFX · f/11 · ISO 640 · Zone B&W', orientation: 'landscape', bg: 'linear-gradient(145deg,#1e1208 0%,#140c04 100%)', url: '' },
-      { id: 's6-02', title: 'Basalt Cathedral', detail: 'GFX · f/8 · ISO 400 · Eternal', orientation: 'panorama', bg: 'linear-gradient(145deg,#1a1006 0%,#100c04 100%)', url: '' },
-      { id: 's6-03', title: 'Coastal Power', detail: 'GFX · f/16 · ISO 800 · Zone B&W', orientation: 'landscape', bg: 'linear-gradient(145deg,#161008 0%,#0e0a04 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's7',
-    series: 'Series 07',
-    title: 'Peninsular Panorama',
-    subtitle: 'Snæfellsnes in Three Moods',
-    type: 'Triptych',
-    coverBg: 'c-s7',
-    coverUrl: '',
-    description: 'The icon, the solitude, the drama. Kirkjufell mountain, Búðir Black Church, Arnarstapi arch — three frames that together describe the emotional range of Iceland\'s most cinematic peninsula.',
-    printSpec: 'Three 20×30″ prints or single 60×30″ panoramic',
-    camera: 'GFX 100S II + 32–64mm',
-    location: 'Snæfellsnes Peninsula',
-    photos: [
-      { id: 's7-01', title: 'The Icon', detail: 'GFX · f/11 · ISO 400 · Aurea', orientation: 'landscape', bg: 'linear-gradient(145deg,#1a1410 0%,#100e08 100%)', url: '' },
-      { id: 's7-02', title: 'The Solitude', detail: 'GFX · f/8 · ISO 800 · Zone B&W', orientation: 'landscape', bg: 'linear-gradient(145deg,#121212 0%,#0a0a0a 100%)', url: '' },
-      { id: 's7-03', title: 'The Drama', detail: 'GFX · f/11 · ISO 1600 · Crepuscolo', orientation: 'landscape', bg: 'linear-gradient(145deg,#1a1008 0%,#120c06 100%)', url: '' },
-    ]
-  },
-  {
-    id: 's8',
-    series: 'Series 08',
-    title: 'Urban Odyssey',
-    subtitle: 'Reykjavík as Coda',
-    type: 'Triptych',
-    coverBg: 'c-s8',
-    coverUrl: '',
-    description: 'The journey ends where civilization begins again. Sun Voyager, Harpa, Grotta lighthouse — three symbols of departure, design, and homecoming. Iceland seen through human ambition, not geological force.',
-    printSpec: 'Three 16×24″ prints',
-    camera: 'GFX 100S II + 32–64mm',
-    location: 'Reykjavík',
-    photos: [
-      { id: 's8-01', title: 'Sun Voyager', detail: 'GFX · f/11 · ISO 400 · Aurea', orientation: 'landscape', bg: 'linear-gradient(145deg,#1e1818 0%,#140e0e 100%)', url: '' },
-      { id: 's8-02', title: 'Harpa Geometry', detail: 'GFX · f/8 · ISO 800 · Reala Ace A', orientation: 'portrait', bg: 'linear-gradient(145deg,#16101e 0%,#0e0a16 100%)', url: '' },
-      { id: 's8-03', title: 'Grotta Lighthouse', detail: 'GFX · f/11 · ISO 1600 · Crepuscolo', orientation: 'landscape', bg: 'linear-gradient(145deg,#1e1810 0%,#14100a 100%)', url: '' },
-    ]
-  },
-];
+// ══════════════════════════════════════════════════════════════
+// GALLERY — reads from localStorage via TIA data layer
+// Admin uploads photos → stored in tia_admin localStorage
+// Gallery reads that → no Cloudinary API listing needed
+// ══════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════
-//  RENDER COLLECTION CARDS
-// ═══════════════════════════════════════════════
+let COLLECTIONS = [];
+let activeSeries = null;
+let lbIndex = 0;
+
+function buildCollections() {
+  COLLECTIONS = TIA.getSeries().map((s, i) => ({
+    id:          s.id,
+    folder:      s.folder,
+    series:      `Series ${s.num}`,
+    title:       s.title,
+    subtitle:    s.subtitle,
+    type:        s.type || 'Series',
+    featured:    i === 0,
+    coverBg:     `c-${s.id}`,
+    description: s.description || '',
+    printSpec:   s.printSpec   || '',
+    camera:      s.camera      || '',
+    location:    s.location    || '',
+  }));
+}
+
+function getCollPhotos(seriesId) {
+  return TIA.getPhotos(seriesId).map((p, i) => ({
+    id:          `${seriesId}-${String(i+1).padStart(2,'0')}`,
+    title:       p.filename.replace(/[-_]/g,' ').replace(/\.[^.]+$/, ''),
+    detail:      '',
+    url:         p.thumb,
+    fullUrl:     p.full,
+    bg:          'linear-gradient(145deg,#1a1a1a,#0a0a0a)',
+  }));
+}
+
+// ── Render gallery grid ────────────────────────────────────
 function renderCards() {
+  buildCollections();
   const grid = document.getElementById('collectionsGrid');
-  grid.innerHTML = COLLECTIONS.map(c => `
+  if (!grid) return;
+  grid.innerHTML = COLLECTIONS.map(c => {
+    const photos   = getCollPhotos(c.id);
+    const coverUrl = TIA.getCoverUrl(c.id, 'cover');
+    return `
     <div class="coll-card${c.featured ? ' featured' : ''}" onclick="openPanel('${c.id}')">
       <div class="coll-photo ${c.coverBg}"
-        ${c.coverUrl ? `style="background-image:url('${c.coverUrl}')"` : ''}>
+           ${coverUrl ? `style="background-image:url('${coverUrl}')"` : ''}>
       </div>
       <div class="coll-overlay"></div>
       <div class="coll-content">
@@ -474,78 +365,57 @@ function renderCards() {
         <h2 class="coll-title">${c.title}</h2>
         <p class="coll-subtitle">${c.subtitle}</p>
         <div class="coll-meta">
-          <span class="coll-count">${c.photos.length} ${c.photos.length === 1 ? 'frame' : 'frames'}</span>
+          <span class="coll-count">${photos.length ? photos.length + ' frame' + (photos.length !== 1 ? 's' : '') : 'Coming soon'}</span>
           <span class="coll-type-badge">${c.type}</span>
         </div>
       </div>
       <span class="coll-arrow">&#8594;</span>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════════
-//  SERIES PANEL
-// ═══════════════════════════════════════════════
-let activeSeries = null;
-
+// ── Open series panel ──────────────────────────────────────
 function openPanel(id) {
-  activeSeries = COLLECTIONS.find(c => c.id === id);
-  if (!activeSeries) return;
-  const c = activeSeries;
+  const c = COLLECTIONS.find(x => x.id === id);
+  if (!c) return;
+  const photos   = getCollPhotos(id);
+  const coverUrl = TIA.getCoverUrl(id, 'cover');
+  activeSeries = { ...c, photos };
 
-  document.getElementById('spEyebrow').textContent = c.series;
-  document.getElementById('spName').textContent = c.title;
-  document.getElementById('spCountLabel').textContent = `${c.photos.length} frames`;
-  document.getElementById('spHeroSeries').textContent = c.series + ' · ' + c.type;
-  document.getElementById('spHeroTitle').textContent = c.title;
-  document.getElementById('spHeroSub').textContent = c.subtitle;
-  document.getElementById('spHeroDesc').textContent = c.description;
-  document.getElementById('spHeroType').textContent = c.type;
+  document.getElementById('spEyebrow').textContent    = c.series;
+  document.getElementById('spName').textContent       = c.title;
+  document.getElementById('spCountLabel').textContent = `${photos.length} frame${photos.length !== 1 ? 's' : ''}`;
+  document.getElementById('spHeroSeries').textContent = `${c.series} · ${c.type}`;
+  document.getElementById('spHeroTitle').textContent  = c.title;
+  document.getElementById('spHeroSub').textContent    = c.subtitle;
+  document.getElementById('spHeroDesc').textContent   = c.description;
+  document.getElementById('spHeroType').textContent   = c.type;
 
-  // hero image
   const hi = document.getElementById('spHeroImg');
   hi.className = 'sp-hero-img ' + c.coverBg;
-  if (c.coverUrl) hi.style.backgroundImage = `url('${c.coverUrl}')`;
-  else hi.style.backgroundImage = '';
+  hi.style.backgroundImage = coverUrl ? `url('${coverUrl}')` : '';
 
-  // grid layout
   const grid = document.getElementById('spGrid');
-  const cols = c.type === 'Triptych' ? 3 : c.type === 'Diptych' ? 2 : 1;
-  grid.setAttribute('data-cols', cols);
-  grid.innerHTML = c.photos.map((p, i) => `
-    <div class="sp-photo-cell ${p.orientation === 'portrait' ? 'portrait' : p.orientation === 'square' ? 'square' : p.orientation === 'panorama' ? 'panorama' : ''}"
-         onclick="openLightbox(${i})" >
-      ${p.url
-        ? `<img class="sp-photo-img" src="${p.url}" alt="${p.title}" loading="lazy">`
-        : `<div class="ph-grad" style="background:${p.bg}"></div><div class="ph-label">Replace with photo<br>${p.id}</div>`
-      }
-      <div class="sp-photo-meta">
-        <span class="sp-photo-title">${p.title}</span>
-        <span class="sp-photo-detail">${p.detail}</span>
-      </div>
-      <span class="sp-photo-expand">&#x26F6;</span>
-    </div>
-  `).join('');
+  if (photos.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:60px;text-align:center;opacity:0.25;font-size:9px;letter-spacing:4px;text-transform:uppercase;">No photos uploaded yet<br><small style="margin-top:8px;display:block;font-size:8px;letter-spacing:2px">Upload in Admin → Upload tab</small></div>`;
+  } else {
+    grid.innerHTML = photos.map((p, i) => `
+      <div class="sp-photo-cell" onclick="openLightbox(${i})">
+        <img class="sp-photo-img" src="${p.url}" alt="${p.title}" loading="lazy">
+        <div class="sp-photo-meta">
+          <span class="sp-photo-title">${p.title}</span>
+        </div>
+        <span class="sp-photo-expand">&#x26F6;</span>
+      </div>`).join('');
+  }
 
-  // info bar
   document.getElementById('spInfoBar').innerHTML = `
-    <div>
-      <span class="sib-label">Camera</span>
-      <div class="sib-val">${c.camera}</div>
-    </div>
-    <div>
-      <span class="sib-label">Location</span>
-      <div class="sib-val">${c.location}</div>
-    </div>
-    <div>
-      <span class="sib-label">Print Format</span>
-      <div class="sib-val" style="font-size:14px">${c.printSpec}<small>Inquire for availability</small></div>
-    </div>
-  `;
+    <div><span class="sib-label">Camera</span><div class="sib-val">${c.camera||'—'}</div></div>
+    <div><span class="sib-label">Location</span><div class="sib-val">${c.location||'—'}</div></div>
+    <div><span class="sib-label">Print Format</span><div class="sib-val">${c.printSpec||'Inquire'}<small>Inquire for availability</small></div></div>`;
 
-  const panel = document.getElementById('seriesPanel');
-  panel.classList.add('open');
-  panel.scrollTop = 0;
+  document.getElementById('seriesPanel').classList.add('open');
+  document.getElementById('seriesPanel').scrollTop = 0;
   document.body.style.overflow = 'hidden';
 }
 
@@ -555,11 +425,7 @@ function closePanel() {
   activeSeries = null;
 }
 
-// ═══════════════════════════════════════════════
-//  LIGHTBOX
-// ═══════════════════════════════════════════════
-let lbIndex = 0;
-
+// ── Lightbox ───────────────────────────────────────────────
 function openLightbox(i) {
   if (!activeSeries) return;
   lbIndex = i;
@@ -568,50 +434,35 @@ function openLightbox(i) {
 }
 
 function renderLightbox() {
-  const photos = activeSeries.photos;
-  const p = photos[lbIndex];
-  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${photos.length}`;
-  document.getElementById('lbTitle').textContent = p.title;
-  document.getElementById('lbDetails').textContent = `${activeSeries.series} · ${p.detail}`;
-
-  const wrap = document.getElementById('lbImgWrap');
-  if (p.url) {
-    wrap.innerHTML = `<img class="lb-img" src="${p.url}" alt="${p.title}">`;
-  } else {
-    wrap.innerHTML = `
-      <div class="lb-placeholder" style="background:${p.bg}">
-        <span>&#x1F4F7; Replace with photo</span>
-        <span>${p.id}</span>
-        <span style="font-size:9px;margin-top:8px">${p.detail}</span>
-      </div>`;
-  }
+  if (!activeSeries?.photos?.length) return;
+  const p = activeSeries.photos[lbIndex];
+  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${activeSeries.photos.length}`;
+  document.getElementById('lbTitle').textContent   = p.title;
+  document.getElementById('lbDetails').textContent = activeSeries.series;
+  document.getElementById('lbImgWrap').innerHTML   =
+    `<img class="lb-img" src="${p.fullUrl || p.url}" alt="${p.title}">`;
 }
 
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-}
-
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
 function lbNav(dir) {
   if (!activeSeries) return;
-  const len = activeSeries.photos.length;
-  lbIndex = (lbIndex + dir + len) % len;
+  lbIndex = (lbIndex + dir + activeSeries.photos.length) % activeSeries.photos.length;
   renderLightbox();
 }
 
-// Keyboard nav
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (document.getElementById('lightbox').classList.contains('open')) closeLightbox();
     else closePanel();
   }
   if (document.getElementById('lightbox').classList.contains('open')) {
-    if (e.key === 'ArrowLeft') lbNav(-1);
+    if (e.key === 'ArrowLeft')  lbNav(-1);
     if (e.key === 'ArrowRight') lbNav(1);
   }
 });
 
-// Init
-renderCards();
+// ── Boot ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', renderCards);
 </script>
 </body>
 </html>
