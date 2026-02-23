@@ -1,379 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TIA Admin</title>
-  <script src="../assets/js/tia-data.js"></script>
-  <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    :root {
-      --bg:#111310; --surface:#191c17; --surface2:#1f2219;
-      --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
-      --cream:#ede9e2; --muted:rgba(237,233,226,0.4); --dim:rgba(237,233,226,0.18);
-      --gold:#c9a227; --green:#5a9e6f; --red:#a05050; --blue:#4a7ea0;
-      --sage:#3d4039; --font:'Helvetica Neue',Arial,sans-serif;
-    }
-    html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--cream); font-family:var(--font); font-size:13px; }
-    a { color:inherit; text-decoration:none; }
-    button { font-family:var(--font); cursor:pointer; }
-    input,textarea { font-family:var(--font); }
-
-    /* ─── AUTH SCREEN ─────────────────────────── */
-    #authScreen {
-      position:fixed; inset:0; z-index:999; background:var(--bg);
-      display:flex; align-items:center; justify-content:center;
-    }
-    .auth-box { width:340px; }
-    .auth-logo { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:var(--dim); margin-bottom:32px; display:block; }
-    .auth-title { font-size:26px; font-weight:300; margin-bottom:28px; opacity:0.8; }
-    .auth-field { margin-bottom:14px; }
-    .auth-field label { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:var(--dim); display:block; margin-bottom:6px; }
-    .auth-field input {
-      width:100%; padding:10px 14px; background:var(--surface);
-      border:1px solid var(--border2); color:var(--cream); font-size:13px;
-      outline:none; transition:border-color 0.2s;
-    }
-    .auth-field input:focus { border-color:rgba(255,255,255,0.3); }
-    .auth-submit {
-      width:100%; margin-top:20px; padding:12px;
-      background:var(--sage); border:none; color:var(--cream);
-      font-size:9px; letter-spacing:5px; text-transform:uppercase;
-      transition:background 0.2s;
-    }
-    .auth-submit:hover { background:#4a4e44; }
-    .auth-error { color:var(--red); font-size:10px; letter-spacing:3px; text-transform:uppercase; margin-top:12px; display:none; }
-    .auth-error.show { display:block; }
-
-    /* ─── APP SHELL ───────────────────────────── */
-    #app { display:none; grid-template-rows:52px 1fr; height:100vh; }
-    #app.show { display:grid; }
-
-    /* TOPBAR */
-    .topbar {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:0 24px; border-bottom:1px solid var(--border);
-      background:var(--surface); flex-shrink:0;
-    }
-    .tb-brand { font-size:9px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); }
-    .tb-brand strong { color:var(--cream); opacity:0.8; }
-    .tb-nav { display:flex; gap:2px; }
-    .tb-tab {
-      padding:8px 18px; font-size:8px; letter-spacing:4px; text-transform:uppercase;
-      border:none; background:transparent; color:var(--muted); cursor:pointer; transition:all 0.2s;
-      border-bottom:2px solid transparent; margin-bottom:-1px;
-    }
-    .tb-tab:hover { color:var(--cream); }
-    .tb-tab.active { color:var(--cream); border-bottom-color:var(--gold); }
-    .tb-right { display:flex; gap:12px; align-items:center; }
-    .tb-signout { font-size:8px; letter-spacing:4px; text-transform:uppercase; border:1px solid var(--border); background:transparent; color:var(--muted); padding:5px 14px; transition:all 0.2s; }
-    .tb-signout:hover { color:var(--cream); border-color:var(--border2); }
-    .tb-save-all { font-size:8px; letter-spacing:4px; text-transform:uppercase; border:none; background:var(--gold); color:#000; padding:6px 18px; font-weight:600; transition:opacity 0.2s; }
-    .tb-save-all:hover { opacity:0.85; }
-
-    /* BODY */
-    .body { display:grid; grid-template-columns:220px 1fr; overflow:hidden; }
-
-    /* ─── SIDEBAR ─────────────────────────────── */
-    .sidebar { border-right:1px solid var(--border); overflow-y:auto; background:var(--surface); }
-    .sb-group { padding:18px 0 6px; }
-    .sb-group-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); padding:0 16px 8px; display:block; }
-    .sb-item {
-      display:flex; align-items:center; gap:10px; padding:9px 16px;
-      border:none; background:transparent; color:var(--muted); cursor:pointer;
-      width:100%; text-align:left; font-size:12px; font-family:var(--font);
-      transition:all 0.15s; border-left:2px solid transparent;
-    }
-    .sb-item:hover { color:var(--cream); background:rgba(255,255,255,0.03); }
-    .sb-item.active { color:var(--cream); background:rgba(255,255,255,0.05); border-left-color:var(--gold); }
-    .sb-item-num { font-size:8px; letter-spacing:2px; color:var(--dim); width:18px; flex-shrink:0; }
-    .sb-item-name { flex:1; line-height:1.3; }
-    .sb-item-count { font-size:9px; color:var(--dim); }
-    .sb-item-count.has { color:var(--green); }
-    .sb-divider { height:1px; background:var(--border); margin:6px 16px; }
-
-    /* ─── MAIN PANEL ──────────────────────────── */
-    .main { display:flex; flex-direction:column; overflow:hidden; }
-    .panel-head {
-      padding:18px 28px 14px; border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
-      background:var(--surface2);
-    }
-    .ph-eyebrow { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); margin-bottom:4px; }
-    .ph-title { font-size:20px; font-weight:300; }
-    .ph-actions { display:flex; gap:8px; }
-
-    .btn {
-      padding:6px 16px; font-size:8px; letter-spacing:4px; text-transform:uppercase;
-      border:1px solid var(--border2); background:transparent; color:var(--muted);
-      cursor:pointer; transition:all 0.2s; font-family:var(--font);
-    }
-    .btn:hover { color:var(--cream); border-color:rgba(255,255,255,0.3); }
-    .btn.primary { background:var(--sage); border-color:var(--sage); color:var(--cream); }
-    .btn.primary:hover { background:#4a4e44; }
-    .btn.success { background:var(--green); border-color:var(--green); color:#fff; }
-    .btn:disabled { opacity:0.3; cursor:not-allowed; }
-
-    /* panel body scrolls */
-    .panel-body { flex:1; overflow-y:auto; padding:24px 28px; }
-
-    /* ─── UPLOAD / DROP ZONE ──────────────────── */
-    .drop-zone {
-      border:1px dashed rgba(255,255,255,0.1); border-radius:2px; padding:32px 20px;
-      text-align:center; cursor:pointer; transition:all 0.25s; position:relative; margin-bottom:22px;
-    }
-    .drop-zone:hover,.drop-zone.over { border-color:rgba(201,162,39,0.5); background:rgba(201,162,39,0.03); }
-    .drop-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-    .dz-icon { font-size:26px; opacity:0.2; margin-bottom:6px; }
-    .dz-text { font-size:12px; opacity:0.35; margin-bottom:3px; }
-    .dz-hint { font-size:9px; letter-spacing:3px; text-transform:uppercase; opacity:0.2; }
-
-    /* ─── QUEUE ───────────────────────────────── */
-    .sec-label {
-      font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--dim);
-      margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;
-    }
-    .sec-label button { font-size:8px; letter-spacing:3px; text-transform:uppercase; border:none; background:none; color:var(--dim); cursor:pointer; padding:2px; }
-    .sec-label button:hover { color:var(--muted); }
-    .progress-wrap { height:2px; background:var(--border); border-radius:1px; overflow:hidden; margin-bottom:16px; }
-    .progress-bar { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
-    .queue-list { display:flex; flex-direction:column; gap:5px; margin-bottom:20px; }
-    .q-item {
-      display:grid; grid-template-columns:44px 1fr 80px; gap:12px; align-items:center;
-      padding:8px 12px; background:var(--surface2); border:1px solid var(--border);
-    }
-    .q-thumb { width:44px; height:32px; object-fit:cover; background:#2a2e28; display:block; }
-    .q-name { font-size:11px; opacity:0.6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .q-size { font-size:9px; letter-spacing:2px; opacity:0.25; margin-top:1px; }
-    .q-status { font-size:8px; letter-spacing:3px; text-transform:uppercase; text-align:right; }
-    .q-status.pending { color:var(--dim); }
-    .q-status.uploading { color:var(--gold); }
-    .q-status.done { color:var(--green); }
-    .q-status.error { color:var(--red); }
-
-    /* ─── PHOTO GRID ──────────────────────────── */
-    .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:5px; }
-    .pg-cell {
-      position:relative; aspect-ratio:3/2; background:var(--surface2);
-      border:2px solid transparent; overflow:hidden; cursor:pointer; border-radius:1px;
-      transition:border-color 0.2s;
-    }
-    .pg-cell:hover { border-color:rgba(255,255,255,0.2); }
-    .pg-cell.selected { border-color:var(--gold) !important; }
-    .pg-cell.cover-star { border-color:var(--green) !important; }
-    .pg-cell img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity 0.2s; }
-    .pg-cell:hover img { opacity:0.7; }
-    .pg-badge {
-      position:absolute; top:5px; left:5px; font-size:8px; letter-spacing:2px;
-      text-transform:uppercase; padding:2px 6px; border-radius:1px;
-    }
-    .pg-badge.cover { background:var(--green); color:#fff; }
-    .pg-badge.selected { background:var(--gold); color:#000; }
-    .pg-overlay {
-      position:absolute; inset:0; background:rgba(0,0,0,0.0);
-      display:flex; align-items:center; justify-content:center; gap:5px;
-      opacity:0; transition:all 0.2s;
-    }
-    .pg-cell:hover .pg-overlay { opacity:1; background:rgba(0,0,0,0.45); }
-    .pg-btn {
-      padding:3px 9px; font-size:8px; letter-spacing:2px; text-transform:uppercase;
-      border:1px solid rgba(255,255,255,0.4); background:rgba(0,0,0,0.7); color:#fff;
-      cursor:pointer; transition:background 0.15s;
-    }
-    .pg-btn:hover { background:rgba(0,0,0,0.9); }
-    .pg-label { position:absolute; bottom:0; left:0; right:0; padding:3px 5px; background:linear-gradient(to top,rgba(0,0,0,0.8),transparent); font-size:8px; opacity:0.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-    /* empty */
-    .empty { padding:40px 0; text-align:center; opacity:0.2; }
-    .empty p { font-size:9px; letter-spacing:4px; text-transform:uppercase; }
-
-    /* shimmer */
-    .shimmer { background:linear-gradient(90deg,var(--surface) 25%,rgba(255,255,255,0.03) 50%,var(--surface) 75%); background-size:200% 100%; animation:sh 1.4s infinite; }
-    @keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-    /* ─── SETTINGS PANEL ──────────────────────── */
-    .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-    .setting-card { background:var(--surface2); border:1px solid var(--border); padding:18px; }
-    .sc-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:var(--dim); margin-bottom:10px; display:block; }
-    .sc-name-input {
-      width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border2);
-      color:var(--cream); font-size:14px; outline:none; margin-bottom:10px;
-      transition:border-color 0.2s;
-    }
-    .sc-name-input:focus { border-color:rgba(255,255,255,0.3); }
-    .sc-desc-input {
-      width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border2);
-      color:var(--cream); font-size:12px; outline:none; resize:vertical; min-height:64px;
-      font-family:var(--font); line-height:1.6; transition:border-color 0.2s;
-    }
-    .sc-desc-input:focus { border-color:rgba(255,255,255,0.3); }
-    .sc-thumb { width:100%; aspect-ratio:16/7; object-fit:cover; display:block; margin-bottom:10px; background:var(--bg); }
-    .sc-no-cover { width:100%; aspect-ratio:16/7; background:var(--bg); display:flex; align-items:center; justify-content:center; margin-bottom:10px; font-size:9px; letter-spacing:3px; text-transform:uppercase; opacity:0.2; }
-
-    /* ─── PAGE SLOTS PANEL ────────────────────── */
-    .slots-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .slot-card { background:var(--surface2); border:1px solid var(--border); overflow:hidden; cursor:pointer; transition:border-color 0.2s; }
-    .slot-card:hover { border-color:var(--border2); }
-    .slot-card.filled { border-color:rgba(90,158,111,0.3); }
-    .slot-card.picking { border-color:var(--gold); }
-    .slot-img { width:100%; aspect-ratio:16/7; object-fit:cover; display:block; background:var(--bg); }
-    .slot-empty { width:100%; aspect-ratio:16/7; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; }
-    .slot-empty-icon { font-size:20px; opacity:0.15; }
-    .slot-empty-label { font-size:9px; letter-spacing:3px; text-transform:uppercase; opacity:0.2; }
-    .slot-info { padding:10px 14px 12px; display:flex; align-items:center; justify-content:space-between; }
-    .slot-name { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
-    .slot-action { font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--dim); }
-    .slot-card.filled .slot-action { color:var(--green); }
-    .slot-card.picking .slot-action { color:var(--gold); }
-
-    /* ─── IMAGE PICKER MODAL ─────────────────── */
-    #pickerModal {
-      position:fixed; inset:0; z-index:800; background:rgba(0,0,0,0.88);
-      display:none; align-items:center; justify-content:center;
-    }
-    #pickerModal.open { display:flex; }
-    .picker-box {
-      background:var(--surface); border:1px solid var(--border2);
-      width:min(900px,95vw); max-height:85vh; display:flex; flex-direction:column; border-radius:2px;
-    }
-    .picker-head {
-      padding:16px 20px; border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
-    }
-    .picker-title { font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); }
-    .picker-slot-name { font-size:16px; font-weight:300; }
-    .picker-close { font-size:20px; color:var(--dim); cursor:pointer; transition:color 0.2s; border:none; background:none; }
-    .picker-close:hover { color:var(--cream); }
-    .picker-filter {
-      padding:12px 20px; border-bottom:1px solid var(--border);
-      display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0;
-    }
-    .pf-btn {
-      padding:4px 12px; font-size:8px; letter-spacing:3px; text-transform:uppercase;
-      border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; transition:all 0.15s;
-    }
-    .pf-btn:hover,.pf-btn.active { background:rgba(255,255,255,0.07); color:var(--cream); border-color:var(--border2); }
-    .picker-grid-wrap { overflow-y:auto; padding:16px 20px; flex:1; }
-    .picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; }
-    .pick-cell {
-      position:relative; aspect-ratio:3/2; background:var(--surface2);
-      overflow:hidden; cursor:pointer; border:2px solid transparent;
-      transition:border-color 0.2s; border-radius:1px;
-    }
-    .pick-cell:hover { border-color:rgba(255,255,255,0.3); }
-    .pick-cell.active { border-color:var(--gold); }
-    .pick-cell img { width:100%; height:100%; object-fit:cover; display:block; }
-    .pick-label { position:absolute; bottom:0; left:0; right:0; padding:3px 5px; background:linear-gradient(to top,rgba(0,0,0,0.85),transparent); font-size:8px; opacity:0.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .picker-foot { padding:14px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; }
-
-    /* ─── TOAST ───────────────────────────────── */
-    .toast {
-      position:fixed; bottom:20px; right:20px; z-index:9999;
-      padding:9px 20px; background:var(--sage); border:1px solid rgba(255,255,255,0.07);
-      font-size:8px; letter-spacing:4px; text-transform:uppercase; color:var(--cream);
-      opacity:0; transform:translateY(5px); transition:all 0.25s; pointer-events:none; border-radius:1px;
-    }
-    .toast.show { opacity:1; transform:translateY(0); }
-    .toast.err { background:var(--red); }
-
-    /* scrollbar */
-    ::-webkit-scrollbar { width:5px; height:5px; }
-    ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TIA Admin</title>
+<script src="../assets/js/tia-data.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1110;--surface:#181b17;--surface2:#1d201c;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --cream:#ede9e2;--muted:rgba(237,233,226,.4);--dim:rgba(237,233,226,.18);
+  --gold:#c9a227;--green:#5a9e6f;--red:#a05050;--sage:#3d4039;
+  --font:"Helvetica Neue",Arial,sans-serif}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--font);font-size:13px}
+button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
+/* AUTH */
+#authScreen{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.auth-box{width:340px}
+.auth-logo{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:var(--dim);margin-bottom:32px;display:block}
+.auth-h{font-size:26px;font-weight:300;margin-bottom:28px;opacity:.8}
+.auth-field{margin-bottom:14px}
+.auth-field label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
+.auth-field input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
+.auth-btn{width:100%;margin-top:20px;padding:12px;background:var(--sage);border:none;color:var(--cream);font-size:9px;letter-spacing:5px;text-transform:uppercase;cursor:pointer}
+.auth-err{color:var(--red);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:10px;display:none}
+.auth-err.show{display:block}
+/* SHELL */
+#app{display:none;grid-template-rows:52px 1fr;height:100vh}
+#app.show{display:grid}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);background:var(--surface)}
+.tb-left{display:flex;align-items:center;gap:16px}
+.tb-brand{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--dim)}
+.tb-brand strong{color:var(--cream);opacity:.8}
+.tb-sync{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}
+.tb-sync.ok{color:var(--green)}.tb-sync.err{color:var(--red)}.tb-sync.busy{color:var(--gold)}
+.tb-nav{display:flex;gap:1px}
+.tb-tab{padding:8px 16px;font-size:8px;letter-spacing:4px;text-transform:uppercase;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tb-tab:hover{color:var(--cream)}.tb-tab.active{color:var(--cream);border-bottom-color:var(--gold)}
+.tb-right{display:flex;gap:10px;align-items:center}
+.tb-save{font-size:8px;letter-spacing:4px;text-transform:uppercase;border:none;background:var(--gold);color:#000;padding:6px 18px;font-weight:700;cursor:pointer}
+.tb-save:disabled{opacity:.4;cursor:not-allowed}
+.tb-signout{font-size:8px;letter-spacing:4px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 14px;cursor:pointer}
+/* LAYOUT */
+.body{display:grid;grid-template-columns:220px 1fr;overflow:hidden;height:100%}
+/* SIDEBAR */
+.sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface)}
+.sb-group{padding:14px 0 4px}
+.sb-lbl{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);padding:0 14px 8px;display:block}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;width:100%;text-align:left;font-size:12px;border-left:2px solid transparent}
+.sb-item:hover{color:var(--cream);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-left-color:var(--gold)}
+.sb-num{font-size:8px;letter-spacing:2px;color:var(--dim);width:18px;flex-shrink:0}
+.sb-name{flex:1;line-height:1.3}.sb-cnt{font-size:9px;color:var(--dim)}.sb-cnt.has{color:var(--green)}
+.sb-div{height:1px;background:var(--border);margin:4px 14px 10px}
+/* MAIN */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.ph{padding:16px 24px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface2)}
+.ph-eye{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.ph-title{font-size:19px;font-weight:300}.ph-acts{display:flex;gap:8px}
+.pb{flex:1;overflow-y:auto;padding:22px 24px}
+/* BUTTONS */
+.btn{padding:6px 16px;font-size:8px;letter-spacing:4px;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.btn:hover{color:var(--cream);border-color:rgba(255,255,255,.3)}
+.btn.pri{background:var(--sage);border-color:var(--sage);color:var(--cream)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700}
+.btn.red{border-color:rgba(160,80,80,.3);color:var(--red)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+/* INPUTS */
+.input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
+.textarea{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:12px;outline:none;resize:vertical;min-height:64px;line-height:1.6}
+.field-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;display:block}
+.sec-lbl{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.card{background:var(--surface2);border:1px solid var(--border);padding:18px;margin-bottom:14px}
+/* PHOTO GRID */
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:5px}
+.pc{position:relative;aspect-ratio:3/2;background:var(--surface2);border:2px solid transparent;overflow:hidden;cursor:pointer;border-radius:1px}
+.pc:hover{border-color:rgba(255,255,255,.2)}.pc.cover{border-color:var(--green)!important}
+.pc img{width:100%;height:100%;object-fit:cover;display:block}
+.pc-badge{position:absolute;top:5px;left:5px;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:2px 6px;border-radius:1px}
+.pc-badge.cover{background:var(--green);color:#fff}
+.pc-ov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;gap:5px;opacity:0;transition:opacity .2s}
+.pc:hover .pc-ov{opacity:1;background:rgba(0,0,0,.5)}
+.pc-btn{padding:3px 9px;font-size:8px;letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
+.pc-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* SLOTS */
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.slot{background:var(--surface2);border:1px solid var(--border);overflow:hidden;cursor:pointer}
+.slot:hover{border-color:var(--border2)}.slot.filled{border-color:rgba(90,158,111,.3)}
+.slot-img{width:100%;aspect-ratio:16/7;object-fit:cover;display:block;background:var(--bg)}
+.slot-empty{width:100%;aspect-ratio:16/7;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px}
+.slot-empty-ico{font-size:20px;opacity:.12}.slot-empty-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.18}
+.slot-info{padding:8px 12px 10px;display:flex;align-items:center;justify-content:space-between}
+.slot-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.slot-act{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}.slot.filled .slot-act{color:var(--green)}
+/* PICKER */
+#picker{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
+#picker.open{display:flex}
+.pk-box{background:var(--surface);border:1px solid var(--border2);width:min(920px,96vw);max-height:88vh;display:flex;flex-direction:column;border-radius:2px}
+.pk-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pk-eye{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.pk-title{font-size:16px;font-weight:300}
+.pk-close{font-size:20px;border:none;background:none;color:var(--muted);cursor:pointer}
+.pk-filter{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.pk-f{padding:4px 12px;font-size:8px;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
+.pk-f:hover,.pk-f.active{background:rgba(255,255,255,.07);color:var(--cream);border-color:var(--border2)}
+.pk-grid-wrap{overflow-y:auto;padding:14px 18px;flex:1}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
+.pk-cell{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;cursor:pointer;border:2px solid transparent;border-radius:1px}
+.pk-cell:hover{border-color:rgba(255,255,255,.3)}.pk-cell.active{border-color:var(--gold)}
+.pk-cell img{width:100%;height:100%;object-fit:cover;display:block}
+.pk-cell-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+/* LR */
+.lr-step{background:var(--surface2);border:1px solid var(--border);padding:18px;margin-bottom:14px}
+.lr-step-num{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:block}
+.lr-connected{display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(90,158,111,.1);border:1px solid rgba(90,158,111,.25)}
+.lr-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.lr-album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:240px;overflow-y:auto}
+.lr-album{background:var(--bg);border:1px solid var(--border);padding:12px;cursor:pointer}
+.lr-album:hover{border-color:var(--border2);background:var(--surface2)}.lr-album.sel{border-color:var(--gold);background:rgba(201,162,39,.06)}
+.lr-album-name{font-size:12px;margin-bottom:4px}.lr-album-cnt{font-size:9px;letter-spacing:2px;color:var(--dim)}
+.lr-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;max-height:300px;overflow-y:auto;margin-top:12px}
+.lr-photo{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;border:2px solid transparent;cursor:pointer}
+.lr-photo:hover{border-color:rgba(255,255,255,.2)}.lr-photo.sel{border-color:var(--gold)}
+.lr-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.lr-check{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:10px;color:#000;font-weight:700}
+.lr-photo.sel .lr-check{display:flex}
+.lr-log{background:var(--bg);border:1px solid var(--border);padding:14px;font-size:11px;line-height:1.9;font-family:monospace;color:rgba(237,233,226,.55);max-height:180px;overflow-y:auto;margin-top:12px;display:none}
+.lr-log.show{display:block}
+/* MISC */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.empty{padding:50px 0;text-align:center}
+.empty p{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.2}
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;padding:9px 20px;background:var(--sage);border:1px solid rgba(255,255,255,.07);font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--cream);opacity:0;transform:translateY(5px);transition:all .25s;pointer-events:none;border-radius:1px}
+.toast.show{opacity:1;transform:translateY(0)}.toast.err{background:var(--red)}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
 </head>
 <body>
 
-<!-- ─── AUTH ─────────────────────────────────────── -->
 <div id="authScreen">
   <div class="auth-box">
-    <span class="auth-logo">The Infinite Arch · Admin</span>
-    <h1 class="auth-title">Photo Manager</h1>
-    <div class="auth-field">
-      <label>Username</label>
-      <input type="text" id="authUser" placeholder="username" autocomplete="username">
-    </div>
-    <div class="auth-field">
-      <label>Password</label>
-      <input type="password" id="authPass" placeholder="password" autocomplete="current-password"
-             onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="auth-submit" onclick="doLogin()">Sign In</button>
-    <div class="auth-error" id="authError">Incorrect credentials</div>
+    <span class="auth-logo">The Infinite Arch &middot; Admin</span>
+    <h1 class="auth-h">Photo Manager</h1>
+    <div class="auth-field"><label>Username</label><input type="text" id="authUser" autocomplete="username"></div>
+    <div class="auth-field"><label>Password</label><input type="password" id="authPass" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="auth-btn" onclick="doLogin()">Sign In</button>
+    <div class="auth-err" id="authErr">Incorrect credentials</div>
   </div>
 </div>
 
-<!-- ─── APP ──────────────────────────────────────── -->
 <div id="app">
   <div class="topbar">
-    <span class="tb-brand">TIA · <strong>Admin</strong></span><span id="syncStatus" style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-left:16px">—</span>
+    <div class="tb-left">
+      <span class="tb-brand">TIA &middot; <strong>Admin</strong></span>
+      <span class="tb-sync" id="syncStatus">&mdash;</span>
+    </div>
     <div class="tb-nav">
-      <button class="tb-tab active" data-tab="galleries" onclick="switchTab('galleries')">Galleries</button>
-      <button class="tb-tab" data-tab="upload" onclick="switchTab('upload')">Upload</button>
-      <button class="tb-tab" data-tab="homepage" onclick="switchTab('homepage')">Homepage</button>
-      <button class="tb-tab" data-tab="portfolio" onclick="switchTab('portfolio')">Portfolio</button>
-      <button class="tb-tab" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
-      <button class="tb-tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+      <button class="tb-tab active" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
+      <button class="tb-tab" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
+      <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
+      <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
+      <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
-      <button class="tb-save-all" onclick="saveAll()">Save All</button>
+      <button class="tb-save" id="saveBtn" onclick="saveAll()">Save &amp; Publish</button>
       <button class="tb-signout" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
-
   <div class="body">
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sb-group">
-        <span class="sb-group-label">Iceland 2026</span>
+        <span class="sb-lbl">Collections</span>
         <div id="seriesList"></div>
       </div>
-      <div class="sb-divider"></div>
+      <div class="sb-div"></div>
       <div class="sb-group">
-        <button class="sb-item" data-view="home-slots" onclick="setView('home-slots')">
-          <span class="sb-item-num">⌂</span>
-          <span class="sb-item-name">Homepage Slots</span>
-        </button>
-        <button class="sb-item" data-view="portfolio-slots" onclick="setView('portfolio-slots')">
-          <span class="sb-item-num">◻</span>
-          <span class="sb-item-name">Portfolio Covers</span>
-        </button>
+        <button class="sb-item" data-view="home-slots" onclick="setView('home-slots')"><span class="sb-num">H</span><span class="sb-name">Homepage Slots</span></button>
+        <button class="sb-item" data-view="portfolio-slots" onclick="setView('portfolio-slots')"><span class="sb-num">P</span><span class="sb-name">Portfolio Covers</span></button>
       </div>
     </aside>
-
-    <!-- MAIN -->
     <div class="main">
-      <div class="panel-head">
-        <div>
-          <div class="ph-eyebrow" id="panelEye">Select a gallery</div>
-          <div class="ph-title" id="panelTitle">Photo Manager</div>
-        </div>
-        <div class="ph-actions" id="panelActions"></div>
+      <div class="ph">
+        <div><div class="ph-eye" id="phEye"></div><div class="ph-title" id="phTitle">Photo Manager</div></div>
+        <div class="ph-acts" id="phActs"></div>
       </div>
-      <div class="panel-body" id="panelBody">
-        <div class="empty"><p>Choose a collection or tab above</p></div>
-      </div>
+      <div class="pb" id="panelBody"><div class="empty"><p>Choose Lightroom to connect</p></div></div>
     </div>
   </div>
 </div>
 
-<!-- ─── IMAGE PICKER MODAL ────────────────────────── -->
-<div id="pickerModal">
-  <div class="picker-box">
-    <div class="picker-head">
-      <div>
-        <div class="picker-title">Choose Photo For</div>
-        <div class="picker-slot-name" id="pickerSlotName">—</div>
-      </div>
-      <button class="picker-close" onclick="closePicker()">✕</button>
+<div id="picker">
+  <div class="pk-box">
+    <div class="pk-head">
+      <div><div class="pk-eye">Choose Photo For</div><div class="pk-title" id="pkTitle">&mdash;</div></div>
+      <button class="pk-close" onclick="closePicker()">&times;</button>
     </div>
-    <div class="picker-filter" id="pickerFilter"></div>
-    <div class="picker-grid-wrap">
-      <div class="picker-grid" id="pickerGrid"></div>
-    </div>
-    <div class="picker-foot">
+    <div class="pk-filter" id="pkFilter"></div>
+    <div class="pk-grid-wrap"><div class="pk-grid" id="pkGrid"></div></div>
+    <div class="pk-foot">
       <button class="btn" onclick="closePicker()">Cancel</button>
-      <button class="btn primary" id="pickerConfirmBtn" onclick="confirmPick()" disabled>Use This Photo</button>
+      <button class="btn gold" id="pkConfirm" onclick="confirmPick()" disabled>Use This Photo</button>
     </div>
   </div>
 </div>
@@ -381,1181 +210,412 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════════
-// AUTH — hardcoded credentials
-// ════════════════════════════════════════════════════════════
-const CREDS = { user:'rla1022', pass:'!1!680300Ra!1!' };
-
-function doLogin() {
-  const u = document.getElementById('authUser').value;
-  const p = document.getElementById('authPass').value;
-  if (u === CREDS.user && p === CREDS.pass) {
-    sessionStorage.setItem('tia_auth','1');
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('app').classList.add('show');
-    init();
-  } else {
-    document.getElementById('authError').classList.add('show');
-    document.getElementById('authPass').value = '';
-  }
+// AUTH
+const CREDS={user:"rla1022",pass:"!1!680300Ra!1!"};
+let authed=sessionStorage.getItem("tia_auth")==="1";
+function doLogin(){
+  if(document.getElementById("authUser").value===CREDS.user&&document.getElementById("authPass").value===CREDS.pass){
+    sessionStorage.setItem("tia_auth","1");authed=true;
+    document.getElementById("authScreen").style.display="none";
+    document.getElementById("app").classList.add("show");init();
+  }else{document.getElementById("authErr").classList.add("show");document.getElementById("authPass").value="";}
 }
+function doLogout(){sessionStorage.removeItem("tia_auth");location.reload();}
+if(authed){document.getElementById("authScreen").style.display="none";document.getElementById("app").classList.add("show");}
 
-function doLogout() {
-  sessionStorage.removeItem('tia_auth');
-  location.reload();
+// STATE
+let STATE={};
+let activeView=null,activeTab="lightroom";
+let LR_PHOTOS={};
+let lrAlbums=[],lrAlbumPhotos=[],lrSelected=new Set(),lrCurrentAlbum=null;
+
+function getSeries(){return TIA.getSeries();}
+function getSeriesPhotos(sid){
+  return(STATE.photos?.[sid]||[]).map(aid=>{
+    const m=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
+    return{assetId:aid,filename:m.filename||aid,thumbUrl:m.urlThumb||"",fullUrl:m.url2048||""};
+  });
 }
-
-// Auto-login if session active
-if (sessionStorage.getItem('tia_auth') === '1') {
-  document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('app').classList.add('show');
-}
-
-// ════════════════════════════════════════════════════════════
-// CONFIG
-// ════════════════════════════════════════════════════════════
-const CLOUD  = 'duxiir9lv';
-const PRESET = 'tia_unsigned';
-const FOLDER = 'tia';
-
-// Series definitions — titles/descriptions can be overridden by settings
-const DEFAULT_SERIES = [
-  { id:'s1', num:'01', folder:'s1-solitude-scale',      title:'Solitude & Scale',        subtitle:'The Secret Lagoon',                type:'Triptych' },
-  { id:'s2', num:'02', folder:'s2-glacial-contrasts',   title:'Glacial Contrasts',        subtitle:'Ice in Two Realms',                type:'Diptych'  },
-  { id:'s3', num:'03', folder:'s3-blue-trilogy',        title:'Blue Trilogy',             subtitle:'The Impossible Blues of Iceland Ice',type:'Triptych'},
-  { id:'s4', num:'04', folder:'s4-coastal-contrasts',   title:'Coastal Contrasts',        subtitle:'Black Sand vs Blue Water',         type:'Diptych'  },
-  { id:'s5', num:'05', folder:'s5-human-element',       title:'The Human Element',        subtitle:'Presence at the Edge of the World',type:'Diptych'  },
-  { id:'s6', num:'06', folder:'s6-arnarstapi-geometry', title:'Arnarstapi Geometry',      subtitle:'The Architecture of Erosion',      type:'Triptych' },
-  { id:'s7', num:'07', folder:'s7-peninsular-panorama', title:'Peninsular Panorama',      subtitle:'Snæfellsnes in Three Moods',       type:'Triptych' },
-  { id:'s8', num:'08', folder:'s8-urban-odyssey',       title:'Urban Odyssey',            subtitle:'Reykjavík as Coda',                type:'Triptych' },
-];
-
-// Homepage photo slots
-const HOME_SLOTS = [
-  { id:'hero',      label:'Hero Background',          hint:'Main full-screen photo on homepage' },
-  { id:'carousel1', label:'Carousel — Slide 1',       hint:'First rotating photo' },
-  { id:'carousel2', label:'Carousel — Slide 2',       hint:'' },
-  { id:'carousel3', label:'Carousel — Slide 3',       hint:'' },
-  { id:'mountain',  label:'Mountain / Full-Width',    hint:'"To see the world" section background' },
-  { id:'qrow1',     label:'Quote Row 1 (Number 25)',  hint:'Right column photo beside the O\'Connell quote' },
-  { id:'qrow2',     label:'Quote Row 2 (Vonnegut)',   hint:'Left column photo' },
-  { id:'qrow3',     label:'Quote Row 3 (Muir)',       hint:'Right column photo' },
-  { id:'qrow4',     label:'Quote Row 4 (Thoreau)',    hint:'Left column photo' },
-  { id:'portrait',  label:'Contact Portrait',         hint:'Your photo in the guide/contact section' },
-];
-
-// Portfolio featured series slots
-const PORTFOLIO_SLOTS = [
-  { id:'pf-s1', label:'Featured Work 1 — Solitude & Scale' },
-  { id:'pf-s3', label:'Featured Work 2 — Blue Trilogy'     },
-  { id:'pf-s2', label:'Featured Work 3 — Glacial Contrasts'},
-  { id:'pf-s5', label:'Featured Work 4 — Human Element'    },
-  { id:'pf-s7', label:'Featured Work 5 — Peninsular Panorama'},
-];
-
-// ════════════════════════════════════════════════════════════
-// STATE — all saved to localStorage key "tia_admin"
-// ════════════════════════════════════════════════════════════
-let STATE = {
-  series: {},      // { s1: { title, subtitle, description, coverPublicId } }
-  home: {},        // { hero: publicId, carousel1: publicId, ... }
-  portfolio: {},   // { 'pf-s1': publicId, ... }
-};
-let PHOTOS = {};   // { folderId: [{publicId, url, thumb, filename}] }
-let activeView = null;
-let activeTab  = 'galleries';
-let queue      = [];
-let uploadTarget = null; // which series folder to upload to
-
-// picker state
-let pickerSlotId  = null;
-let pickerSlotCtx = null; // 'home' | 'portfolio' | 'cover'
-let pickerActive  = null; // selected publicId in picker
-
-async function loadState() {
-  STATE = await TIA.load();
-  STATE.series    = STATE.series    || {};
-  STATE.home      = STATE.home      || {};
-  STATE.portfolio = STATE.portfolio || {};
-  STATE.photos    = STATE.photos    || {};
-  STATE.lightroom = STATE.lightroom || {};
-}
-
-async function saveAll() {
-  setSaving(true);
-  try {
-    await TIA.save(STATE);
-    toast('Saved & synced to site ✓');
-  } catch(err) {
-    // localStorage already written by TIA.save, Cloudinary push failed
-    toast('Saved locally — cloud sync failed: ' + err.message, true);
-    console.error(err);
-  }
-  setSaving(false);
-}
-
-function setSaving(on) {
-  const btn = document.querySelector('.tb-save-all');
-  if (btn) btn.textContent = on ? 'Saving…' : 'Save All';
-  if (btn) btn.disabled = on;
-}
-
-function getSeries() {
-  return DEFAULT_SERIES.map(s => ({
-    ...s,
-    ...(STATE.series[s.id] || {}),
+function allPhotos(){
+  const all=[];
+  Object.values(STATE.photos||{}).forEach(ids=>ids.forEach(aid=>{
+    const m=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
+    all.push({assetId:aid,...m});
   }));
-}
-
-// ════════════════════════════════════════════════════════════
-// CLOUDINARY FETCH
-// ════════════════════════════════════════════════════════════
-async function fetchFolder(folder) {
-  try {
-    const url = `https://res.cloudinary.com/${CLOUD}/image/list/${FOLDER}/${folder}.json`;
-    const res = await fetch(url + '?t=' + Date.now());
-    if (!res.ok) {
-      console.warn(`fetchFolder ${folder}: HTTP ${res.status} — Resource list may be disabled in Cloudinary settings`);
-      return [];
-    }
-    const data = await res.json();
-    const resources = data.resources || [];
-    console.log(`fetchFolder ${folder}: found ${resources.length} photos`);
-    return resources.map(r => makePhotoObj(r.public_id));
-  } catch(err) {
-    console.warn(`fetchFolder ${folder} error:`, err);
-    return [];
-  }
-}
-
-function makePhotoObj(publicId) {
-  return {
-    publicId,
-    url:      `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto/${publicId}`,
-    thumb:    `https://res.cloudinary.com/${CLOUD}/image/upload/w_280,q_auto,f_auto/${publicId}`,
-    large:    `https://res.cloudinary.com/${CLOUD}/image/upload/w_1600,q_auto,f_auto/${publicId}`,
-    filename: publicId.split('/').pop(),
-  };
-}
-
-async function ensurePhotos(folderId, folderPath) {
-  if (!PHOTOS[folderId]) {
-    PHOTOS[folderId] = null; // loading
-    PHOTOS[folderId] = await fetchFolder(folderPath);
-  }
-  return PHOTOS[folderId] || [];
-}
-
-function allPhotos() {
-  const all = [];
-  Object.values(PHOTOS).forEach(arr => { if (Array.isArray(arr)) all.push(...arr); });
   return all;
 }
 
-// ════════════════════════════════════════════════════════════
-// PHOTO PERSISTENCE — write/read from tia_admin localStorage
-// This is what gallery.html reads — the single source of truth
-// ════════════════════════════════════════════════════════════
-function persistPhoto(seriesId, publicId) {
-  if (!STATE.photos) STATE.photos = {};
-  if (!STATE.photos[seriesId]) STATE.photos[seriesId] = [];
-  if (!STATE.photos[seriesId].includes(publicId)) {
-    STATE.photos[seriesId].push(publicId);
-  }
-  // Fire-and-forget push to Cloudinary — don't block upload loop
-  TIA.save(STATE).catch(err => console.warn('Config sync failed:', err));
-}
-
-function loadPhotosFromState() {
-  // Build PHOTOS cache from what's stored in localStorage
-  // so admin shows what was previously uploaded without needing Cloudinary list API
-  if (!STATE.photos) return;
-  Object.entries(STATE.photos).forEach(([sid, pids]) => {
-    if (!PHOTOS[sid]) {
-      PHOTOS[sid] = pids.map(pid => makePhotoObj(pid));
-    }
-  });
-}
-
-// ════════════════════════════════════════════════════════════
 // INIT
-// ════════════════════════════════════════════════════════════
-async function init() {
-  setSaving(true);
-  document.getElementById('syncStatus').textContent = 'Loading…';
-  await loadState();
-  setSaving(false);
-  document.getElementById('syncStatus').textContent = TIA._state ? '✓ Synced' : 'Offline';
-  loadPhotosFromState();
-  renderSidebar();
+async function init(){
+  setSyncStatus("busy","Loading...");
+  STATE=await TIA.load();
+  STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
+  STATE.home=STATE.home||{};STATE.portfolio=STATE.portfolio||{};
+  STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
+  Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
+  setSyncStatus("ok","Synced");
+  renderSidebar();handleOAuthReturn();switchTab("lightroom");
 }
 
-// ════════════════════════════════════════════════════════════
+// SAVE
+async function saveAll(){
+  setSyncStatus("busy","Saving...");setSaveBtn(true,"Saving...");
+  try{
+    STATE.lr.assetMeta={...STATE.lr.assetMeta,...LR_PHOTOS};
+    await TIA.save(STATE);
+    setSyncStatus("ok","Published");toast("Saved & published");
+  }catch(err){setSyncStatus("err","Failed");toast("Save failed: "+err.message,true);}
+  setSaveBtn(false,"Save & Publish");
+}
+function setSaveBtn(d,l){const b=document.getElementById("saveBtn");if(b){b.disabled=d;b.textContent=l;}}
+function setSyncStatus(s,l){const e=document.getElementById("syncStatus");if(e){e.className="tb-sync "+s;e.textContent=l;}}
+
 // SIDEBAR
-// ════════════════════════════════════════════════════════════
-function renderSidebar() {
-  const el = document.getElementById('seriesList');
-  el.innerHTML = getSeries().map(s => {
-    const photos = PHOTOS[s.id];
-    const count  = Array.isArray(photos) ? photos.length : '…';
-    return `
-      <button class="sb-item ${activeView === s.id ? 'active' : ''}" data-view="${s.id}" onclick="setView('${s.id}')">
-        <span class="sb-item-num">${s.num}</span>
-        <span class="sb-item-name">${s.title}</span>
-        <span class="sb-item-count ${count > 0 ? 'has' : ''}">${count || ''}</span>
-      </button>`;
-  }).join('');
+function renderSidebar(){
+  document.getElementById("seriesList").innerHTML=getSeries().map(s=>{
+    const cnt=(STATE.photos?.[s.id]||[]).length;
+    return`<button class="sb-item ${activeView===s.id?"active":""}" data-view="${s.id}" onclick="setView('${s.id}')"><span class="sb-num">${s.num}</span><span class="sb-name">${s.title}</span><span class="sb-cnt ${cnt>0?"has":""}">${cnt||""}</span></button>`;
+  }).join("");
 }
 
-// ════════════════════════════════════════════════════════════
-// TAB SWITCHING
-// ════════════════════════════════════════════════════════════
-function switchTab(tab) {
-  activeTab = tab;
-  document.querySelectorAll('.tb-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  const sidebar = document.getElementById('sidebar');
-  sidebar.style.display = ['galleries','upload','settings'].includes(tab) ? '' : 'none';
-
-  if (tab === 'homepage')    showHomeSlots();
-  else if (tab === 'portfolio')  showPortfolioSlots();
-  else if (tab === 'settings')   showSettingsPanel();
-  else if (tab === 'upload')     showUploadPanel();
-  else if (tab === 'lightroom')  showLightroomPanel();
-  else { setPanel('','Photo Manager'); document.getElementById('panelBody').innerHTML = '<div class="empty"><p>Choose a collection from the left</p></div>'; }
+// ROUTING
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
+  document.getElementById("sidebar").style.display=["galleries","settings"].includes(tab)?"":"none";
+  if(tab==="lightroom")showLightroomPanel();
+  else if(tab==="homepage")showHomeSlots();
+  else if(tab==="portfolio")showPortfolioSlots();
+  else if(tab==="settings")showSettingsPanel();
+  else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}
 }
-
-// ════════════════════════════════════════════════════════════
-// VIEW ROUTING
-// ════════════════════════════════════════════════════════════
-function setView(id) {
-  activeView = id;
-  // update sidebar active state
-  document.querySelectorAll('.sb-item').forEach(b => b.classList.toggle('active', b.dataset.view === id));
-
-  if (id === 'home-slots')      showHomeSlots();
-  else if (id === 'portfolio-slots') showPortfolioSlots();
+function setView(id){
+  activeView=id;
+  document.querySelectorAll(".sb-item").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+  if(id==="home-slots")showHomeSlots();
+  else if(id==="portfolio-slots")showPortfolioSlots();
   else showSeriesView(id);
 }
-
-function setPanel(eye, title, actions='') {
-  document.getElementById('panelEye').textContent   = eye;
-  document.getElementById('panelTitle').textContent = title;
-  document.getElementById('panelActions').innerHTML = actions;
+function setPanel(eye,title,acts=""){
+  document.getElementById("phEye").textContent=eye;
+  document.getElementById("phTitle").textContent=title;
+  document.getElementById("phActs").innerHTML=acts;
 }
 
-// ════════════════════════════════════════════════════════════
-// SERIES VIEW — photo grid + cover picker + rename
-// ════════════════════════════════════════════════════════════
-async function showSeriesView(sid) {
-  const s = getSeries().find(x => x.id === sid);
-  if (!s) return;
-
-  setPanel(`Series ${s.num}`, s.title,
-    `<button class="btn" onclick="showRenamePanel('${sid}')">✎ Rename</button>
-     <button class="btn primary" onclick="startUploadFor('${sid}')">+ Upload Photos</button>`
-  );
-
-  const body = document.getElementById('panelBody');
-  body.innerHTML = `<div class="shimmer" style="height:120px;margin-bottom:16px;border-radius:1px"></div><div class="empty"><p>Loading photos…</p></div>`;
-
-  const photos = await ensurePhotos(sid, s.folder);
-  renderSidebar();
-
-  const cover = STATE.series[sid]?.coverPublicId || photos[0]?.publicId;
-
-  let html = '';
-
-  // rename inline strip
-  html += `
-    <div style="background:var(--surface2);border:1px solid var(--border);padding:16px 18px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div>
-        <div class="sc-label">Gallery Title</div>
-        <input class="sc-name-input" id="inlineTitle" value="${escHtml(s.title)}" placeholder="Series title" oninput="updateSeriesField('${sid}','title',this.value)">
-      </div>
-      <div>
-        <div class="sc-label">Subtitle / Tagline</div>
-        <input class="sc-name-input" id="inlineSub" value="${escHtml(s.subtitle)}" placeholder="Subtitle" oninput="updateSeriesField('${sid}','subtitle',this.value)">
-      </div>
-      <div style="grid-column:span 2">
-        <div class="sc-label">Description</div>
-        <textarea class="sc-desc-input" id="inlineDesc" placeholder="Describe this series…" oninput="updateSeriesField('${sid}','description',this.value)">${escHtml(s.description||'')}</textarea>
-      </div>
-    </div>`;
-
-  if (photos.length === 0) {
-    html += `
-      <div style="background:rgba(201,162,39,0.07);border:1px solid rgba(201,162,39,0.2);padding:16px 18px;margin-bottom:16px;font-size:12px;line-height:1.8;color:rgba(237,233,226,0.55);">
-        <strong style="color:var(--gold);font-size:9px;letter-spacing:4px;text-transform:uppercase;">No photos showing?</strong><br>
-        If you just uploaded, Cloudinary's folder listing may be disabled.<br>
-        Fix: <strong>cloudinary.com/console → Settings → Security → Resource list → Enable</strong><br>
-        Then refresh this page. Your photos are safely uploaded — they just can't be listed yet.
-      </div>
-      <div class="empty"><p>No photos found — upload some or enable Resource list in Cloudinary</p></div>`;
-  } else {
-    html += `<div class="sec-label"><span>${photos.length} photos in Cloudinary — click ★ to set cover</span></div>`;
-    html += `<div class="photo-grid">`;
-    photos.forEach(p => {
-      const isCover = p.publicId === cover;
-      html += `
-        <div class="pg-cell ${isCover ? 'cover-star' : ''}" id="pgc-${safeId(p.publicId)}">
-          <img src="${p.thumb}" loading="lazy" alt="${p.filename}">
-          ${isCover ? `<div class="pg-badge cover">Cover</div>` : ''}
-          <div class="pg-overlay">
-            <button class="pg-btn" onclick="setCover('${sid}','${p.publicId}')">★ Cover</button>
-            <button class="pg-btn" onclick="copyUrl('${p.url}')">Copy URL</button>
-          </div>
-          <div class="pg-label">${p.filename}</div>
-        </div>`;
-    });
-    html += `</div>`;
-  }
-
-  body.innerHTML = html;
-}
-
-function updateSeriesField(sid, field, val) {
-  if (!STATE.series[sid]) STATE.series[sid] = {};
-  STATE.series[sid][field] = val;
-  // update sidebar name live
-  if (field === 'title') renderSidebar();
-}
-
-function setCover(sid, publicId) {
-  if (!STATE.series[sid]) STATE.series[sid] = {};
-  STATE.series[sid].coverPublicId = publicId;
-  saveAll();
-  showSeriesView(sid);
-  toast('Cover set ✓');
-}
-
-// ════════════════════════════════════════════════════════════
-// UPLOAD PANEL
-// ════════════════════════════════════════════════════════════
-function showUploadPanel() {
-  setPanel('Upload','Add Photos to a Series','');
-  const body = document.getElementById('panelBody');
-  const series = getSeries();
-
-  body.innerHTML = `
-    <div style="margin-bottom:18px">
-      <div class="sec-label"><span>Choose destination series</span></div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;" id="uploadSeriesBtns">
-        ${series.map(s => `
-          <button class="pf-btn ${uploadTarget===s.id?'active':''}" onclick="selectUploadTarget('${s.id}','${escHtml(s.title)}')">${s.num} — ${escHtml(s.title)}</button>
-        `).join('')}
-      </div>
-    </div>
-    <div class="drop-zone" id="dz">
-      <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
-      <div class="dz-icon">📷</div>
-      <p class="dz-text">Drop photos here or click to select</p>
-      <p class="dz-hint">JPG · TIFF · PNG · Any size</p>
-    </div>
-    <div id="queueWrap" style="display:none">
-      <div class="sec-label">
-        <span>Queue (<span id="qCount">0</span> pending)</span>
-        <button onclick="clearPending()">Clear pending</button>
-      </div>
-      <div class="progress-wrap"><div class="progress-bar" id="pbar"></div></div>
-      <div class="queue-list" id="qList"></div>
-      <div style="margin-top:12px;display:flex;gap:8px;">
-        <button class="btn primary" onclick="uploadAll()" id="uploadAllBtn">Upload All</button>
-        <span id="uploadTargetLabel" style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);align-self:center;"></span>
-      </div>
-    </div>`;
-
-  setupDz();
-  renderQueueUI();
-  updateUploadTargetLabel();
-}
-
-function selectUploadTarget(sid, title) {
-  uploadTarget = sid;
-  showUploadPanel();
-}
-
-function updateUploadTargetLabel() {
-  const el = document.getElementById('uploadTargetLabel');
-  if (!el) return;
-  if (uploadTarget) {
-    const s = getSeries().find(x => x.id === uploadTarget);
-    el.textContent = `→ tia/${s?.folder || uploadTarget}/`;
-  } else {
-    el.textContent = 'Select a series above first';
-  }
-}
-
-function startUploadFor(sid) {
-  uploadTarget = sid;
-  switchTab('upload');
-}
-
-function setupDz() {
-  const dz = document.getElementById('dz');
-  if (!dz) return;
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); handleFiles(e.dataTransfer.files); });
-}
-
-function handleFiles(files) {
-  if (!uploadTarget) { toast('Select a series first', true); return; }
-  Array.from(files).forEach(f => queue.push({ file:f, status:'pending', preview: URL.createObjectURL(f) }));
-  renderQueueUI();
-}
-
-function renderQueueUI() {
-  const wrap = document.getElementById('queueWrap');
-  const list = document.getElementById('qList');
-  const cnt  = document.getElementById('qCount');
-  if (!wrap || !list) return;
-  if (queue.length === 0) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  if (cnt) cnt.textContent = queue.filter(i => i.status==='pending').length;
-  list.innerHTML = queue.map((item, i) => {
-    const kb = item.file.size > 1024*1024
-      ? (item.file.size/1024/1024).toFixed(1)+'MB'
-      : Math.round(item.file.size/1024)+'KB';
-    return `
-      <div class="q-item">
-        <img class="q-thumb" src="${item.preview}">
-        <div>
-          <div class="q-name">${item.file.name}</div>
-          <div class="q-size">${kb}</div>
-        </div>
-        <span class="q-status ${item.status}" id="qs${i}">${item.status}</span>
-      </div>`;
-  }).join('');
-}
-
-function clearPending() {
-  queue = queue.filter(i => i.status !== 'pending');
-  renderQueueUI();
-}
-
-// Convert File to base64 data URI — avoids FormData cloning issues
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('FileReader failed'));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadAll() {
-  if (!uploadTarget) { toast('Select a series first', true); return; }
-  const pending = queue.filter(i => i.status === 'pending');
-  if (!pending.length) { toast('Nothing to upload'); return; }
-
-  const s = getSeries().find(x => x.id === uploadTarget);
-  const folder = `${FOLDER}/${s.folder}`;
-  const btn = document.getElementById('uploadAllBtn');
-  if (btn) btn.disabled = true;
-
-  // ── Pre-flight: test one small request to catch preset/cloud errors early
-  showUploadStatus('Connecting to Cloudinary…', 'info');
-
-  let firstError = null;
-
-  for (let i = 0; i < queue.length; i++) {
-    const item = queue[i];
-    if (item.status !== 'pending') continue;
-    item.status = 'uploading';
-    const el = document.getElementById(`qs${i}`);
-    if (el) { el.className='q-status uploading'; el.textContent='uploading'; }
-
-    try {
-      // Use base64 data URI instead of raw File object in FormData
-      // — avoids "FormData could not be cloned" postMessage error
-      const dataUri = await fileToBase64(item.file);
-      const fd = new FormData();
-      fd.append('file', dataUri);
-      fd.append('upload_preset', PRESET);
-      fd.append('folder', folder);
-      fd.append('public_id', item.file.name.replace(/\.[^/.]+$/, ''));
-
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,
-        { method:'POST', body:fd }
-      );
-
-      if (!res.ok) {
-        const body = await res.text();
-        let msg = `HTTP ${res.status}`;
-        try {
-          const json = JSON.parse(body);
-          msg = json.error?.message || msg;
-        } catch {}
-        throw new Error(msg);
-      }
-
-      const result = await res.json();
-      item.status = 'done';
-      item.publicId = result.public_id;
-      if (el) { el.className='q-status done'; el.textContent='done ✓'; }
-
-      // Store publicId in localStorage via TIA data layer
-      // This is what the gallery/portfolio/homepage reads
-      persistPhoto(uploadTarget, result.public_id);
-
-      // Also add to local PHOTOS cache for immediate display in admin
-      if (!PHOTOS[uploadTarget]) PHOTOS[uploadTarget] = [];
-      if (Array.isArray(PHOTOS[uploadTarget])) {
-        const already = PHOTOS[uploadTarget].find(p => p.publicId === result.public_id);
-        if (!already) PHOTOS[uploadTarget].push(makePhotoObj(result.public_id));
-      }
-
-    } catch(err) {
-      item.status = 'error';
-      const errMsg = err.message || String(err);
-      if (el) {
-        el.className='q-status error';
-        el.textContent='error';
-        el.title = errMsg; // hover to see detail
-      }
-      console.error('Upload error:', errMsg);
-      if (!firstError) firstError = errMsg;
-    }
-
-    const done = queue.filter(x => x.status !== 'pending').length;
-    const pbar = document.getElementById('pbar');
-    if (pbar) pbar.style.width = (done / queue.length * 100) + '%';
-    const cnt = document.getElementById('qCount');
-    if (cnt) cnt.textContent = queue.filter(i => i.status === 'pending').length;
-  }
-
-  if (btn) btn.disabled = false;
-  hideUploadStatus();
-
-  const errors = queue.filter(i => i.status === 'error').length;
-  const doneCount = queue.filter(i => i.status === 'done').length;
-
-  if (errors > 0 && doneCount === 0) {
-    // All failed — show diagnostic
-    showUploadError(firstError);
-  } else if (errors > 0) {
-    toast(`${doneCount} uploaded, ${errors} failed — hover red items for details`, true);
-  } else {
-    toast('Upload complete ✓');
-    // Try to refresh from Cloudinary, but photos already in cache from upload response
-    // so grid will show immediately regardless of whether list API works
-    const freshPhotos = await fetchFolder(s.folder);
-    if (freshPhotos.length > 0) {
-      PHOTOS[uploadTarget] = freshPhotos;
-    }
-    // Either way, render what we have
-    renderSidebar();
-    // Switch to the gallery view so user can see the uploaded photos
-    setView(uploadTarget);
-  }
-}
-
-function showUploadStatus(msg, type) {
-  let el = document.getElementById('uploadStatusMsg');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'uploadStatusMsg';
-    el.style.cssText = 'padding:10px 14px;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;border-radius:1px;';
-    const wrap = document.getElementById('queueWrap');
-    if (wrap) wrap.insertBefore(el, wrap.firstChild);
-  }
-  el.style.background = type === 'error' ? 'rgba(160,80,80,0.15)' : 'rgba(201,162,39,0.1)';
-  el.style.color = type === 'error' ? 'var(--red)' : 'var(--gold)';
-  el.style.border = `1px solid ${type === 'error' ? 'rgba(160,80,80,0.3)' : 'rgba(201,162,39,0.3)'}`;
-  el.textContent = msg;
-  el.style.display = 'block';
-}
-
-function hideUploadStatus() {
-  const el = document.getElementById('uploadStatusMsg');
-  if (el) el.style.display = 'none';
-}
-
-function showUploadError(errMsg) {
-  let diagnosis = errMsg;
-
-  // Translate common Cloudinary error messages into plain English
-  if (errMsg?.includes('preset') || errMsg?.includes('upload_preset')) {
-    diagnosis = `Upload preset "${PRESET}" not found or not set to Unsigned.\n\nFix: Go to cloudinary.com/console → Settings → Upload → Upload Presets → create preset named "${PRESET}" with Mode = Unsigned.`;
-  } else if (errMsg?.includes('401') || errMsg?.includes('unauthorized')) {
-    diagnosis = `Cloud name "${CLOUD}" may be incorrect, or the preset requires authentication.\n\nFix: Check your Cloudinary cloud name at cloudinary.com/console.`;
-  } else if (errMsg?.includes('Failed to fetch') || errMsg?.includes('NetworkError')) {
-    diagnosis = `Network error — cannot reach Cloudinary.\n\nFix: Check your internet connection, or try opening admin on a real server (not file://).`;
-  } else if (errMsg?.includes('format') || errMsg?.includes('invalid')) {
-    diagnosis = `File format issue: ${errMsg}\n\nTry a standard JPG first to test.`;
-  }
-
-  showUploadStatus('Upload failed — see details below', 'error');
-
-  const wrap = document.getElementById('queueWrap');
-  let diagEl = document.getElementById('uploadDiag');
-  if (!diagEl) {
-    diagEl = document.createElement('div');
-    diagEl.id = 'uploadDiag';
-    diagEl.style.cssText = 'background:rgba(160,80,80,0.08);border:1px solid rgba(160,80,80,0.2);padding:16px;margin-bottom:16px;font-size:12px;line-height:1.7;white-space:pre-wrap;color:rgba(237,233,226,0.6);';
-    if (wrap) wrap.insertBefore(diagEl, wrap.children[1] || null);
-  }
-  diagEl.textContent = diagnosis;
-  diagEl.style.display = 'block';
-}
-
-// ════════════════════════════════════════════════════════════
-// HOMEPAGE SLOTS
-// ════════════════════════════════════════════════════════════
-function showHomeSlots() {
-  setPanel('Homepage','Page Photo Assignments','');
-  const body = document.getElementById('panelBody');
-
-  let html = `<div class="slots-grid">`;
-  HOME_SLOTS.forEach(slot => {
-    const pid    = STATE.home[slot.id];
-    const photos = PHOTOS;
-    const found  = pid ? findPhoto(pid) : null;
-    const filled = !!found;
-    html += `
-      <div class="slot-card ${filled ? 'filled' : ''}" id="slot-${slot.id}" onclick="openPicker('${slot.id}','home','${escHtml(slot.label)}')">
-        ${found
-          ? `<img class="slot-img" src="${found.thumb}" alt="">`
-          : `<div class="slot-empty"><div class="slot-empty-icon">📷</div><div class="slot-empty-label">No photo assigned</div></div>`}
-        <div class="slot-info">
-          <span class="slot-name">${slot.label}</span>
-          <span class="slot-action">${filled ? '✓ Set — click to change' : 'Click to assign'}</span>
-        </div>
-      </div>`;
-  });
-  html += `</div>`;
-  body.innerHTML = html;
-}
-
-// ════════════════════════════════════════════════════════════
-// PORTFOLIO SLOTS
-// ════════════════════════════════════════════════════════════
-function showPortfolioSlots() {
-  setPanel('Portfolio','Featured Work Cover Photos','');
-  const body = document.getElementById('panelBody');
-
-  let html = `<div class="slots-grid">`;
-  PORTFOLIO_SLOTS.forEach(slot => {
-    const pid   = STATE.portfolio[slot.id];
-    const found = pid ? findPhoto(pid) : null;
-    const filled = !!found;
-    html += `
-      <div class="slot-card ${filled ? 'filled' : ''}" id="slot-${slot.id}" onclick="openPicker('${slot.id}','portfolio','${escHtml(slot.label)}')">
-        ${found
-          ? `<img class="slot-img" src="${found.thumb}" alt="">`
-          : `<div class="slot-empty"><div class="slot-empty-icon">📷</div><div class="slot-empty-label">No photo assigned</div></div>`}
-        <div class="slot-info">
-          <span class="slot-name">${slot.label}</span>
-          <span class="slot-action">${filled ? '✓ Set — click to change' : 'Click to assign'}</span>
-        </div>
-      </div>`;
-  });
-  html += `</div>`;
-  body.innerHTML = html;
-}
-
-// ════════════════════════════════════════════════════════════
-// SETTINGS PANEL
-// ════════════════════════════════════════════════════════════
-function showSettingsPanel() {
-  setPanel('Settings', 'Gallery Names & Descriptions', '');
-  const body = document.getElementById('panelBody');
-  const series = getSeries();
-
-  let html = `<div class="settings-grid">`;
-  series.forEach(s => {
-    const cover = STATE.series[s.id]?.coverPublicId;
-    const coverPhoto = cover ? findPhoto(cover) : null;
-    html += `
-      <div class="setting-card">
-        ${coverPhoto
-          ? `<img class="sc-thumb" src="${coverPhoto.thumb}" alt="">`
-          : `<div class="sc-no-cover">No cover set</div>`}
-        <span class="sc-label">Series ${s.num} — Title</span>
-        <input class="sc-name-input" value="${escHtml(s.title)}" placeholder="Gallery title" oninput="updateSeriesField('${s.id}','title',this.value)">
-        <span class="sc-label">Subtitle</span>
-        <input class="sc-name-input" value="${escHtml(s.subtitle)}" placeholder="Subtitle / tagline" oninput="updateSeriesField('${s.id}','subtitle',this.value)">
-        <span class="sc-label">Description</span>
-        <textarea class="sc-desc-input" placeholder="Series description…" oninput="updateSeriesField('${s.id}','description',this.value)">${escHtml(s.description||'')}</textarea>
-      </div>`;
-  });
-  html += `</div>`;
-  body.innerHTML = html;
-}
-
-// ════════════════════════════════════════════════════════════
-// IMAGE PICKER MODAL
-// ════════════════════════════════════════════════════════════
-function openPicker(slotId, ctx, label) {
-  pickerSlotId  = slotId;
-  pickerSlotCtx = ctx;
-  pickerActive  = null;
-  document.getElementById('pickerSlotName').textContent = label;
-  document.getElementById('pickerConfirmBtn').disabled = true;
-  renderPickerFilter();
-  renderPickerGrid(null);
-  document.getElementById('pickerModal').classList.add('open');
-}
-
-function closePicker() {
-  document.getElementById('pickerModal').classList.remove('open');
-  pickerSlotId = pickerSlotCtx = pickerActive = null;
-}
-
-function renderPickerFilter() {
-  const el = document.getElementById('pickerFilter');
-  const series = getSeries();
-  el.innerHTML = `<button class="pf-btn active" onclick="renderPickerGrid(null);setActiveFilter(this)">All</button>` +
-    series.map(s => `<button class="pf-btn" onclick="renderPickerGrid('${s.id}');setActiveFilter(this)">${s.num} — ${escHtml(s.title)}</button>`).join('');
-}
-
-function setActiveFilter(btn) {
-  document.querySelectorAll('.pf-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function renderPickerGrid(filterSid) {
-  const grid = document.getElementById('pickerGrid');
-  let photos = filterSid ? (PHOTOS[filterSid] || []) : allPhotos();
-  if (photos.length === 0) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><p>${filterSid ? 'No photos in this series yet' : 'No photos uploaded yet'}</p></div>`;
-    return;
-  }
-  grid.innerHTML = photos.map(p => `
-    <div class="pick-cell ${pickerActive===p.publicId ? 'active' : ''}" onclick="selectInPicker('${p.publicId}',this)">
-      <img src="${p.thumb}" loading="lazy" alt="${p.filename}">
-      <div class="pick-label">${p.filename}</div>
-    </div>`).join('');
-}
-
-function selectInPicker(publicId, el) {
-  pickerActive = publicId;
-  document.querySelectorAll('.pick-cell').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('pickerConfirmBtn').disabled = false;
-}
-
-function confirmPick() {
-  if (!pickerActive || !pickerSlotId) return;
-  if (pickerSlotCtx === 'home')      STATE.home[pickerSlotId]      = pickerActive;
-  if (pickerSlotCtx === 'portfolio') STATE.portfolio[pickerSlotId] = pickerActive;
-  if (pickerSlotCtx === 'cover') {
-    if (!STATE.series[pickerSlotId]) STATE.series[pickerSlotId] = {};
-    STATE.series[pickerSlotId].coverPublicId = pickerActive;
-  }
-  saveAll();
-  closePicker();
-
-  // Refresh current view
-  if (activeTab === 'homepage')  showHomeSlots();
-  if (activeTab === 'portfolio') showPortfolioSlots();
-  toast('Photo assigned ✓');
-}
-
-// ════════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════════
-function findPhoto(publicId) {
-  if (!publicId) return null;
-  for (const arr of Object.values(PHOTOS)) {
-    if (!Array.isArray(arr)) continue;
-    const found = arr.find(p => p.publicId === publicId);
-    if (found) return found;
-  }
-  return null;
-}
-
-function copyUrl(url) {
-  navigator.clipboard.writeText(url)
-    .then(() => toast('URL copied'))
-    .catch(() => { prompt('Copy this URL:', url); });
-}
-
-function safeId(str) { return str.replace(/[^a-z0-9]/gi, '_'); }
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function toast(msg, isErr=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (isErr ? ' err' : '');
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-
-// ════════════════════════════════════════════════════════════
 // LIGHTROOM PANEL
-// Adobe Lightroom API — pull albums → push to Cloudinary
-// Requires: Adobe OAuth client_id (free developer account)
-// ════════════════════════════════════════════════════════════
-function showLightroomPanel() {
-  setPanel('Adobe Lightroom', 'Import Albums to Cloudinary', '');
-  const state = TIA.getState();
-  const lrState = state.lightroom || {};
-
-  document.getElementById('panelBody').innerHTML = `
-    <div style="max-width:640px">
-
-      <!-- Step 1: OAuth setup -->
-      <div style="background:var(--surface2);border:1px solid var(--border);padding:20px;margin-bottom:16px;">
-        <div class="sec-label" style="margin-bottom:12px"><span>Step 1 — Adobe OAuth Client ID</span></div>
-        <p style="font-size:12px;opacity:0.5;margin-bottom:14px;line-height:1.7;">
-          Get a free Client ID at
-          <a href="https://developer.adobe.com/console" target="_blank"
-             style="color:var(--gold);opacity:1">developer.adobe.com/console</a>
-          → Create project → Add API → Lightroom → OAuth Web App.
-          Set redirect URI to: <code style="font-size:10px;background:rgba(255,255,255,0.05);padding:2px 6px">${location.origin}/admin/</code>
-        </p>
-        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+function showLightroomPanel(){
+  setPanel("Adobe Creative Cloud","Lightroom Connection","");
+  document.getElementById("sidebar").style.display="none";
+  const lr=STATE.lr||{};
+  const connected=!!lr.accessToken;
+  document.getElementById("panelBody").innerHTML=`
+<div class="lr-step">
+  <span class="lr-step-num">Step 1 &mdash; Adobe Developer App (one-time setup)</span>
+  <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">
+    Go to <a href="https://developer.adobe.com/console" target="_blank">developer.adobe.com/console</a>
+    &rarr; Create project &rarr; Add API &rarr; <strong>Lightroom</strong> &rarr; OAuth Web App.<br>
+    Set redirect URI to: <code style="background:rgba(255,255,255,.06);padding:2px 6px;font-size:10px">${location.origin}/admin/</code>
+  </p>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+    <div><span class="field-lbl">Client ID (API Key)</span>
+      <input class="input" id="lrClientId" value="${lr.clientId||""}" placeholder="Paste your Client ID here"></div>
+    <button class="btn pri" onclick="saveLrClientId()">Save</button>
+  </div>
+</div>
+<div class="lr-step">
+  <span class="lr-step-num">Step 2 &mdash; Connect to Lightroom</span>
+  ${connected
+    ?`<div class="lr-connected"><div class="lr-dot"></div>
+       <span style="font-size:11px;color:var(--green)">Connected to Adobe Lightroom</span>
+       <button class="btn red" onclick="lrDisconnect()" style="margin-left:auto;padding:4px 12px">Disconnect</button></div>`
+    :`<button class="btn gold" onclick="lrAuthorize()" ${lr.clientId?"":"disabled"}>Authorize with Adobe &rarr;</button>
+       ${!lr.clientId?"<p style='font-size:10px;opacity:.3;margin-top:8px'>Save Client ID first</p>":""}`}
+</div>
+<div class="lr-step">
+  <span class="lr-step-num">Step 3 &mdash; Import Album to Series</span>
+  ${!connected
+    ?"<p style='font-size:12px;color:var(--muted)'>Connect to Lightroom first</p>"
+    :`<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+        <button class="btn pri" onclick="lrLoadAlbums()">Load Albums</button>
+        <span style="font-size:10px;opacity:.3">Select an album, pick photos, assign to a series</span></div>
+      <div id="lrAlbumList"><p style="font-size:11px;opacity:.3">Click Load Albums to begin</p></div>
+      <div id="lrPhotoSection" style="display:none;margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div>
-            <div class="sec-label" style="margin-bottom:6px"><span>Client ID (API Key)</span></div>
-            <input id="lrClientId" class="sc-name-input" value="${lrState.clientId||''}"
-                   placeholder="e.g. abc123def456..." style="margin-bottom:0">
+            <span class="field-lbl" style="margin-bottom:4px">Click photos to select</span>
+            <div style="font-size:9px;letter-spacing:3px;color:var(--dim)">
+              <span id="lrSelCount">0</span> selected &nbsp;&middot;&nbsp;
+              <button onclick="lrSelAll()" style="border:none;background:none;color:var(--gold);font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase">All</button>
+              &nbsp;&middot;&nbsp;
+              <button onclick="lrSelNone()" style="border:none;background:none;color:var(--dim);font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase">None</button>
+            </div>
           </div>
-          <button class="btn primary" onclick="saveLrClientId()">Save</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="field-lbl" style="margin-bottom:0;white-space:nowrap">Import to &rarr;</span>
+            <select class="input" id="lrTargetSeries" style="width:200px">
+              ${getSeries().map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
+            </select>
+            <button class="btn gold" id="lrImportBtn" onclick="lrImport()" disabled>Import Selected</button>
+          </div>
         </div>
-      </div>
-
-      <!-- Step 2: Authorize -->
-      <div style="background:var(--surface2);border:1px solid var(--border);padding:20px;margin-bottom:16px;">
-        <div class="sec-label" style="margin-bottom:12px"><span>Step 2 — Connect to Lightroom</span></div>
-        ${lrState.accessToken
-          ? `<div style="display:flex;align-items:center;gap:12px;">
-               <span style="color:var(--green);font-size:10px;letter-spacing:3px;text-transform:uppercase;">✓ Connected</span>
-               <button class="btn danger" onclick="lrDisconnect()" style="padding:5px 14px">Disconnect</button>
-             </div>`
-          : `<button class="btn primary" onclick="lrAuthorize()" ${lrState.clientId?'':'disabled'}>
-               Authorize with Adobe
-             </button>
-             ${!lrState.clientId ? '<p style="font-size:10px;opacity:0.3;margin-top:8px">Save your Client ID first</p>' : ''}`
-        }
-      </div>
-
-      <!-- Step 3: Pick album and import -->
-      <div style="background:var(--surface2);border:1px solid var(--border);padding:20px;margin-bottom:16px;">
-        <div class="sec-label" style="margin-bottom:12px">
-          <span>Step 3 — Import Album to Series</span>
-          ${lrState.accessToken
-            ? `<button onclick="lrLoadAlbums()" style="font-size:8px;letter-spacing:3px;text-transform:uppercase;border:none;background:none;color:var(--gold);cursor:pointer">↻ Load Albums</button>`
-            : ''}
-        </div>
-
-        ${!lrState.accessToken
-          ? `<p style="font-size:11px;opacity:0.3">Connect to Lightroom first</p>`
-          : `<div id="lrAlbumList" style="margin-bottom:16px">
-               <p style="font-size:11px;opacity:0.3">Click "Load Albums" to fetch your Lightroom albums</p>
-             </div>
-             <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
-               <div>
-                 <div class="sec-label" style="margin-bottom:6px"><span>Selected Album</span></div>
-                 <input id="lrSelectedAlbum" class="sc-name-input" style="margin-bottom:0" readonly
-                        placeholder="Click an album above" value="${lrState.selectedAlbumName||''}">
-               </div>
-               <div>
-                 <div class="sec-label" style="margin-bottom:6px"><span>Import to Series</span></div>
-                 <select id="lrTargetSeries" class="sc-name-input" style="margin-bottom:0;cursor:pointer">
-                   ${TIA.getSeries().map(s =>
-                     `<option value="${s.id}" ${lrState.targetSeries===s.id?'selected':''}>${s.num} — ${s.title}</option>`
-                   ).join('')}
-                 </select>
-               </div>
-               <button class="btn primary" id="lrImportBtn" onclick="lrImport()"
-                       ${lrState.selectedAlbumId?'':'disabled'}>
-                 Import
-               </button>
-             </div>`
-        }
-      </div>
-
-      <!-- Import log -->
-      <div id="lrLog" style="display:none;background:var(--surface2);border:1px solid var(--border);padding:16px;">
-        <div class="sec-label" style="margin-bottom:8px"><span>Import Log</span></div>
-        <div id="lrLogContent" style="font-size:11px;line-height:2;opacity:0.6;font-family:monospace"></div>
-      </div>
-
-    </div>`;
+        <div class="lr-photo-grid" id="lrPhotoGrid"></div>
+      </div>`}
+</div>
+<div class="lr-log" id="lrLog"></div>`;
 }
 
-function saveLrClientId() {
-  const id = document.getElementById('lrClientId')?.value?.trim();
-  if (!id) return;
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-  state.lightroom.clientId = id;
-  TIA.setState(state);
-  toast('Client ID saved');
-  showLightroomPanel();
+// ADOBE OAUTH - implicit flow (no server needed)
+function saveLrClientId(){
+  const id=document.getElementById("lrClientId")?.value?.trim();
+  if(!id)return;STATE.lr.clientId=id;saveAll();toast("Client ID saved");showLightroomPanel();
+}
+function lrAuthorize(){
+  const clientId=STATE.lr.clientId;
+  if(!clientId)return toast("Save Client ID first",true);
+  const redirect=encodeURIComponent(location.origin+"/admin/");
+  const scope=encodeURIComponent("lr_partner_apis openid");
+  sessionStorage.setItem("lr_oauth","1");
+  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=token`;
+}
+function handleOAuthReturn(){
+  const params=new URLSearchParams(window.location.hash.replace("#",""));
+  const token=params.get("access_token");
+  if(!token)return;
+  history.replaceState({},"",location.pathname);
+  STATE.lr.accessToken=token;
+  STATE.lr.tokenExpiry=Date.now()+(Number(params.get("expires_in")||3600)*1000);
+  saveAll();toast("Connected to Lightroom");showLightroomPanel();
+}
+function lrDisconnect(){delete STATE.lr.accessToken;delete STATE.lr.tokenExpiry;saveAll();toast("Disconnected");showLightroomPanel();}
+
+// LR API
+async function lrFetch(path){
+  const token=STATE.lr.accessToken,clientId=STATE.lr.clientId;
+  if(!token)throw new Error("Not connected");
+  const res=await fetch("https://lr.adobe.io"+path,{headers:{"Authorization":"Bearer "+token,"X-API-Key":clientId}});
+  if(res.status===401){delete STATE.lr.accessToken;throw new Error("Session expired - reconnect");}
+  if(!res.ok)throw new Error("LR API error "+res.status);
+  return res.json();
 }
 
-function lrAuthorize() {
-  const state = TIA.getState();
-  const clientId = state.lightroom?.clientId;
-  if (!clientId) { toast('Save Client ID first', true); return; }
-
-  const redirectUri = encodeURIComponent(location.origin + '/admin/');
-  const scope = encodeURIComponent('lr_partner_apis openid');
-  const url = `https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`;
-
-  // Store state so we can complete exchange on return
-  sessionStorage.setItem('lr_oauth_pending', '1');
-  window.location.href = url;
+async function lrLoadAlbums(){
+  const el=document.getElementById("lrAlbumList");
+  if(el)el.innerHTML="<p style='font-size:11px;opacity:.4'>Loading albums...</p>";
+  try{
+    const data=await lrFetch("/v2/albums?subtype=project&limit=100");
+    lrAlbums=data.resources||[];
+    if(!lrAlbums.length){el.innerHTML="<p style='font-size:11px;opacity:.3'>No albums found</p>";return;}
+    el.innerHTML=`<div class="lr-album-grid">${lrAlbums.map(a=>`
+      <div class="lr-album" onclick="lrSelectAlbum('${a.id}')">
+        <div class="lr-album-name">${a.payload?.name||"Untitled"}</div>
+        <div class="lr-album-cnt">${a.payload?.assetCount||"?"} photos</div>
+      </div>`).join("")}</div>`;
+  }catch(err){el.innerHTML=`<p style="font-size:11px;color:var(--red)">${err.message}</p>`;toast(err.message,true);}
 }
 
-function lrDisconnect() {
-  const state = TIA.getState();
-  if (state.lightroom) {
-    delete state.lightroom.accessToken;
-    delete state.lightroom.selectedAlbumId;
-    delete state.lightroom.selectedAlbumName;
-  }
-  TIA.setState(state);
-  toast('Disconnected from Lightroom');
-  showLightroomPanel();
-}
-
-async function lrExchangeCode(code) {
-  // NOTE: Token exchange requires a server-side call (client_secret must not be in browser JS)
-  // For now we store the code and show instructions
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-
-  lrLog(`OAuth code received: ${code.substring(0,8)}...`);
-  lrLog('⚠ Token exchange requires server-side call — paste your access token manually below for now.');
-
-  // Show manual token input
-  const panel = document.getElementById('panelBody');
-  if (!panel) return;
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
-  div.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border2);padding:28px;width:500px;border-radius:2px">
-      <div class="sec-label" style="margin-bottom:12px"><span>Paste Access Token</span></div>
-      <p style="font-size:11px;opacity:0.5;margin-bottom:14px;line-height:1.7">
-        Complete the exchange at
-        <a href="https://developer.adobe.com/console" target="_blank" style="color:var(--gold)">Adobe Console</a>
-        and paste your access token here.
-      </p>
-      <textarea id="lrTokenInput" style="width:100%;height:80px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);padding:8px;font-size:11px;font-family:monospace;resize:none" placeholder="Bearer eyJ..."></textarea>
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">
-        <button class="btn" onclick="this.closest('div[style]').remove()">Cancel</button>
-        <button class="btn primary" onclick="saveLrToken(this)">Save Token</button>
-      </div>
-    </div>`;
-  document.body.appendChild(div);
-}
-
-function saveLrToken(btn) {
-  const token = document.getElementById('lrTokenInput')?.value?.trim();
-  if (!token) return;
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-  state.lightroom.accessToken = token.replace(/^Bearer /i,'');
-  TIA.setState(state);
-  btn.closest('div[style*="position:fixed"]').remove();
-  toast('Token saved — loading albums…');
-  showLightroomPanel();
-  setTimeout(lrLoadAlbums, 300);
-}
-
-async function lrLoadAlbums() {
-  const state = TIA.getState();
-  const token = state.lightroom?.accessToken;
-  if (!token) { toast('Not connected', true); return; }
-
-  const listEl = document.getElementById('lrAlbumList');
-  if (listEl) listEl.innerHTML = '<p style="font-size:11px;opacity:0.4">Loading…</p>';
-
-  try {
-    const res = await fetch('https://lr.adobe.io/v2/albums', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-API-Key': state.lightroom.clientId,
-      }
-    });
-
-    if (res.status === 401) {
-      lrLog('Token expired — re-authorize to get a new token');
-      if (listEl) listEl.innerHTML = '<p style="font-size:11px;color:var(--red)">Token expired — reconnect</p>';
-      return;
-    }
-
-    const data = await res.json();
-    const albums = data.resources || [];
-
-    if (!listEl) return;
-    if (albums.length === 0) {
-      listEl.innerHTML = '<p style="font-size:11px;opacity:0.3">No albums found in your Lightroom catalog</p>';
-      return;
-    }
-
-    listEl.innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto;padding:2px">
-        ${albums.map(a => `
-          <button class="pf-btn ${state.lightroom?.selectedAlbumId===a.id?'active':''}"
-                  onclick="selectLrAlbum('${a.id}','${(a.payload?.name||'Album').replace(/'/g,'')}')"
-                  style="font-size:10px">
-            ${a.payload?.name || 'Untitled'} (${a.payload?.userUpdated||''})
-          </button>`).join('')}
-      </div>`;
-
-  } catch(err) {
-    lrLog('Error fetching albums: ' + err.message);
-    if (listEl) listEl.innerHTML = `<p style="font-size:11px;color:var(--red)">${err.message}</p>`;
-  }
-}
-
-function selectLrAlbum(id, name) {
-  const state = TIA.getState();
-  if (!state.lightroom) state.lightroom = {};
-  state.lightroom.selectedAlbumId   = id;
-  state.lightroom.selectedAlbumName = name;
-  TIA.setState(state);
-
-  const inp = document.getElementById('lrSelectedAlbum');
-  if (inp) inp.value = name;
-  const btn = document.getElementById('lrImportBtn');
-  if (btn) btn.disabled = false;
-
-  // Highlight selected
-  document.querySelectorAll('#lrAlbumList .pf-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim().startsWith(name));
+async function lrSelectAlbum(albumId){
+  lrCurrentAlbum=albumId;lrAlbumPhotos=[];lrSelected=new Set();
+  document.querySelectorAll(".lr-album").forEach(el=>{
+    el.classList.toggle("sel",(el.getAttribute("onclick")||"").includes("'"+albumId+"'"));
   });
+  const sec=document.getElementById("lrPhotoSection");
+  const grid=document.getElementById("lrPhotoGrid");
+  if(sec)sec.style.display="block";
+  if(grid)grid.innerHTML="<div style='grid-column:1/-1;padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase'>Loading...</div>";
+  try{
+    const data=await lrFetch("/v2/albums/"+albumId+"/assets?subtype=image&limit=200");
+    lrAlbumPhotos=data.resources||[];renderLrPhotoGrid();
+  }catch(err){if(grid)grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px">${err.message}</div>`;}
 }
 
-async function lrImport() {
-  const state  = TIA.getState();
-  const token  = state.lightroom?.accessToken;
-  const albumId= state.lightroom?.selectedAlbumId;
-  const sid    = document.getElementById('lrTargetSeries')?.value;
+function getLrThumbUrl(asset){
+  const clientId=STATE.lr.clientId;
+  const links=asset.links||{};
+  const href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
+  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+clientId;
+}
+function getLrFullUrl(asset){
+  const clientId=STATE.lr.clientId;
+  const links=asset.links||{};
+  const href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
+  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+clientId;
+}
 
-  if (!token || !albumId || !sid) { toast('Select album and series first', true); return; }
+function renderLrPhotoGrid(){
+  const grid=document.getElementById("lrPhotoGrid"),cnt=document.getElementById("lrSelCount"),btn=document.getElementById("lrImportBtn");
+  if(!grid)return;
+  if(cnt)cnt.textContent=lrSelected.size;
+  if(btn)btn.disabled=lrSelected.size===0;
+  if(!lrAlbumPhotos.length){grid.innerHTML="<div style='grid-column:1/-1;padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase'>No photos</div>";return;}
+  grid.innerHTML=lrAlbumPhotos.map(a=>`
+    <div class="lr-photo ${lrSelected.has(a.id)?"sel":""}" id="lrp-${a.id}" onclick="lrTogglePhoto('${a.id}')">
+      <img src="${getLrThumbUrl(a)}" loading="lazy" alt="">
+      <div class="lr-check">✓</div></div>`).join("");
+}
+function lrTogglePhoto(id){
+  if(lrSelected.has(id))lrSelected.delete(id);else lrSelected.add(id);
+  const el=document.getElementById("lrp-"+id);if(el)el.classList.toggle("sel",lrSelected.has(id));
+  const cnt=document.getElementById("lrSelCount"),btn=document.getElementById("lrImportBtn");
+  if(cnt)cnt.textContent=lrSelected.size;if(btn)btn.disabled=lrSelected.size===0;
+}
+function lrSelAll(){lrAlbumPhotos.forEach(a=>lrSelected.add(a.id));renderLrPhotoGrid();}
+function lrSelNone(){lrSelected.clear();renderLrPhotoGrid();}
 
-  const s = TIA.getSeries().find(x => x.id === sid);
-  if (!s) return;
-
-  const logEl = document.getElementById('lrLog');
-  const logContent = document.getElementById('lrLogContent');
-  if (logEl) logEl.style.display = 'block';
-
-  lrLog(`Starting import from album: ${state.lightroom.selectedAlbumName}`);
-  lrLog(`Destination: Cloudinary → tia/${s.folder}/`);
-
-  try {
-    // 1. Get assets from the album
-    const res = await fetch(`https://lr.adobe.io/v2/albums/${albumId}/assets?subtype=image&limit=100`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-API-Key': state.lightroom.clientId,
-      }
-    });
-
-    if (!res.ok) throw new Error(`Lightroom API: ${res.status}`);
-    const data   = await res.json();
-    const assets = data.resources || [];
-    lrLog(`Found ${assets.length} photos in album`);
-
-    let imported = 0;
-    for (const asset of assets) {
-      const assetId = asset.id;
-      const name    = asset.payload?.importSource?.fileName || assetId;
-
-      lrLog(`Downloading: ${name}…`);
-
-      // 2. Get rendition URL (largest available)
-      const rendRes = await fetch(`https://lr.adobe.io/v2/assets/${assetId}/renditions/2048`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-API-Key': state.lightroom.clientId,
-        }
-      });
-
-      if (!rendRes.ok) {
-        lrLog(`  ✗ Could not get rendition for ${name} (${rendRes.status})`);
-        continue;
-      }
-
-      const blob = await rendRes.blob();
-      const file = new File([blob], name, { type: blob.type });
-
-      // 3. Upload to Cloudinary
-      const dataUri = await fileToBase64(file);
-      const fd = new FormData();
-      fd.append('file', dataUri);
-      fd.append('upload_preset', PRESET);
-      fd.append('folder', `${FOLDER}/${s.folder}`);
-      fd.append('public_id', name.replace(/\.[^.]+$/, ''));
-
-      const upRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`, {
-        method: 'POST', body: fd
-      });
-
-      if (!upRes.ok) {
-        lrLog(`  ✗ Upload failed for ${name}`);
-        continue;
-      }
-
-      const result = await upRes.json();
-      persistPhoto(sid, result.public_id);
-      imported++;
-      lrLog(`  ✓ ${name} → ${result.public_id}`);
-    }
-
-    lrLog(`─────────────────────`);
-    lrLog(`Import complete: ${imported}/${assets.length} photos`);
-    lrLog(`Now visible in gallery at /gallery`);
-    renderSidebar();
-    toast(`Imported ${imported} photos from Lightroom ✓`);
-
-  } catch(err) {
-    lrLog('Error: ' + err.message);
-    toast('Import failed — see log', true);
+async function lrImport(){
+  const sid=document.getElementById("lrTargetSeries")?.value;
+  if(!sid||!lrSelected.size)return;
+  const btn=document.getElementById("lrImportBtn");if(btn)btn.disabled=true;
+  const logEl=document.getElementById("lrLog");if(logEl){logEl.innerHTML="";logEl.classList.add("show");}
+  lrLog("Importing "+lrSelected.size+" photos to series "+sid+"...");
+  if(!STATE.photos[sid])STATE.photos[sid]=[];
+  if(!STATE.lr.assetMeta)STATE.lr.assetMeta={};
+  let imported=0;
+  for(const assetId of lrSelected){
+    const asset=lrAlbumPhotos.find(a=>a.id===assetId);if(!asset)continue;
+    const filename=asset.payload?.importSource?.fileName||assetId;
+    const urlThumb=getLrThumbUrl(asset);
+    const url2048=getLrFullUrl(asset);
+    STATE.lr.assetMeta[assetId]={filename,assetId,url2048,urlThumb};
+    LR_PHOTOS[assetId]=STATE.lr.assetMeta[assetId];
+    if(!STATE.photos[sid].includes(assetId))STATE.photos[sid].push(assetId);
+    imported++;lrLog("  + "+filename);
   }
+  lrLog("Done: "+imported+" photos assigned to series "+sid);
+  lrLog("Click Save & Publish to push to live site.");
+  renderSidebar();if(btn)btn.disabled=false;
+  toast(imported+" photos imported - Save & Publish to go live");
 }
 
-function lrLog(msg) {
-  const el = document.getElementById('lrLogContent');
-  if (el) el.innerHTML += msg + '<br>';
-  const log = document.getElementById('lrLog');
-  if (log) log.style.display = 'block';
+// SERIES VIEW
+function showSeriesView(sid){
+  const s=getSeries().find(x=>x.id===sid);
+  const photos=getSeriesPhotos(sid);
+  const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
+  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick="switchTab('lightroom')">+ Import from Lightroom</button>");
+  let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+    <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
+    <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
+    <div style="grid-column:span 2"><span class="field-lbl">Description</span>
+      <textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)">${esc(s?.description||"")}</textarea></div></div>`;
+  if(!photos.length){
+    html+="<div class='empty'><p>No photos yet - use Lightroom tab to import</p></div>";
+  }else{
+    html+=`<div class="sec-lbl"><span>${photos.length} photos &mdash; click Cover to set the cover image</span></div><div class="pg">`;
+    photos.forEach(p=>{
+      const isCover=p.assetId===cover;
+      html+=`<div class="pc ${isCover?"cover":""}">
+        ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
+        ${isCover?`<div class="pc-badge cover">Cover</div>`:""}
+        <div class="pc-ov">
+          <button class="pc-btn" onclick="setCover('${sid}','${p.assetId}')">Cover</button>
+          <button class="pc-btn" onclick="removePhoto('${sid}','${p.assetId}')">Remove</button>
+        </div>
+        <div class="pc-lbl">${p.filename}</div></div>`;
+    });
+    html+="</div>";
+  }
+  document.getElementById("panelBody").innerHTML=html;
+}
+function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid][field]=val;renderSidebar();}
+function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showSeriesView(sid);toast("Cover set");}
+function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);renderSidebar();showSeriesView(sid);}
+
+// HOMEPAGE & PORTFOLIO SLOTS
+const HOME_SLOTS=[
+  {id:"hero",label:"Hero Background"},{id:"carousel1",label:"Carousel Slide 1"},
+  {id:"carousel2",label:"Carousel Slide 2"},{id:"carousel3",label:"Carousel Slide 3"},
+  {id:"mountain",label:"Full-Width Photo"},{id:"qrow1",label:"Quote Row 1"},
+  {id:"qrow2",label:"Quote Row 2"},{id:"qrow3",label:"Quote Row 3"},
+  {id:"qrow4",label:"Quote Row 4"},{id:"portrait",label:"Contact Portrait"},
+];
+const PF_SLOTS=[
+  {id:"pf-s1",label:"Featured 1 - Solitude & Scale"},{id:"pf-s3",label:"Featured 2 - Blue Trilogy"},
+  {id:"pf-s2",label:"Featured 3 - Glacial Contrasts"},{id:"pf-s5",label:"Featured 4 - Human Element"},
+  {id:"pf-s7",label:"Featured 5 - Peninsular Panorama"},
+];
+function showHomeSlots(){setPanel("Homepage","Photo Assignments","");document.getElementById("panelBody").innerHTML=`<div class="slots">${HOME_SLOTS.map(s=>slotCard(s.id,s.label,"home")).join("")}</div>`;}
+function showPortfolioSlots(){setPanel("Portfolio","Featured Work Covers","");document.getElementById("panelBody").innerHTML=`<div class="slots">${PF_SLOTS.map(s=>slotCard(s.id,s.label,"portfolio")).join("")}</div>`;}
+function slotCard(slotId,label,ctx){
+  const aid=ctx==="home"?STATE.home?.[slotId]:STATE.portfolio?.[slotId];
+  const meta=aid?(LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]):null;
+  const thumb=meta?.urlThumb||"";
+  const filled=!!thumb;
+  return`<div class="slot ${filled?"filled":""}" onclick="openPicker('${slotId}','${ctx}','${esc(label)}')">
+    ${filled?`<img class="slot-img" src="${thumb}" alt="">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">No photo assigned</div></div>`}
+    <div class="slot-info"><span class="slot-name">${label}</span><span class="slot-act">${filled?"Set - click to change":"Click to assign"}</span></div></div>`;
 }
 
-// ── Handle OAuth redirect callback ────────────────────────
-// If URL has ?code= param, we just came back from Adobe auth
-(function handleOAuthReturn() {
-  const params = new URLSearchParams(window.location.search);
-  const code   = params.get('code');
-  if (!code) return;
-  // Clean URL
-  history.replaceState({}, document.title, location.pathname);
-  // Wait for app to init, then handle
-  setTimeout(() => {
-    if (sessionStorage.getItem('tia_auth') === '1') {
-      switchTab('lightroom');
-      setTimeout(() => lrExchangeCode(code), 400);
-    }
-  }, 500);
-})();
+// SETTINGS
+function showSettingsPanel(){
+  setPanel("Settings","Gallery Names & Descriptions","");
+  document.getElementById("panelBody").innerHTML=`<div class="settings-grid">${getSeries().map(s=>{
+    const coverAid=STATE.series?.[s.id]?.coverAssetId;
+    const meta=coverAid?(LR_PHOTOS[coverAid]||STATE.lr?.assetMeta?.[coverAid]):null;
+    return`<div class="card">
+      ${meta?.urlThumb?`<img src="${meta.urlThumb}" style="width:100%;aspect-ratio:16/7;object-fit:cover;display:block;margin-bottom:12px">`:
+        `<div style="width:100%;aspect-ratio:16/7;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2">No cover</div>`}
+      <span class="field-lbl">Series ${s.num} Title</span>
+      <input class="input" style="margin-bottom:10px" value="${esc(s.title)}" oninput="updateSeries('${s.id}','title',this.value)">
+      <span class="field-lbl">Subtitle</span>
+      <input class="input" style="margin-bottom:10px" value="${esc(s.subtitle)}" oninput="updateSeries('${s.id}','subtitle',this.value)">
+      <span class="field-lbl">Description</span>
+      <textarea class="textarea" oninput="updateSeries('${s.id}','description',this.value)">${esc(s.description||"")}</textarea></div>`;
+  }).join("")}</div>`;
+}
 
-// ════════════════════════════════════════════════════════════
-// KEYBOARD
-// ════════════════════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closePicker();
-  if (e.key === 'Enter' && document.getElementById('authScreen').style.display !== 'none') doLogin();
-});
+// PICKER
+let pkSlotId=null,pkCtx=null,pkActive=null;
+function openPicker(slotId,ctx,label){
+  pkSlotId=slotId;pkCtx=ctx;pkActive=null;
+  document.getElementById("pkTitle").textContent=label;
+  document.getElementById("pkConfirm").disabled=true;
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById("picker").classList.add("open");
+}
+function closePicker(){document.getElementById("picker").classList.remove("open");}
+function renderPkFilter(){
+  document.getElementById("pkFilter").innerHTML=
+    `<button class="pk-f active" onclick="renderPkGrid(null);setActivePkF(this)">All</button>`+
+    getSeries().map(s=>`<button class="pk-f" onclick="renderPkGrid('${s.id}');setActivePkF(this)">${s.num} ${s.title}</button>`).join("");
+}
+function setActivePkF(btn){document.querySelectorAll(".pk-f").forEach(b=>b.classList.remove("active"));btn.classList.add("active");}
+function renderPkGrid(filterSid){
+  const photos=filterSid?getSeriesPhotos(filterSid).map(p=>({assetId:p.assetId,thumbUrl:p.thumbUrl,filename:p.filename})):
+    allPhotos().map(p=>({assetId:p.assetId,thumbUrl:p.urlThumb||"",filename:p.filename||p.assetId}));
+  const grid=document.getElementById("pkGrid");
+  if(!photos.length){grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No photos imported yet</p></div>";return;}
+  grid.innerHTML=photos.map(p=>`
+    <div class="pk-cell ${pkActive===p.assetId?"active":""}" onclick="selectInPicker('${p.assetId}',this)">
+      ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
+      <div class="pk-cell-lbl">${p.filename||p.assetId}</div></div>`).join("");
+}
+function selectInPicker(assetId,el){
+  pkActive=assetId;
+  document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
+  el.classList.add("active");document.getElementById("pkConfirm").disabled=false;
+}
+function confirmPick(){
+  if(!pkActive||!pkSlotId)return;
+  if(pkCtx==="home")STATE.home[pkSlotId]=pkActive;
+  if(pkCtx==="portfolio")STATE.portfolio[pkSlotId]=pkActive;
+  saveAll();closePicker();
+  if(activeTab==="homepage")showHomeSlots();
+  if(activeTab==="portfolio")showPortfolioSlots();
+  toast("Photo assigned");
+}
 
-// ════════════════════════════════════════════════════════════
-// BOOT
-// ════════════════════════════════════════════════════════════
-if (sessionStorage.getItem('tia_auth') === '1') init();
-
-// Also init when app is shown after login
-const _origShowApp = showApp;
-showApp = async function(user) {
-  _origShowApp(user);
-  await init();
-};
+// HELPERS
+function lrLog(msg){const el=document.getElementById("lrLog");if(el){el.innerHTML+=msg+"<br>";el.scrollTop=el.scrollHeight;}}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function toast(msg,isErr=false){
+  const t=document.getElementById("toast");t.textContent=msg;
+  t.className="toast show"+(isErr?" err":"");clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove("show"),3500);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePicker();});
+if(authed)init();
 </script>
 </body>
 </html>
