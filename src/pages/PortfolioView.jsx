@@ -1,143 +1,166 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
-import { Loader2, Camera, ArrowLeft } from 'lucide-react';
+import Footer from '../components/Footer';
 
 export default function PortfolioView() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchPortfolio = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get(`/api/portfolios/public/${slug}`);
-        setPortfolio(response.data);
-      } catch (err) {
-        console.error('Error fetching portfolio:', err);
-        setError('Portfolio not found or unpublished.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPortfolio();
+    api.get(`/api/portfolios/public/${slug}`)
+      .then(r => setPortfolio(r.data))
+      .catch(() => setError('Portfolio not found or unpublished.'))
+      .finally(() => setLoading(false));
   }, [slug]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin mb-4" />
-        <p>Loading portfolio...</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="tia-loading">
+      <div className="tia-spinner" />
+      <p className="label-sm">Loading portfolio</p>
+    </div>
+  );
 
-  if (error || !portfolio) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center space-y-4">
-        <p className="text-lg">{error || 'Portfolio unavailable'}</p>
-        <Link to="/" className="text-amber-400 hover:text-amber-300">Return home</Link>
-      </div>
-    );
-  }
+  if (error || !portfolio) return (
+    <div className="tia-loading">
+      <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 24, opacity: 0.4 }}>{error || 'Portfolio unavailable'}</p>
+      <Link to="/" className="btn-tia" style={{ marginTop: 16 }}>← Return Home</Link>
+    </div>
+  );
 
   const { heroImage, aboutContent, gearSummary, galleries = [] } = portfolio;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
-      <header className="relative w-full h-[55vh] overflow-hidden">
+    <div style={{ background: 'var(--ink)', color: 'var(--cream)', minHeight: '100vh' }}>
+
+      {/* ── HERO ── */}
+      <header style={{ position: 'relative', width: '100%', height: '60vh', minHeight: 480, overflow: 'hidden' }}>
         {heroImage ? (
-          <img src={heroImage.url || heroImage} alt={portfolio.title} className="w-full h-full object-cover opacity-80" />
+          <img
+            src={heroImage.url || heroImage}
+            alt={portfolio.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
         ) : (
-          <div className="w-full h-full bg-slate-900 flex items-center justify-center">
-            <Camera className="w-16 h-16 text-slate-600" />
-          </div>
+          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #1a1a1e 0%, #0d0d0d 100%)' }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/20 to-slate-950"></div>
-        <div className="absolute inset-0 max-w-4xl mx-auto px-6 flex flex-col justify-end pb-16">
-          <p className="uppercase tracking-[0.3em] text-sm text-slate-300 mb-2">Portfolio</p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{portfolio.title}</h1>
-          <p className="text-slate-200 max-w-2xl">{portfolio.subtitle || 'Curated photographic stories from the Mission Gallery studio.'}</p>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,13,13,1) 0%, rgba(13,13,13,0.3) 50%, rgba(13,13,13,0.1) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, maxWidth: 1000, margin: '0 auto', padding: '0 80px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: 80 }}>
+          <p className="label-sm fade-up" style={{ marginBottom: 14 }}>Portfolio</p>
+          <h1 className="fade-up d1" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(36px, 5.5vw, 72px)', lineHeight: 0.92, letterSpacing: '-2px', marginBottom: 20 }}>
+            {portfolio.title}
+          </h1>
+          <div className="fade-up d2" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ width: 32, height: 1, background: 'var(--gold)', opacity: 0.55 }} />
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, opacity: 0.45, maxWidth: 520 }}>
+              {portfolio.subtitle || 'Curated photographic stories from the Infinite Arch studio.'}
+            </p>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12 space-y-12">
+      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 80px' }}>
+
+        {/* About + Gear */}
         {(aboutContent || gearSummary) && (
-          <section className="grid md:grid-cols-2 gap-8">
+          <section style={{ display: 'grid', gridTemplateColumns: aboutContent && gearSummary ? '1fr 1fr' : '1fr', gap: 3, marginBottom: 80 }}>
             {aboutContent && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <h2 className="text-2xl font-semibold mb-3">About This Portfolio</h2>
-                <p className="text-slate-200 whitespace-pre-line leading-relaxed">{aboutContent}</p>
+              <div style={{ background: 'rgba(245,240,232,0.03)', border: '1px solid rgba(245,240,232,0.08)', padding: '36px 40px' }}>
+                <p className="label-sm" style={{ marginBottom: 16 }}>About This Portfolio</p>
+                <div style={{ width: 32, height: 1, background: 'var(--gold)', opacity: 0.4, marginBottom: 20 }} />
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, lineHeight: 1.85, opacity: 0.55, whiteSpace: 'pre-line' }}>
+                  {aboutContent}
+                </p>
               </div>
             )}
             {gearSummary && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <h2 className="text-2xl font-semibold mb-3">Gear Highlights</h2>
-                <p className="text-slate-200 whitespace-pre-line leading-relaxed">{gearSummary}</p>
+              <div style={{ background: 'rgba(245,240,232,0.03)', border: '1px solid rgba(245,240,232,0.08)', padding: '36px 40px' }}>
+                <p className="label-sm" style={{ marginBottom: 16 }}>Gear Highlights</p>
+                <div style={{ width: 32, height: 1, background: 'var(--gold)', opacity: 0.4, marginBottom: 20 }} />
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, lineHeight: 1.85, opacity: 0.55, whiteSpace: 'pre-line' }}>
+                  {gearSummary}
+                </p>
               </div>
             )}
           </section>
         )}
 
+        {/* Galleries */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-semibold">Featured Galleries</h2>
-            <Link to="/galleries" className="text-amber-400 hover:text-amber-300 text-sm flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              View all galleries
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 40 }}>
+            <div>
+              <p className="label-sm" style={{ marginBottom: 10 }}>Featured Galleries</p>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(24px, 3vw, 38px)', letterSpacing: '-1px' }}>
+                The <strong style={{ fontWeight: 900, fontStyle: 'normal' }}>Collection</strong>
+              </h2>
+            </div>
+            <Link to="/galleries" style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.3, fontFamily: "'Cormorant Garamond', serif", transition: 'opacity 0.3s' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = 0.7}
+              onMouseLeave={e => e.currentTarget.style.opacity = 0.3}
+            >
+              All Galleries →
             </Link>
           </div>
 
           {galleries.length === 0 ? (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center text-slate-300">
-              No galleries linked yet.
+            <div style={{ background: 'rgba(245,240,232,0.03)', border: '1px solid rgba(245,240,232,0.07)', padding: '60px 40px', textAlign: 'center' }}>
+              <p className="label-sm">No galleries linked yet</p>
             </div>
           ) : (
-            <div className="space-y-8">
-              {galleries.map((gallery) => (
-                <article key={gallery._id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-                  <div className="p-6 border-b border-white/5">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {galleries.map((gallery) => {
+                const previewImages = (gallery.images || []).slice(0, 6);
+                return (
+                  <article
+                    key={gallery._id}
+                    style={{ background: 'rgba(245,240,232,0.02)', border: '1px solid rgba(245,240,232,0.07)', overflow: 'hidden', transition: 'border-color 0.3s', cursor: gallery.slug ? 'pointer' : 'default' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(245,240,232,0.18)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(245,240,232,0.07)'}
+                    onClick={() => gallery.slug && navigate(`/gallery/${gallery.slug}`)}
+                  >
+                    {/* Image strip */}
+                    {previewImages.length > 0 && (
+                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(previewImages.length, 6)}, 1fr)`, height: 160 }}>
+                        {previewImages.map((img, i) => (
+                          <div key={i} style={{ overflow: 'hidden', background: 'rgba(245,240,232,0.04)' }}>
+                            <img
+                              src={img.imageId?.thumbnailPath || img.imageId?.path}
+                              alt=""
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Info */}
+                    <div style={{ padding: '24px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, borderTop: '1px solid rgba(245,240,232,0.05)' }}>
                       <div>
-                        <h3 className="text-2xl font-semibold">{gallery.title}</h3>
-                        <p className="text-sm text-slate-300">
-                          {gallery.description || 'Curated collection'} • {(gallery.images?.length || 0)} images
+                        <h3 style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 400, fontSize: 22, marginBottom: 5 }}>
+                          {gallery.title}
+                        </h3>
+                        <p style={{ fontSize: 13, opacity: 0.35, fontFamily: "'Cormorant Garamond', serif" }}>
+                          {gallery.description || 'Curated collection'} &nbsp;·&nbsp; {gallery.images?.length || 0} photographs
                         </p>
                       </div>
                       {gallery.slug && (
-                        <Link
-                          to={`/gallery/${gallery.slug}`}
-                          className="text-sm text-amber-400 hover:text-amber-300"
-                        >
+                        <span style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.3, fontFamily: "'Cormorant Garamond', serif", whiteSpace: 'nowrap' }}>
                           View Gallery →
-                        </Link>
+                        </span>
                       )}
                     </div>
-                  </div>
-                  {gallery.images && gallery.images.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
-                      {gallery.images.slice(0, 8).map((image) => (
-                        <div key={image._id || image.imageId?._id} className="aspect-square overflow-hidden">
-                          <img
-                            src={image.imageId?.thumbnailPath || image.imageId?.path}
-                            alt={image.imageId?.caption || 'Gallery image'}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-slate-400 text-sm">No preview images available.</div>
-                  )}
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 }

@@ -1,61 +1,80 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
-import { Loader, User } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import Footer from '../components/Footer';
 
 export default function AboutMe() {
-  const [loading, setLoading] = useState(true);
   const [about, setAbout] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAbout();
+    api.get('/api/about')
+      .then(r => { if (r.data?.isPublished) setAbout(r.data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchAbout = async () => {
-    try {
-      const response = await api.get('/api/about');
-      if (response.data && response.data.isPublished) {
-        setAbout(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching about:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-700 to-primary-900 flex items-center justify-center">
-        <Loader className="w-8 h-8 text-primary-400 animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="tia-loading">
+      <div className="tia-spinner" />
+      <p className="label-sm">Loading</p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-700 to-primary-900 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        {about ? (
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 shadow-2xl border border-white/20">
-            <div className="flex items-center gap-3 mb-6">
-              <User className="w-8 h-8 text-primary-400" />
-              <h1 className="text-3xl font-bold text-white">About Me</h1>
-            </div>
-            <div className="prose prose-invert prose-lg max-w-none">
-              <div className="text-gray-200 whitespace-pre-wrap leading-relaxed">
-                {about.refinedText || about.rawText}
+    <div style={{ background: 'var(--ink)', color: 'var(--cream)', minHeight: '100vh' }}>
+      <div style={{ paddingTop: 'var(--nav-h)' }}>
+
+        {/* Header */}
+        <div style={{ padding: '80px 80px 60px', borderBottom: '1px solid rgba(245,240,232,0.07)', maxWidth: 1400, margin: '0 auto' }}>
+          <p className="label-sm fade-up" style={{ marginBottom: 16 }}>The Photographer</p>
+          <h1 className="fade-up d1" style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 400, fontSize: 'clamp(36px, 5vw, 68px)', lineHeight: 0.95, letterSpacing: '-2px' }}>
+            About <strong style={{ fontWeight: 900, fontStyle: 'normal' }}>the Work</strong>
+          </h1>
+        </div>
+
+        <section style={{ padding: '60px 80px', maxWidth: 1100, margin: '0 auto' }}>
+          {about ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 80, alignItems: 'start' }}>
+              {/* Sidebar */}
+              <div className="fade-up">
+                <div style={{ width: 40, height: 1, background: 'var(--gold)', opacity: 0.5, marginBottom: 28 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {[
+                    ['Camera', 'Fujifilm GFX 100S / X-T5'],
+                    ['Focus', 'Landscape · Arches · Portals'],
+                    ['Style', 'Contemplative · Fine Art'],
+                    ['Tagline', 'Beyond the Daydream'],
+                  ].map(([k, v]) => (
+                    <div key={k}>
+                      <p style={{ fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', opacity: 0.3, marginBottom: 4, fontFamily: "'Cormorant Garamond', serif" }}>{k}</p>
+                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, opacity: 0.65 }}>{v}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Main text */}
+              <div className="fade-up d2">
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, lineHeight: 1.9, opacity: 0.6, whiteSpace: 'pre-wrap' }}>
+                  {about.refinedText || about.rawText}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-lg rounded-xl p-12 shadow-2xl border border-white/20 text-center">
-            <User className="w-16 h-16 text-primary-400/50 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">No Profile Yet</h2>
-            <p className="text-primary-200">The photographer hasn't published their profile yet.</p>
-          </div>
-        )}
+          ) : (
+            <div className="fade-up" style={{ textAlign: 'center', padding: '80px 0' }}>
+              <div style={{ width: 40, height: 1, background: 'var(--gold)', opacity: 0.4, margin: '0 auto 28px' }} />
+              <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 22, opacity: 0.35 }}>
+                Profile coming soon
+              </p>
+              <p style={{ fontSize: 13, opacity: 0.22, marginTop: 12, fontFamily: "'Cormorant Garamond', serif", letterSpacing: 2 }}>
+                The photographer hasn't published their profile yet.
+              </p>
+            </div>
+          )}
+        </section>
       </div>
+
+      <Footer />
     </div>
   );
 }

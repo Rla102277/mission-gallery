@@ -99,5 +99,16 @@ export default {
       },
     },
   },
+  safelist: [
+    'd1','d2','d3','d4','d5',
+    'fade-up','fade-in',
+    'tia-loading','tia-spinner','tia-card','tia-nav',
+    'btn-tia','btn-tia-gold','btn-tia-solid',
+    'photo-grid','photo-cell','photo-cell-overlay',
+    'tia-footer','footer-quote',
+    'label-sm','label-gold',
+    'wordmark','wm-arch','wm-infinite','wm-the','wm-r-heavy','wm-r-thin','wm-r-bot',
+    'nav-links','page-wrap','section',
+  ],
   plugins: [],
 }
