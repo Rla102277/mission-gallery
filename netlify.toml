@@ -1,13 +1,61 @@
-[build]
-  command = "npm run build"
-  publish = "dist"
-  functions = "netlify/functions"
+# The Infinite Arch — Netlify Config
+# Static HTML site — no build step
 
-[dev]
-  command = "npm run dev"
-  port = 5173
+[build]
+  publish = "."
+  # No build command — pure static HTML
+
+# ── CLEAN URLS ──────────────────────────────────────
+[[redirects]]
+  from = "/about"
+  to   = "/pages/about.html"
+  status = 200
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/portfolio"
+  to   = "/pages/portfolio.html"
   status = 200
+
+[[redirects]]
+  from = "/gallery"
+  to   = "/pages/gallery.html"
+  status = 200
+
+[[redirects]]
+  from = "/prints"
+  to   = "/pages/prints.html"
+  status = 200
+
+[[redirects]]
+  from = "/hope-hike"
+  to   = "/pages/hope-hike.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to   = "/pages/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to   = "/admin/index.html"
+  status = 200
+
+# ── 404 FALLBACK ─────────────────────────────────────
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 404
+
+# ── HEADERS ──────────────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

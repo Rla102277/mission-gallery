@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Infinite Arch — Hope Hike</title>
+  <link rel="stylesheet" href="/assets/css/tia.css">
+  <style>
+    .coming-soon {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 40px;
+      gap: 20px;
+    }
+    .cs-label {
+      font-size: 9px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      opacity: 0.25;
+    }
+    .cs-rule { width: 40px; height: 1px; background: rgba(245,240,232,0.2); }
+    .cs-title {
+      font-family: "Playfair Display", serif;
+      font-weight: 900;
+      font-size: clamp(52px, 8vw, 96px);
+      letter-spacing: -3px;
+      line-height: 0.9;
+      opacity: 0.15;
+    }
+    .cs-sub {
+      font-family: "Playfair Display", serif;
+      font-style: italic;
+      font-size: clamp(16px, 2vw, 22px);
+      opacity: 0.25;
+      letter-spacing: 2px;
+    }
+    .cs-back {
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      opacity: 0.3;
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: opacity 0.3s;
+    }
+    .cs-back:hover { opacity: 0.7; }
+    .cs-back-line { width: 28px; height: 1px; background: rgba(245,240,232,0.5); transition: width 0.4s; }
+    .cs-back:hover .cs-back-line { width: 48px; }
+  </style>
+</head>
+<body>
+<div class="page-content">
+  <div class="coming-soon">
+    <span class="cs-label">The Infinite Arch</span>
+    <div class="cs-rule"></div>
+    <h1 class="cs-title">Hope Hike</h1>
+    <p class="cs-sub">Guadalupe Peak · May 29–31, 2026</p>
+    <a href="/" class="cs-back">
+      <div class="cs-back-line"></div>
+      Return Home
+    </a>
+  </div>
+</div>
+<script src="/assets/js/components.js"></script>
+<script src="/assets/js/tia.js"></script>
+</body>
+</html>

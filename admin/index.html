@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TIA Admin</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1110;--surface:#181b17;--surface2:#1d201c;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --cream:#ede9e2;--muted:rgba(237,233,226,.4);--dim:rgba(237,233,226,.18);
+  --gold:#c9a227;--green:#5a9e6f;--red:#a05050;--sage:#3d4039;
+  --font:"Helvetica Neue",Arial,sans-serif}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--font);font-size:13px}
+button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
+/* AUTH */
+#authScreen{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.auth-box{width:340px}
+.auth-logo{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:var(--dim);margin-bottom:32px;display:block}
+.auth-h{font-size:26px;font-weight:300;margin-bottom:28px;opacity:.8}
+.auth-field{margin-bottom:14px}
+.auth-field label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
+.auth-field input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
+.auth-btn{width:100%;margin-top:20px;padding:12px;background:var(--sage);border:none;color:var(--cream);font-size:9px;letter-spacing:5px;text-transform:uppercase;cursor:pointer}
+.auth-err{color:var(--red);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:10px;display:none}
+.auth-err.show{display:block}
+/* SHELL */
+#app{display:none;grid-template-rows:52px 1fr;height:100vh}
+#app.show{display:grid}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);background:var(--surface)}
+.tb-left{display:flex;align-items:center;gap:16px}
+.tb-brand{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--dim)}
+.tb-brand strong{color:var(--cream);opacity:.8}
+.tb-sync{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}
+.tb-sync.ok{color:var(--green)}.tb-sync.err{color:var(--red)}.tb-sync.busy{color:var(--gold)}
+.tb-nav{display:flex;gap:1px}
+.tb-tab{padding:8px 16px;font-size:8px;letter-spacing:4px;text-transform:uppercase;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tb-tab:hover{color:var(--cream)}.tb-tab.active{color:var(--cream);border-bottom-color:var(--gold)}
+.tb-right{display:flex;gap:10px;align-items:center}
+.tb-save{font-size:8px;letter-spacing:4px;text-transform:uppercase;border:none;background:var(--gold);color:#000;padding:6px 18px;font-weight:700;cursor:pointer}
+.tb-save:disabled{opacity:.4;cursor:not-allowed}
+.tb-signout{font-size:8px;letter-spacing:4px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 14px;cursor:pointer}
+/* LAYOUT */
+.body{display:grid;grid-template-columns:220px 1fr;overflow:hidden;height:100%}
+/* SIDEBAR */
+.sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface)}
+.sb-group{padding:14px 0 4px}
+.sb-lbl{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);padding:0 14px 8px;display:block}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;width:100%;text-align:left;font-size:12px;border-left:2px solid transparent}
+.sb-item:hover{color:var(--cream);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-left-color:var(--gold)}
+.sb-num{font-size:8px;letter-spacing:2px;color:var(--dim);width:18px;flex-shrink:0}
+.sb-name{flex:1;line-height:1.3}.sb-cnt{font-size:9px;color:var(--dim)}.sb-cnt.has{color:var(--green)}
+.sb-div{height:1px;background:var(--border);margin:4px 14px 10px}
+/* MAIN */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.ph{padding:16px 24px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface2)}
+.ph-eye{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.ph-title{font-size:19px;font-weight:300}.ph-acts{display:flex;gap:8px}
+.pb{flex:1;overflow-y:auto;padding:22px 24px}
+/* BUTTONS */
+.btn{padding:6px 16px;font-size:8px;letter-spacing:4px;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.btn:hover{color:var(--cream);border-color:rgba(255,255,255,.3)}
+.btn.pri{background:var(--sage);border-color:var(--sage);color:var(--cream)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700}
+.btn.red{border-color:rgba(160,80,80,.3);color:var(--red)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+/* INPUTS */
+.input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
+.textarea{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:12px;outline:none;resize:vertical;min-height:64px;line-height:1.6}
+.field-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;display:block}
+.sec-lbl{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.card{background:var(--surface2);border:1px solid var(--border);padding:18px;margin-bottom:14px}
+/* PHOTO GRID */
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:5px}
+.pc{position:relative;aspect-ratio:3/2;background:var(--surface2);border:2px solid transparent;overflow:hidden;cursor:pointer;border-radius:1px}
+.pc:hover{border-color:rgba(255,255,255,.2)}.pc.cover{border-color:var(--green)!important}
+.pc img{width:100%;height:100%;object-fit:cover;display:block}
+.pc-badge{position:absolute;top:5px;left:5px;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:2px 6px;border-radius:1px}
+.pc-badge.cover{background:var(--green);color:#fff}
+.pc-ov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;gap:5px;opacity:0;transition:opacity .2s}
+.pc:hover .pc-ov{opacity:1;background:rgba(0,0,0,.5)}
+.pc-btn{padding:3px 9px;font-size:8px;letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
+.pc-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* SLOTS */
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.slot{background:var(--surface2);border:1px solid var(--border);overflow:hidden;cursor:pointer}
+.slot:hover{border-color:var(--border2)}.slot.filled{border-color:rgba(90,158,111,.3)}
+.slot-img{width:100%;aspect-ratio:16/7;object-fit:cover;display:block;background:var(--bg)}
+.slot-empty{width:100%;aspect-ratio:16/7;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px}
+.slot-empty-ico{font-size:20px;opacity:.12}.slot-empty-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.18}
+.slot-info{padding:8px 12px 10px;display:flex;align-items:center;justify-content:space-between}
+.slot-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.slot-act{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}.slot.filled .slot-act{color:var(--green)}
+/* PICKER */
+#picker{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
+#picker.open{display:flex}
+.pk-box{background:var(--surface);border:1px solid var(--border2);width:min(920px,96vw);max-height:88vh;display:flex;flex-direction:column;border-radius:2px}
+.pk-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pk-eye{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.pk-title{font-size:16px;font-weight:300}
+.pk-close{font-size:20px;border:none;background:none;color:var(--muted);cursor:pointer}
+.pk-filter{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.pk-f{padding:4px 12px;font-size:8px;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
+.pk-f:hover,.pk-f.active{background:rgba(255,255,255,.07);color:var(--cream);border-color:var(--border2)}
+.pk-grid-wrap{overflow-y:auto;padding:14px 18px;flex:1}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
+.pk-cell{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;cursor:pointer;border:2px solid transparent;border-radius:1px}
+.pk-cell:hover{border-color:rgba(255,255,255,.3)}.pk-cell.active{border-color:var(--gold)}
+.pk-cell img{width:100%;height:100%;object-fit:cover;display:block}
+.pk-cell-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+/* LR */
+.lr-step{background:var(--surface2);border:1px solid var(--border);padding:18px;margin-bottom:14px}
+.lr-step-num{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:block}
+.lr-connected{display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(90,158,111,.1);border:1px solid rgba(90,158,111,.25)}
+.lr-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.lr-album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:240px;overflow-y:auto}
+.lr-album{background:var(--bg);border:1px solid var(--border);padding:12px;cursor:pointer}
+.lr-album:hover{border-color:var(--border2);background:var(--surface2)}.lr-album.sel{border-color:var(--gold);background:rgba(201,162,39,.06)}
+.lr-album-name{font-size:12px;margin-bottom:4px}.lr-album-cnt{font-size:9px;letter-spacing:2px;color:var(--dim)}
+.lr-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;max-height:300px;overflow-y:auto;margin-top:12px}
+.lr-photo{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;border:2px solid transparent;cursor:pointer}
+.lr-photo:hover{border-color:rgba(255,255,255,.2)}.lr-photo.sel{border-color:var(--gold)}
+.lr-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.lr-check{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:10px;color:#000;font-weight:700}
+.lr-photo.sel .lr-check{display:flex}
+.lr-log{background:var(--bg);border:1px solid var(--border);padding:14px;font-size:11px;line-height:1.9;font-family:monospace;color:rgba(237,233,226,.55);max-height:180px;overflow-y:auto;margin-top:12px;display:none}
+.lr-log.show{display:block}
+/* MISC */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.empty{padding:50px 0;text-align:center}
+.empty p{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.2}
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;padding:9px 20px;background:var(--sage);border:1px solid rgba(255,255,255,.07);font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--cream);opacity:0;transform:translateY(5px);transition:all .25s;pointer-events:none;border-radius:1px}
+.toast.show{opacity:1;transform:translateY(0)}.toast.err{background:var(--red)}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="auth-box">
+    <span class="auth-logo">The Infinite Arch &middot; Admin</span>
+    <h1 class="auth-h">Photo Manager</h1>
+    <div class="auth-field"><label>Access Code</label><input type="password" id="authPass" autocomplete="off" autofocus onkeydown="if(event.key==='Enter')doLogin()" placeholder="Enter access code"></div>
+    <button class="auth-btn" onclick="doLogin()">Enter</button>
+    <div class="auth-err" id="authErr">Incorrect code</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="tb-left">
+      <span class="tb-brand">TIA &middot; <strong>Admin</strong></span>
+      <span class="tb-sync" id="syncStatus">&mdash;</span>
+    </div>
+    <div class="tb-nav">
+      <button class="tb-tab active" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
+      <button class="tb-tab" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
+      <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
+      <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
+      <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
+    </div>
+    <div class="tb-right">
+      <button class="tb-save" id="saveBtn" onclick="saveAll()">Save &amp; Publish</button>
+      <button class="tb-signout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="body">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-group">
+        <span class="sb-lbl">Collections</span>
+        <div id="seriesList"></div>
+      </div>
+      <div class="sb-div"></div>
+      <div class="sb-group">
+        <button class="sb-item" data-view="home-slots" onclick="setView('home-slots')"><span class="sb-num">H</span><span class="sb-name">Homepage Slots</span></button>
+        <button class="sb-item" data-view="portfolio-slots" onclick="setView('portfolio-slots')"><span class="sb-num">P</span><span class="sb-name">Portfolio Covers</span></button>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="ph">
+        <div><div class="ph-eye" id="phEye"></div><div class="ph-title" id="phTitle">Photo Manager</div></div>
+        <div class="ph-acts" id="phActs"></div>
+      </div>
+      <div class="pb" id="panelBody"><div class="empty"><p>Choose Lightroom to connect</p></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="picker">
+  <div class="pk-box">
+    <div class="pk-head">
+      <div><div class="pk-eye">Choose Photo For</div><div class="pk-title" id="pkTitle">&mdash;</div></div>
+      <button class="pk-close" onclick="closePicker()">&times;</button>
+    </div>
+    <div class="pk-filter" id="pkFilter"></div>
+    <div class="pk-grid-wrap"><div class="pk-grid" id="pkGrid"></div></div>
+    <div class="pk-foot">
+      <button class="btn" onclick="closePicker()">Cancel</button>
+      <button class="btn gold" id="pkConfirm" onclick="confirmPick()" disabled>Use This Photo</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// TIA-DATA.JS  v4
+//
+// Photo SOR: Adobe Lightroom (CC subscription)
+// Config store: Cloudinary raw JSON (tia-config.json)
+// No photo uploads to Cloudinary — Adobe CDN serves images
+//
+// Config JSON at:
+//   https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json
+//
+// Config schema:
+// {
+//   series:    { s1: { title, subtitle, description, coverAssetId } }
+//   photos:    { s1: [ assetId, assetId, ... ] }
+//   home:      { hero: assetId, carousel1: assetId, ... }
+//   portfolio: { 'pf-s1': assetId, ... }
+//   lr:        { assetMeta: { assetId: { url2048, urlThumb, filename } } }
+// }
+// ═══════════════════════════════════════════════════════════════
+
+const TIA = {
+  CLOUD:      'duxiir9lv',
+  FOLDER:     'tia',
+  PRESET:     'tia_unsigned',
+  STORE_KEY:  'tia_admin',
+  CONFIG_PID: 'tia/tia-config',
+  CONFIG_URL: 'https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json',
+
+  // ── Adobe CDN URL builders ─────────────────────────────────
+  // Lightroom asset URLs come from assetMeta stored in config
+  lrUrl(assetId, size) {
+    const meta = TIA.getState().lr?.assetMeta?.[assetId];
+    if (!meta) return '';
+    if (size === 'thumb')  return meta.urlThumb  || meta.url2048 || '';
+    if (size === 'full')   return meta.urlFull   || meta.url2048 || '';
+    return meta.url2048 || meta.urlThumb || '';
+  },
+
+  // Convenience — pick best size for context
+  thumb(assetId)  { return TIA.lrUrl(assetId, 'thumb');  },
+  cover(assetId)  { return TIA.lrUrl(assetId, 'cover')  || TIA.lrUrl(assetId, ''); },
+  hero(assetId)   { return TIA.lrUrl(assetId, 'full')   || TIA.lrUrl(assetId, ''); },
+  full(assetId)   { return TIA.lrUrl(assetId, 'full');   },
+
+  // ── Series definitions ─────────────────────────────────────
+  DEFAULT_SERIES: [
+    { id:'s1', num:'01', title:'Solitude & Scale',          subtitle:'The Secret Lagoon',                  type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Fjallsárlón Glacier Lagoon'          },
+    { id:'s2', num:'02', title:'Glacial Contrasts',          subtitle:'Ice in Two Realms',                  type:'Diptych',  camera:'GFX 100S II + 100–200mm', location:'Jökulsárlón & Diamond Beach'         },
+    { id:'s3', num:'03', title:'Blue Trilogy',               subtitle:'The Impossible Blues of Iceland Ice', type:'Triptych', camera:'X-E5 + GFX 100S II',      location:'Ice Cave · Diamond Beach · Jökulsárlón'},
+    { id:'s4', num:'04', title:'Coastal Contrasts',          subtitle:'Black Sand vs Blue Water',            type:'Diptych',  camera:'GFX 100S II',              location:'Reynisfjara · Blue Lagoon'           },
+    { id:'s5', num:'05', title:'The Human Element',          subtitle:'Presence at the Edge of the World',   type:'Diptych',  camera:'GFX 100S II',              location:'South Iceland Plains'                },
+    { id:'s6', num:'06', title:'Arnarstapi Geometry',        subtitle:'The Architecture of Erosion',         type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Arnarstapi, Snæfellsnes'             },
+    { id:'s7', num:'07', title:'Peninsular Panorama',        subtitle:'Snæfellsnes in Three Moods',          type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Snæfellsnes Peninsula'               },
+    { id:'s8', num:'08', title:'Urban Odyssey',              subtitle:'Reykjavík as Coda',                   type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Reykjavík'                           },
+  ],
+
+  _state: null,
+
+  // ── Load config from Cloudinary ───────────────────────────
+  async load() {
+    try {
+      const res = await fetch(TIA.CONFIG_URL + '?t=' + Date.now());
+      if (res.ok) {
+        TIA._state = await res.json();
+        localStorage.setItem(TIA.STORE_KEY, JSON.stringify(TIA._state));
+        return TIA._state;
+      }
+    } catch {}
+    try {
+      const cached = localStorage.getItem(TIA.STORE_KEY);
+      if (cached) { TIA._state = JSON.parse(cached); return TIA._state; }
+    } catch {}
+    TIA._state = {};
+    return TIA._state;
+  },
+
+  getState() {
+    if (TIA._state) return TIA._state;
+    try { return JSON.parse(localStorage.getItem(TIA.STORE_KEY) || '{}'); }
+    catch { return {}; }
+  },
+
+  // ── Save — localStorage + push JSON to Cloudinary ─────────
+  async save(state) {
+    TIA._state = state;
+    localStorage.setItem(TIA.STORE_KEY, JSON.stringify(state));
+    await TIA._pushConfig(state);
+  },
+
+  async _pushConfig(state) {
+    const blob    = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const dataUri = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+    const fd = new FormData();
+    fd.append('file',          dataUri);
+    fd.append('upload_preset', TIA.PRESET);
+    fd.append('folder',        TIA.FOLDER);
+    fd.append('public_id',     'tia-config');
+    fd.append('resource_type', 'raw');
+    fd.append('overwrite',     'true');
+    fd.append('invalidate',    'true');
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/raw/upload`, { method:'POST', body:fd });
+    if (!res.ok) throw new Error('Config push failed: ' + await res.text());
+  },
+
+  // ── Series helpers ─────────────────────────────────────────
+  getSeries() {
+    const state = TIA.getState();
+    return TIA.DEFAULT_SERIES.map(s => ({ ...s, ...(state.series?.[s.id] || {}) }));
+  },
+
+  getPhotos(seriesId) {
+    const state = TIA.getState();
+    return (state.photos?.[seriesId] || []).map(aid => ({
+      assetId:  aid,
+      thumb:    TIA.thumb(aid),
+      full:     TIA.full(aid),
+      cover:    TIA.cover(aid),
+      hero:     TIA.hero(aid),
+      filename: state.lr?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
+    }));
+  },
+
+  getCoverUrl(seriesId, size = 'cover') {
+    const state    = TIA.getState();
+    const adminAid = state.series?.[seriesId]?.coverAssetId;
+    if (adminAid) return TIA[size]?.(adminAid) || TIA.lrUrl(adminAid, '');
+    const photos   = TIA.getPhotos(seriesId);
+    return photos[0]?.[size] || photos[0]?.cover || '';
+  },
+
+  getHomeUrl(slotId, size = 'hero') {
+    const aid = TIA.getState().home?.[slotId];
+    return aid ? (TIA[size]?.(aid) || TIA.lrUrl(aid, '')) : '';
+  },
+
+  getPortfolioUrl(pfKey, size = 'cover') {
+    const aid = TIA.getState().portfolio?.[pfKey];
+    return aid ? (TIA[size]?.(aid) || TIA.lrUrl(aid, '')) : '';
+  },
+
+  applyAll() {
+    document.querySelectorAll('[data-tia]').forEach(el => {
+      const slot = el.dataset.tia;
+      const ctx  = el.dataset.tiaCtx  || 'home';
+      const size = el.dataset.tiaSize || (el.tagName === 'IMG' ? 'cover' : 'hero');
+      let url = '';
+      if (ctx === 'home')      url = TIA.getHomeUrl(slot, size);
+      if (ctx === 'portfolio') url = TIA.getPortfolioUrl(slot, size);
+      if (ctx === 'series')    url = TIA.getCoverUrl(slot, size);
+      if (!url) return;
+      if (el.tagName === 'IMG') el.src = url;
+      else el.style.backgroundImage = `url('${url}')`;
+    });
+  },
+};
+
+
+// AUTH
+// AUTH
+let authed = sessionStorage.getItem("tia_auth") === "1";
+
+function doLogin() {
+  const p = document.getElementById("authPass").value;
+  // PIN: tia2026
+  if (p === "tia2026") {
+    sessionStorage.setItem("tia_auth","1");
+    authed = true;
+    document.getElementById("authScreen").style.display = "none";
+    document.getElementById("app").classList.add("show");
+    init();
+  } else {
+    document.getElementById("authErr").classList.add("show");
+    document.getElementById("authPass").value = "";
+    document.getElementById("authPass").focus();
+  }
+}
+
+function doLogout() { sessionStorage.removeItem("tia_auth"); location.reload(); }
+
+if (authed) {
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("app").classList.add("show");
+}
+
+// STATE
+let STATE={};
+let activeView=null,activeTab="lightroom";
+let LR_PHOTOS={};
+let lrAlbums=[],lrAlbumPhotos=[],lrSelected=new Set(),lrCurrentAlbum=null;
+
+function getSeries(){return TIA.getSeries();}
+function getSeriesPhotos(sid){
+  return(STATE.photos?.[sid]||[]).map(aid=>{
+    const m=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
+    return{assetId:aid,filename:m.filename||aid,thumbUrl:m.urlThumb||"",fullUrl:m.url2048||""};
+  });
+}
+function allPhotos(){
+  const all=[];
+  Object.values(STATE.photos||{}).forEach(ids=>ids.forEach(aid=>{
+    const m=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
+    all.push({assetId:aid,...m});
+  }));
+  return all;
+}
+
+// INIT
+async function init(){
+  setSyncStatus("busy","Loading...");
+  STATE=await TIA.load();
+  STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
+  STATE.home=STATE.home||{};STATE.portfolio=STATE.portfolio||{};
+  STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
+  // Pre-baked Adobe Client ID
+  if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
+  Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
+  setSyncStatus("ok","Synced");
+  renderSidebar();handleOAuthReturn();switchTab("lightroom");
+}
+
+// SAVE
+async function saveAll(){
+  setSyncStatus("busy","Saving...");setSaveBtn(true,"Saving...");
+  try{
+    STATE.lr.assetMeta={...STATE.lr.assetMeta,...LR_PHOTOS};
+    await TIA.save(STATE);
+    setSyncStatus("ok","Published");toast("Saved & published");
+  }catch(err){setSyncStatus("err","Failed");toast("Save failed: "+err.message,true);}
+  setSaveBtn(false,"Save & Publish");
+}
+function setSaveBtn(d,l){const b=document.getElementById("saveBtn");if(b){b.disabled=d;b.textContent=l;}}
+function setSyncStatus(s,l){const e=document.getElementById("syncStatus");if(e){e.className="tb-sync "+s;e.textContent=l;}}
+
+// SIDEBAR
+function renderSidebar(){
+  document.getElementById("seriesList").innerHTML=getSeries().map(s=>{
+    const cnt=(STATE.photos?.[s.id]||[]).length;
+    return`<button class="sb-item ${activeView===s.id?"active":""}" data-view="${s.id}" onclick="setView('${s.id}')"><span class="sb-num">${s.num}</span><span class="sb-name">${s.title}</span><span class="sb-cnt ${cnt>0?"has":""}">${cnt||""}</span></button>`;
+  }).join("");
+}
+
+// ROUTING
+function switchTab(tab){
+  activeTab=tab;
+  document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
+  document.getElementById("sidebar").style.display=["galleries","settings"].includes(tab)?"":"none";
+  if(tab==="lightroom")showLightroomPanel();
+  else if(tab==="homepage")showHomeSlots();
+  else if(tab==="portfolio")showPortfolioSlots();
+  else if(tab==="settings")showSettingsPanel();
+  else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}
+}
+function setView(id){
+  activeView=id;
+  document.querySelectorAll(".sb-item").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+  if(id==="home-slots")showHomeSlots();
+  else if(id==="portfolio-slots")showPortfolioSlots();
+  else showSeriesView(id);
+}
+function setPanel(eye,title,acts=""){
+  document.getElementById("phEye").textContent=eye;
+  document.getElementById("phTitle").textContent=title;
+  document.getElementById("phActs").innerHTML=acts;
+}
+
+// LIGHTROOM PANEL
+function showLightroomPanel(){
+  setPanel("Adobe Creative Cloud","Lightroom Connection","");
+  document.getElementById("sidebar").style.display="none";
+  const lr=STATE.lr||{};
+  const connected=!!lr.accessToken;
+  document.getElementById("panelBody").innerHTML=`
+<div class="lr-step">
+  <span class="lr-step-num">Step 1 &mdash; Adobe Developer App (one-time setup)</span>
+  <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">
+    Go to <a href="https://developer.adobe.com/console" target="_blank">developer.adobe.com/console</a>
+    &rarr; Create project &rarr; Add API &rarr; <strong>Lightroom</strong> &rarr; OAuth Web App.<br>
+    Set redirect URI to: <code style="background:rgba(255,255,255,.06);padding:2px 6px;font-size:10px">${location.origin}/admin/</code>
+  </p>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+    <div><span class="field-lbl">Client ID (API Key)</span>
+      <input class="input" id="lrClientId" value="${lr.clientId||'afd0ee2721d04f0c8fd9ac505713e014'}" placeholder="Paste your Client ID here"></div>
+    <button class="btn pri" onclick="saveLrClientId()">Save</button>
+  </div>
+</div>
+<div class="lr-step">
+  <span class="lr-step-num">Step 2 &mdash; Connect to Lightroom</span>
+  ${connected
+    ?`<div class="lr-connected"><div class="lr-dot"></div>
+       <span style="font-size:11px;color:var(--green)">Connected to Adobe Lightroom</span>
+       <button class="btn red" onclick="lrDisconnect()" style="margin-left:auto;padding:4px 12px">Disconnect</button></div>`
+    :`<button class="btn gold" onclick="lrAuthorize()" ${lr.clientId?"":"disabled"}>Authorize with Adobe &rarr;</button>
+       ${!lr.clientId?"<p style='font-size:10px;opacity:.3;margin-top:8px'>Save Client ID first</p>":""}`}
+</div>
+<div class="lr-step">
+  <span class="lr-step-num">Step 3 &mdash; Import Album to Series</span>
+  ${!connected
+    ?"<p style='font-size:12px;color:var(--muted)'>Connect to Lightroom first</p>"
+    :`<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+        <button class="btn pri" onclick="lrLoadAlbums()">Load Albums</button>
+        <span style="font-size:10px;opacity:.3">Select an album, pick photos, assign to a series</span></div>
+      <div id="lrAlbumList"><p style="font-size:11px;opacity:.3">Click Load Albums to begin</p></div>
+      <div id="lrPhotoSection" style="display:none;margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <span class="field-lbl" style="margin-bottom:4px">Click photos to select</span>
+            <div style="font-size:9px;letter-spacing:3px;color:var(--dim)">
+              <span id="lrSelCount">0</span> selected &nbsp;&middot;&nbsp;
+              <button onclick="lrSelAll()" style="border:none;background:none;color:var(--gold);font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase">All</button>
+              &nbsp;&middot;&nbsp;
+              <button onclick="lrSelNone()" style="border:none;background:none;color:var(--dim);font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase">None</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="field-lbl" style="margin-bottom:0;white-space:nowrap">Import to &rarr;</span>
+            <select class="input" id="lrTargetSeries" style="width:200px">
+              ${getSeries().map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
+            </select>
+            <button class="btn gold" id="lrImportBtn" onclick="lrImport()" disabled>Import Selected</button>
+          </div>
+        </div>
+        <div class="lr-photo-grid" id="lrPhotoGrid"></div>
+      </div>`}
+</div>
+<div class="lr-log" id="lrLog"></div>`;
+}
+
+// ADOBE OAUTH - implicit flow (no server needed)
+function saveLrClientId(){
+  const id=document.getElementById("lrClientId")?.value?.trim();
+  if(!id)return;STATE.lr.clientId=id;saveAll();toast("Client ID saved");showLightroomPanel();
+}
+function lrAuthorize(){
+  const clientId=STATE.lr.clientId;
+  if(!clientId)return toast("Save Client ID first",true);
+  const redirect=encodeURIComponent(location.origin+"/admin/");
+  const scope=encodeURIComponent("lr_partner_apis openid");
+  sessionStorage.setItem("lr_oauth","1");
+  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=token`;
+}
+function handleOAuthReturn(){
+  const params=new URLSearchParams(window.location.hash.replace("#",""));
+  const token=params.get("access_token");
+  if(!token)return;
+  history.replaceState({},"",location.pathname);
+  STATE.lr.accessToken=token;
+  STATE.lr.tokenExpiry=Date.now()+(Number(params.get("expires_in")||3600)*1000);
+  saveAll();toast("Connected to Lightroom");showLightroomPanel();
+}
+function lrDisconnect(){delete STATE.lr.accessToken;delete STATE.lr.tokenExpiry;saveAll();toast("Disconnected");showLightroomPanel();}
+
+// LR API
+async function lrFetch(path){
+  const token=STATE.lr.accessToken,clientId=STATE.lr.clientId;
+  if(!token)throw new Error("Not connected");
+  const res=await fetch("https://lr.adobe.io"+path,{headers:{"Authorization":"Bearer "+token,"X-API-Key":clientId}});
+  if(res.status===401){delete STATE.lr.accessToken;throw new Error("Session expired - reconnect");}
+  if(!res.ok)throw new Error("LR API error "+res.status);
+  return res.json();
+}
+
+async function lrLoadAlbums(){
+  const el=document.getElementById("lrAlbumList");
+  if(el)el.innerHTML="<p style='font-size:11px;opacity:.4'>Loading albums...</p>";
+  try{
+    const data=await lrFetch("/v2/albums?subtype=project&limit=100");
+    lrAlbums=data.resources||[];
+    if(!lrAlbums.length){el.innerHTML="<p style='font-size:11px;opacity:.3'>No albums found</p>";return;}
+    el.innerHTML=`<div class="lr-album-grid">${lrAlbums.map(a=>`
+      <div class="lr-album" onclick="lrSelectAlbum('${a.id}')">
+        <div class="lr-album-name">${a.payload?.name||"Untitled"}</div>
+        <div class="lr-album-cnt">${a.payload?.assetCount||"?"} photos</div>
+      </div>`).join("")}</div>`;
+  }catch(err){el.innerHTML=`<p style="font-size:11px;color:var(--red)">${err.message}</p>`;toast(err.message,true);}
+}
+
+async function lrSelectAlbum(albumId){
+  lrCurrentAlbum=albumId;lrAlbumPhotos=[];lrSelected=new Set();
+  document.querySelectorAll(".lr-album").forEach(el=>{
+    el.classList.toggle("sel",(el.getAttribute("onclick")||"").includes("'"+albumId+"'"));
+  });
+  const sec=document.getElementById("lrPhotoSection");
+  const grid=document.getElementById("lrPhotoGrid");
+  if(sec)sec.style.display="block";
+  if(grid)grid.innerHTML="<div style='grid-column:1/-1;padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase'>Loading...</div>";
+  try{
+    const data=await lrFetch("/v2/albums/"+albumId+"/assets?subtype=image&limit=200");
+    lrAlbumPhotos=data.resources||[];renderLrPhotoGrid();
+  }catch(err){if(grid)grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px">${err.message}</div>`;}
+}
+
+function getLrThumbUrl(asset){
+  const clientId=STATE.lr.clientId;
+  const links=asset.links||{};
+  const href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
+  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+clientId;
+}
+function getLrFullUrl(asset){
+  const clientId=STATE.lr.clientId;
+  const links=asset.links||{};
+  const href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
+  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+clientId;
+}
+
+function renderLrPhotoGrid(){
+  const grid=document.getElementById("lrPhotoGrid"),cnt=document.getElementById("lrSelCount"),btn=document.getElementById("lrImportBtn");
+  if(!grid)return;
+  if(cnt)cnt.textContent=lrSelected.size;
+  if(btn)btn.disabled=lrSelected.size===0;
+  if(!lrAlbumPhotos.length){grid.innerHTML="<div style='grid-column:1/-1;padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase'>No photos</div>";return;}
+  grid.innerHTML=lrAlbumPhotos.map(a=>`
+    <div class="lr-photo ${lrSelected.has(a.id)?"sel":""}" id="lrp-${a.id}" onclick="lrTogglePhoto('${a.id}')">
+      <img src="${getLrThumbUrl(a)}" loading="lazy" alt="">
+      <div class="lr-check">✓</div></div>`).join("");
+}
+function lrTogglePhoto(id){
+  if(lrSelected.has(id))lrSelected.delete(id);else lrSelected.add(id);
+  const el=document.getElementById("lrp-"+id);if(el)el.classList.toggle("sel",lrSelected.has(id));
+  const cnt=document.getElementById("lrSelCount"),btn=document.getElementById("lrImportBtn");
+  if(cnt)cnt.textContent=lrSelected.size;if(btn)btn.disabled=lrSelected.size===0;
+}
+function lrSelAll(){lrAlbumPhotos.forEach(a=>lrSelected.add(a.id));renderLrPhotoGrid();}
+function lrSelNone(){lrSelected.clear();renderLrPhotoGrid();}
+
+async function lrImport(){
+  const sid=document.getElementById("lrTargetSeries")?.value;
+  if(!sid||!lrSelected.size)return;
+  const btn=document.getElementById("lrImportBtn");if(btn)btn.disabled=true;
+  const logEl=document.getElementById("lrLog");if(logEl){logEl.innerHTML="";logEl.classList.add("show");}
+  lrLog("Importing "+lrSelected.size+" photos to series "+sid+"...");
+  if(!STATE.photos[sid])STATE.photos[sid]=[];
+  if(!STATE.lr.assetMeta)STATE.lr.assetMeta={};
+  let imported=0;
+  for(const assetId of lrSelected){
+    const asset=lrAlbumPhotos.find(a=>a.id===assetId);if(!asset)continue;
+    const filename=asset.payload?.importSource?.fileName||assetId;
+    const urlThumb=getLrThumbUrl(asset);
+    const url2048=getLrFullUrl(asset);
+    STATE.lr.assetMeta[assetId]={filename,assetId,url2048,urlThumb};
+    LR_PHOTOS[assetId]=STATE.lr.assetMeta[assetId];
+    if(!STATE.photos[sid].includes(assetId))STATE.photos[sid].push(assetId);
+    imported++;lrLog("  + "+filename);
+  }
+  lrLog("Done: "+imported+" photos assigned to series "+sid);
+  lrLog("Click Save & Publish to push to live site.");
+  renderSidebar();if(btn)btn.disabled=false;
+  toast(imported+" photos imported - Save & Publish to go live");
+}
+
+// SERIES VIEW
+function showSeriesView(sid){
+  const s=getSeries().find(x=>x.id===sid);
+  const photos=getSeriesPhotos(sid);
+  const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
+  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick=\"switchTab('lightroom')\">+ Import from Lightroom</button>");
+  let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+    <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
+    <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
+    <div style="grid-column:span 2"><span class="field-lbl">Description</span>
+      <textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)">${esc(s?.description||"")}</textarea></div></div>`;
+  if(!photos.length){
+    html+="<div class='empty'><p>No photos yet - use Lightroom tab to import</p></div>";
+  }else{
+    html+=`<div class="sec-lbl"><span>${photos.length} photos &mdash; click Cover to set the cover image</span></div><div class="pg">`;
+    photos.forEach(p=>{
+      const isCover=p.assetId===cover;
+      html+=`<div class="pc ${isCover?"cover":""}">
+        ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
+        ${isCover?`<div class="pc-badge cover">Cover</div>`:""}
+        <div class="pc-ov">
+          <button class="pc-btn" onclick="setCover('${sid}','${p.assetId}')">Cover</button>
+          <button class="pc-btn" onclick="removePhoto('${sid}','${p.assetId}')">Remove</button>
+        </div>
+        <div class="pc-lbl">${p.filename}</div></div>`;
+    });
+    html+="</div>";
+  }
+  document.getElementById("panelBody").innerHTML=html;
+}
+function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid][field]=val;renderSidebar();}
+function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showSeriesView(sid);toast("Cover set");}
+function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);renderSidebar();showSeriesView(sid);}
+
+// HOMEPAGE & PORTFOLIO SLOTS
+const HOME_SLOTS=[
+  {id:"hero",label:"Hero Background"},{id:"carousel1",label:"Carousel Slide 1"},
+  {id:"carousel2",label:"Carousel Slide 2"},{id:"carousel3",label:"Carousel Slide 3"},
+  {id:"mountain",label:"Full-Width Photo"},{id:"qrow1",label:"Quote Row 1"},
+  {id:"qrow2",label:"Quote Row 2"},{id:"qrow3",label:"Quote Row 3"},
+  {id:"qrow4",label:"Quote Row 4"},{id:"portrait",label:"Contact Portrait"},
+];
+const PF_SLOTS=[
+  {id:"pf-s1",label:"Featured 1 - Solitude & Scale"},{id:"pf-s3",label:"Featured 2 - Blue Trilogy"},
+  {id:"pf-s2",label:"Featured 3 - Glacial Contrasts"},{id:"pf-s5",label:"Featured 4 - Human Element"},
+  {id:"pf-s7",label:"Featured 5 - Peninsular Panorama"},
+];
+function showHomeSlots(){setPanel("Homepage","Photo Assignments","");document.getElementById("panelBody").innerHTML=`<div class="slots">${HOME_SLOTS.map(s=>slotCard(s.id,s.label,"home")).join("")}</div>`;}
+function showPortfolioSlots(){setPanel("Portfolio","Featured Work Covers","");document.getElementById("panelBody").innerHTML=`<div class="slots">${PF_SLOTS.map(s=>slotCard(s.id,s.label,"portfolio")).join("")}</div>`;}
+function slotCard(slotId,label,ctx){
+  const aid=ctx==="home"?STATE.home?.[slotId]:STATE.portfolio?.[slotId];
+  const meta=aid?(LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]):null;
+  const thumb=meta?.urlThumb||"";
+  const filled=!!thumb;
+  return`<div class="slot ${filled?"filled":""}" onclick="openPicker('${slotId}','${ctx}','${esc(label)}')">
+    ${filled?`<img class="slot-img" src="${thumb}" alt="">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">No photo assigned</div></div>`}
+    <div class="slot-info"><span class="slot-name">${label}</span><span class="slot-act">${filled?"Set - click to change":"Click to assign"}</span></div></div>`;
+}
+
+// SETTINGS
+function showSettingsPanel(){
+  setPanel("Settings","Gallery Names & Descriptions","");
+  document.getElementById("panelBody").innerHTML=`<div class="settings-grid">${getSeries().map(s=>{
+    const coverAid=STATE.series?.[s.id]?.coverAssetId;
+    const meta=coverAid?(LR_PHOTOS[coverAid]||STATE.lr?.assetMeta?.[coverAid]):null;
+    return`<div class="card">
+      ${meta?.urlThumb?`<img src="${meta.urlThumb}" style="width:100%;aspect-ratio:16/7;object-fit:cover;display:block;margin-bottom:12px">`:
+        `<div style="width:100%;aspect-ratio:16/7;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2">No cover</div>`}
+      <span class="field-lbl">Series ${s.num} Title</span>
+      <input class="input" style="margin-bottom:10px" value="${esc(s.title)}" oninput="updateSeries('${s.id}','title',this.value)">
+      <span class="field-lbl">Subtitle</span>
+      <input class="input" style="margin-bottom:10px" value="${esc(s.subtitle)}" oninput="updateSeries('${s.id}','subtitle',this.value)">
+      <span class="field-lbl">Description</span>
+      <textarea class="textarea" oninput="updateSeries('${s.id}','description',this.value)">${esc(s.description||"")}</textarea></div>`;
+  }).join("")}</div>`;
+}
+
+// PICKER
+let pkSlotId=null,pkCtx=null,pkActive=null;
+function openPicker(slotId,ctx,label){
+  pkSlotId=slotId;pkCtx=ctx;pkActive=null;
+  document.getElementById("pkTitle").textContent=label;
+  document.getElementById("pkConfirm").disabled=true;
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById("picker").classList.add("open");
+}
+function closePicker(){document.getElementById("picker").classList.remove("open");}
+function renderPkFilter(){
+  document.getElementById("pkFilter").innerHTML=
+    `<button class="pk-f active" onclick="renderPkGrid(null);setActivePkF(this)">All</button>`+
+    getSeries().map(s=>`<button class="pk-f" onclick="renderPkGrid('${s.id}');setActivePkF(this)">${s.num} ${s.title}</button>`).join("");
+}
+function setActivePkF(btn){document.querySelectorAll(".pk-f").forEach(b=>b.classList.remove("active"));btn.classList.add("active");}
+function renderPkGrid(filterSid){
+  const photos=filterSid?getSeriesPhotos(filterSid).map(p=>({assetId:p.assetId,thumbUrl:p.thumbUrl,filename:p.filename})):
+    allPhotos().map(p=>({assetId:p.assetId,thumbUrl:p.urlThumb||"",filename:p.filename||p.assetId}));
+  const grid=document.getElementById("pkGrid");
+  if(!photos.length){grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No photos imported yet</p></div>";return;}
+  grid.innerHTML=photos.map(p=>`
+    <div class="pk-cell ${pkActive===p.assetId?"active":""}" onclick="selectInPicker('${p.assetId}',this)">
+      ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
+      <div class="pk-cell-lbl">${p.filename||p.assetId}</div></div>`).join("");
+}
+function selectInPicker(assetId,el){
+  pkActive=assetId;
+  document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
+  el.classList.add("active");document.getElementById("pkConfirm").disabled=false;
+}
+function confirmPick(){
+  if(!pkActive||!pkSlotId)return;
+  if(pkCtx==="home")STATE.home[pkSlotId]=pkActive;
+  if(pkCtx==="portfolio")STATE.portfolio[pkSlotId]=pkActive;
+  saveAll();closePicker();
+  if(activeTab==="homepage")showHomeSlots();
+  if(activeTab==="portfolio")showPortfolioSlots();
+  toast("Photo assigned");
+}
+
+// HELPERS
+function lrLog(msg){const el=document.getElementById("lrLog");if(el){el.innerHTML+=msg+"<br>";el.scrollTop=el.scrollHeight;}}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function toast(msg,isErr=false){
+  const t=document.getElementById("toast");t.textContent=msg;
+  t.className="toast show"+(isErr?" err":"");clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove("show"),3500);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePicker();});
+if(authed)init();
+</script>
+</body>
+</html>
