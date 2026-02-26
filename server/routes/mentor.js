@@ -56,6 +56,10 @@ router.post('/import-lightroom', ensureAuth, async (req, res) => {
   try {
     const { albumId } = req.body;
     if (!albumId) return res.status(400).json({ error: 'albumId required' });
+    const adobeClientId = process.env.ADOBE_CLIENT_ID || process.env.VITE_ADOBE_CLIENT_ID;
+    if (!adobeClientId) {
+      return res.status(500).json({ error: 'Adobe client ID not configured' });
+    }
     // Get Lightroom token from user session or stored token (assume sent in header or body)
     const token = req.headers['x-adobe-token'] || req.body.adobeToken;
     if (!token) return res.status(401).json({ error: 'Adobe token missing' });
@@ -64,7 +68,7 @@ router.post('/import-lightroom', ensureAuth, async (req, res) => {
     const assetsRes = await axios.get(assetsUrl, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'X-Api-Key': process.env.VITE_ADOBE_CLIENT_ID,
+        'X-API-Key': adobeClientId,
       },
     });
     const assets = assetsRes.data.resources;
@@ -79,7 +83,7 @@ router.post('/import-lightroom', ensureAuth, async (req, res) => {
     const renditionRes = await axios.get(renditionUrl, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'X-Api-Key': process.env.VITE_ADOBE_CLIENT_ID,
+        'X-API-Key': adobeClientId,
       },
     });
     const renditions = renditionRes.data.resources;
