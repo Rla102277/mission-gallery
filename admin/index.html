@@ -373,6 +373,7 @@ const TIA = {
 // AUTH
 const AUTH_TOKEN_KEY = "tia_auth_token";
 const API_BASE_KEY = "tia_api_base";
+const LR_CLIENT_ID_KEY = "tia_lr_client_id";
 
 const normalizeApiBase = (url) => {
   const trimmed = (url || "").trim();
@@ -508,6 +509,10 @@ async function init(){
   STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
   STATE.home=STATE.home||{};STATE.portfolio=STATE.portfolio||{};
   STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
+  if(!STATE.lr.clientId){
+    const localClientId=localStorage.getItem(LR_CLIENT_ID_KEY)||"";
+    if(localClientId)STATE.lr.clientId=localClientId;
+  }
   // Pre-baked Adobe Client ID
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
@@ -625,7 +630,11 @@ function showLightroomPanel(){
 // ADOBE OAUTH - implicit flow (no server needed)
 function saveLrClientId(){
   const id=document.getElementById("lrClientId")?.value?.trim();
-  if(!id)return;STATE.lr.clientId=id;saveAll();toast("Client ID saved");showLightroomPanel();
+  if(!id)return;
+  STATE.lr.clientId=id;
+  localStorage.setItem(LR_CLIENT_ID_KEY,id);
+  toast("Client ID saved");
+  showLightroomPanel();
 }
 async function lrAuthorize(){
   let clientId=STATE.lr.clientId;
@@ -639,7 +648,7 @@ async function lrAuthorize(){
       if(config?.clientId){
         clientId=config.clientId;
         STATE.lr.clientId=clientId;
-        saveAll();
+        localStorage.setItem(LR_CLIENT_ID_KEY,clientId);
       }
       if(config && config.configured===false){
         return toast("Backend Adobe credentials are not configured",true);
@@ -650,7 +659,7 @@ async function lrAuthorize(){
   if(!clientId)return toast("Save Client ID first",true);
   const redirectUri=location.origin+"/admin/";
   const redirect=encodeURIComponent(redirectUri);
-  const scope=encodeURIComponent("openid,AdobeID,lr_partner_apis,lr_partner_rendition_apis");
+  const scope=encodeURIComponent("openid AdobeID lr_partner_apis lr_partner_rendition_apis");
   sessionStorage.setItem("lr_oauth","1");
   window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=code`;
 }
@@ -677,7 +686,10 @@ async function handleOAuthReturn(){
       if(!tokenResponse.ok){
         const providerMsg=payload?.details?.error_description||payload?.details?.error;
         const rawMsg=(payloadText||"").trim();
-        throw new Error(providerMsg||payload?.error||rawMsg||`Adobe token exchange failed (${tokenResponse.status})`);
+        const fallbackMsg=rawMsg.startsWith("{")||rawMsg.startsWith("[")
+          ? `Adobe token exchange failed (${tokenResponse.status})`
+          : rawMsg;
+        throw new Error(providerMsg||payload?.error||fallbackMsg||`Adobe token exchange failed (${tokenResponse.status})`);
       }
 
       const tokenData=payload;
@@ -695,7 +707,9 @@ async function handleOAuthReturn(){
       return;
     }catch(err){
       history.replaceState({},"",location.pathname);
-      toast(err.message||"Adobe login failed",true);
+      const msg=((err&&err.message)||"Adobe login failed").replace(/\s+/g," ").trim();
+      const shortMsg=msg.length>220?`${msg.slice(0,220)}...`:msg;
+      toast(shortMsg,true);
       showLightroomPanel();
       return;
     }
