@@ -79,6 +79,34 @@ function extractExif(buffer) {
   return {};
 }
 
+app.get("/api/images/list", async function(req, res) {
+  if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
+    return res.status(500).json({ error: "Cloudflare Images not configured" });
+  }
+  try {
+    var allImages = [];
+    var cursor = null;
+    do {
+      var url = "https://api.cloudflare.com/client/v4/accounts/" + CF_ACCOUNT_ID + "/images/v2?per_page=100";
+      if (cursor) url += "&continuation_token=" + encodeURIComponent(cursor);
+      var cfRes = await fetch(url, { headers: { "Authorization": "Bearer " + CF_IMAGES_TOKEN } });
+      var data = await cfRes.json();
+      if (!data.success) break;
+      (data.result.images || []).forEach(function(img) {
+        allImages.push({ id: img.id, filename: img.filename, uploaded: img.uploaded, requireSignedURLs: img.requireSignedURLs, variants: img.variants });
+      });
+      cursor = data.result.continuation_token || null;
+    } while (cursor);
+    res.json({ images: allImages, hash: CF_HASH });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/images/config", function(req, res) {
+  res.json({ hash: CF_HASH, accountId: CF_ACCOUNT_ID ? "configured" : "missing" });
+});
+
 app.post("/api/images/upload", upload.single("file"), async function(req, res) {
   if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
     return res.status(500).json({ error: "Cloudflare Images not configured" });

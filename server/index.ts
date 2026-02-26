@@ -126,6 +126,34 @@ app.delete("/api/images/:id", async (req, res) => {
   }
 });
 
+app.get("/api/images/list", async (req, res) => {
+  if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
+    return res.status(500).json({ error: "Cloudflare Images not configured" });
+  }
+  try {
+    const allImages: any[] = [];
+    let page = 1;
+    let hasMore = true;
+    while (hasMore) {
+      const cfRes = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1?per_page=100&page=${page}`,
+        { headers: { "Authorization": `Bearer ${CF_IMAGES_TOKEN}` } }
+      );
+      const data = await cfRes.json() as any;
+      if (!data.success) {
+        return res.status(400).json({ error: data.errors?.[0]?.message || "List failed" });
+      }
+      const images = data.result.images || [];
+      allImages.push(...images);
+      hasMore = images.length === 100;
+      page++;
+    }
+    res.json({ images: allImages, hash: CF_IMAGES_HASH || "" });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/api/images/config", (_req, res) => {
   res.json({ hash: CF_IMAGES_HASH || "" });
 });

@@ -177,6 +177,56 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .gallery-upload-ico{font-size:22px;opacity:.12;margin-bottom:6px}
 .gallery-upload-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.3;margin-bottom:3px}
 .gallery-upload-sub{font-size:10px;opacity:.18}
+/* IMAGES TAB */
+.img-layout{display:grid;grid-template-columns:200px 1fr;height:100%;overflow:hidden}
+.img-folders{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);padding:10px 0}
+.img-folder-item{display:flex;align-items:center;gap:8px;padding:7px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;width:100%;text-align:left;font-size:11px;border-left:2px solid transparent}
+.img-folder-item:hover{color:var(--cream);background:rgba(255,255,255,.03)}
+.img-folder-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-left-color:var(--gold)}
+.img-folder-ico{font-size:12px;opacity:.4;flex-shrink:0;width:16px;text-align:center}
+.img-folder-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.img-folder-cnt{font-size:9px;color:var(--dim)}
+.img-folder-acts{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.img-folder-item:hover .img-folder-acts{opacity:1}
+.img-folder-del{border:none;background:none;color:var(--red);font-size:11px;cursor:pointer;padding:0 3px}
+.img-new-folder{display:flex;gap:6px;padding:6px 14px;margin-top:6px}
+.img-new-folder input{flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:11px;outline:none}
+.img-new-folder button{padding:4px 10px;font-size:8px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.img-main{display:flex;flex-direction:column;overflow:hidden}
+.img-toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface2)}
+.img-toolbar-left{display:flex;align-items:center;gap:8px;flex:1}
+.img-toolbar-right{display:flex;align-items:center;gap:8px}
+.img-sel-count{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.img-content{flex:1;overflow-y:auto;padding:16px}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.img-card{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;border:2px solid transparent;border-radius:1px;cursor:pointer}
+.img-card:hover{border-color:rgba(255,255,255,.2)}
+.img-card.selected{border-color:var(--gold)}
+.img-card.in-series{border-color:rgba(90,158,111,.3)}
+.img-card.selected.in-series{border-color:var(--gold)}
+.img-card img{width:100%;height:100%;object-fit:cover;display:block}
+.img-card-check{position:absolute;top:4px;left:4px;width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;transition:all .15s}
+.img-card.selected .img-card-check{background:var(--gold);border-color:var(--gold);color:#000}
+.img-card-info{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent)}
+.img-card-name{font-size:8px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.img-card-badges{position:absolute;top:4px;right:4px;display:flex;gap:3px;flex-wrap:wrap}
+.img-card-badge{font-size:7px;letter-spacing:1px;text-transform:uppercase;padding:1px 5px;border-radius:1px;background:rgba(90,158,111,.8);color:#fff}
+.img-card-badge.folder{background:rgba(201,162,39,.7)}
+.img-upload-zone{border:2px dashed var(--border2);padding:20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px}
+.img-upload-zone:hover,.img-upload-zone.drag{border-color:var(--gold);background:rgba(201,162,39,.04)}
+/* ASSIGN MODAL */
+#assignModal{position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
+#assignModal.open{display:flex}
+.am-box{background:var(--surface);border:1px solid var(--border2);width:min(440px,92vw);border-radius:2px}
+.am-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.am-title{font-size:14px;font-weight:300}
+.am-close{font-size:18px;border:none;background:none;color:var(--muted);cursor:pointer}
+.am-body{padding:16px 18px}
+.am-section{margin-bottom:14px}
+.am-section-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:block}
+.am-opt{display:flex;align-items:center;gap:10px;padding:6px 10px;cursor:pointer;border:1px solid var(--border);margin-bottom:4px;background:transparent;width:100%;text-align:left;color:var(--cream);font-size:11px}
+.am-opt:hover{border-color:var(--border2);background:rgba(255,255,255,.03)}
+.am-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 /* MISC */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .empty{padding:50px 0;text-align:center}
@@ -206,6 +256,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
     </div>
     <div class="tb-nav">
       <button class="tb-tab active" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
+      <button class="tb-tab" data-tab="images" onclick="switchTab('images')">Images</button>
       <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
       <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
       <button class="tb-tab" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
@@ -249,6 +300,19 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
     <div class="pk-foot">
       <button class="btn" onclick="closePicker()">Cancel</button>
       <button class="btn gold" id="pkConfirm" onclick="confirmPick()" disabled>Use This Photo</button>
+    </div>
+  </div>
+</div>
+
+<div id="assignModal">
+  <div class="am-box">
+    <div class="am-head">
+      <div class="am-title" id="amTitle">Assign to...</div>
+      <button class="am-close" onclick="closeAssignModal()">&times;</button>
+    </div>
+    <div class="am-body" id="amBody"></div>
+    <div class="am-foot">
+      <button class="btn" onclick="closeAssignModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -519,6 +583,7 @@ async function init(){
   STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
   STATE.cl=STATE.cl||{};STATE.cl.assetMeta=STATE.cl.assetMeta||{};
   STATE.cf=STATE.cf||{};STATE.cf.assetMeta=STATE.cf.assetMeta||{};
+  STATE.imgFolders=STATE.imgFolders||{};
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
   Object.assign(CL_PHOTOS,STATE.cl.assetMeta);
@@ -561,6 +626,7 @@ function switchTab(tab){
     if(activeView)showSeriesView(activeView);
     else{const first=getSeries()[0];if(first){setView(first.id);}else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}}
   }
+  else if(tab==="images")showImagesPanel();
   else if(tab==="lightroom")showLightroomPanel();
   else if(tab==="homepage")showHomeSlots();
   else if(tab==="portfolio")showPortfolioSlots();
@@ -958,6 +1024,382 @@ function confirmPick(){
   if(activeTab==="homepage")showHomeSlots();
   if(activeTab==="portfolio")showPortfolioSlots();
   toast("Photo assigned");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IMAGES TAB — Browse all CF images, organize into folders, assign to series/slots
+// ═══════════════════════════════════════════════════════════════
+let imgAllImages=[];
+let imgActiveFolder=null;
+let imgSelected=new Set();
+let imgLoading=false;
+
+function getImgFolders(){return STATE.imgFolders||{};}
+function getImgImageFolder(cfId){
+  const folders=getImgFolders();
+  for(const[fid,fdata]of Object.entries(folders)){
+    if(fdata.images&&fdata.images.includes(cfId))return fid;
+  }
+  return null;
+}
+function getImgSeriesForImage(cfId){
+  const series=[];
+  for(const[sid,ids]of Object.entries(STATE.photos||{})){
+    if(ids.includes(cfId)){const s=getSeries().find(x=>x.id===sid);series.push(s?s.num+" "+s.title:sid);}
+  }
+  return series;
+}
+
+async function showImagesPanel(){
+  document.getElementById("sidebar").style.display="none";
+  document.querySelector(".ph").style.display="none";
+  imgSelected=new Set();
+  document.getElementById("panelBody").innerHTML=`<div class="img-layout">
+    <div class="img-folders" id="imgFolders"></div>
+    <div class="img-main">
+      <div class="img-toolbar">
+        <div class="img-toolbar-left">
+          <span class="img-sel-count" id="imgSelCount">0 selected</span>
+          <button class="btn" id="imgAssignBtn" onclick="openAssignModal()" disabled data-testid="btn-assign-selected">Assign to Series</button>
+          <button class="btn" id="imgMoveBtn" onclick="openMoveToFolder()" disabled>Move to Folder</button>
+          <button class="btn red" id="imgDelBtn" onclick="imgDeleteSelected()" disabled data-testid="btn-delete-selected">Delete</button>
+        </div>
+        <div class="img-toolbar-right">
+          <button class="btn pri" onclick="imgRefresh()" data-testid="btn-refresh-images">Refresh</button>
+        </div>
+      </div>
+      <div class="img-content" id="imgContent">
+        <div class="img-upload-zone" id="imgUploadZone"
+          onclick="document.getElementById('imgUploadInput').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="event.preventDefault();this.classList.remove('drag');imgUploadFiles(event.dataTransfer.files)">
+          <div style="font-size:20px;opacity:.12;margin-bottom:4px">&#x2191;</div>
+          <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.3">Drop photos here or click to upload</div>
+        </div>
+        <input type="file" id="imgUploadInput" multiple accept="image/*" style="display:none" onchange="imgUploadFiles(this.files)">
+        <div id="imgUploadProgress"></div>
+        <div id="imgGrid" class="img-grid"></div>
+      </div>
+    </div>
+  </div>`;
+  renderImgFolders();
+  if(!imgAllImages.length&&!imgLoading)await imgRefresh();
+  else renderImgGrid();
+}
+
+function renderImgFolders(){
+  const el=document.getElementById("imgFolders");
+  if(!el)return;
+  const folders=getImgFolders();
+  const folderIds=Object.keys(folders).sort((a,b)=>(folders[a].name||a).localeCompare(folders[b].name||b));
+  const allCount=imgAllImages.length;
+  const unassigned=imgAllImages.filter(img=>!getImgImageFolder(img.id)).length;
+  let html=`<button class="img-folder-item ${imgActiveFolder===null?"active":""}" onclick="imgSetFolder(null)">
+    <span class="img-folder-ico">&#x1f5bc;</span>
+    <span class="img-folder-name">All Images</span>
+    <span class="img-folder-cnt">${allCount}</span>
+  </button>
+  <button class="img-folder-item ${imgActiveFolder==="__unassigned"?"active":""}" onclick="imgSetFolder('__unassigned')">
+    <span class="img-folder-ico">&#x2609;</span>
+    <span class="img-folder-name">Unsorted</span>
+    <span class="img-folder-cnt">${unassigned}</span>
+  </button>`;
+  folderIds.forEach(fid=>{
+    const f=folders[fid];
+    const cnt=(f.images||[]).length;
+    html+=`<button class="img-folder-item ${imgActiveFolder===fid?"active":""}" onclick="imgSetFolder('${fid}')">
+      <span class="img-folder-ico">&#x1f4c1;</span>
+      <span class="img-folder-name">${esc(f.name||fid)}</span>
+      <span class="img-folder-cnt">${cnt}</span>
+      <span class="img-folder-acts"><button class="img-folder-del" onclick="event.stopPropagation();imgDeleteFolder('${fid}')" title="Delete folder">&times;</button></span>
+    </button>`;
+  });
+  html+=`<div class="img-new-folder">
+    <input id="imgNewFolderName" placeholder="New folder..." onkeydown="if(event.key==='Enter')imgCreateFolder()">
+    <button onclick="imgCreateFolder()">+ Add</button>
+  </div>`;
+  el.innerHTML=html;
+}
+
+function imgSetFolder(fid){
+  imgActiveFolder=fid;
+  imgSelected=new Set();
+  renderImgFolders();
+  renderImgGrid();
+  imgUpdateToolbar();
+}
+
+async function imgRefresh(){
+  imgLoading=true;
+  const grid=document.getElementById("imgGrid");
+  if(grid)grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading images from Cloudflare...</div>";
+  try{
+    const res=await fetch("/api/images/list");
+    if(!res.ok)throw new Error("Failed to load images");
+    const data=await res.json();
+    imgAllImages=data.images||[];
+    if(data.hash)TIA.CF_HASH=data.hash;
+    imgAllImages.forEach(img=>{
+      if(!CF_PHOTOS[img.id]){
+        CF_PHOTOS[img.id]={id:img.id,filename:img.filename||img.id};
+        if(!STATE.cf)STATE.cf={assetMeta:{}};
+        if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+        STATE.cf.assetMeta[img.id]={id:img.id,filename:img.filename||img.id};
+      }
+    });
+    renderImgGrid();
+    renderImgFolders();
+    toast(imgAllImages.length+" images loaded from Cloudflare");
+  }catch(err){
+    if(grid)grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
+    toast(err.message,true);
+  }
+  imgLoading=false;
+}
+
+function imgGetFilteredImages(){
+  if(imgActiveFolder===null)return imgAllImages;
+  if(imgActiveFolder==="__unassigned")return imgAllImages.filter(img=>!getImgImageFolder(img.id));
+  const folder=getImgFolders()[imgActiveFolder];
+  if(!folder||!folder.images)return[];
+  const ids=new Set(folder.images);
+  return imgAllImages.filter(img=>ids.has(img.id));
+}
+
+function renderImgGrid(){
+  const grid=document.getElementById("imgGrid");
+  if(!grid)return;
+  const images=imgGetFilteredImages();
+  if(!images.length){
+    grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images</div>";
+    return;
+  }
+  const hash=TIA.CF_HASH||STATE.cf?.hash||"";
+  grid.innerHTML=images.map(img=>{
+    const sel=imgSelected.has(img.id);
+    const seriesList=getImgSeriesForImage(img.id);
+    const folderId=getImgImageFolder(img.id);
+    const folderName=folderId?getImgFolders()[folderId]?.name:null;
+    const inSeries=seriesList.length>0;
+    const thumb=hash?`https://imagedelivery.net/${hash}/${img.id}/thumb`:"";
+    let badges="";
+    if(inSeries)badges+=seriesList.map(s=>`<span class="img-card-badge">${esc(s)}</span>`).join("");
+    if(folderName&&imgActiveFolder===null)badges+=`<span class="img-card-badge folder">${esc(folderName)}</span>`;
+    return`<div class="img-card ${sel?"selected":""} ${inSeries?"in-series":""}" onclick="imgToggle('${img.id}')" data-testid="img-card-${img.id}">
+      ${thumb?`<img src="${thumb}" loading="lazy" alt="">`:""}
+      <div class="img-card-check">&#x2713;</div>
+      ${badges?`<div class="img-card-badges">${badges}</div>`:""}
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div></div>
+    </div>`;
+  }).join("");
+}
+
+function imgToggle(id){
+  if(imgSelected.has(id))imgSelected.delete(id);else imgSelected.add(id);
+  const card=document.querySelector(`[data-testid="img-card-${id}"]`);
+  if(card)card.classList.toggle("selected",imgSelected.has(id));
+  imgUpdateToolbar();
+}
+
+function imgUpdateToolbar(){
+  const cnt=document.getElementById("imgSelCount");
+  const assignBtn=document.getElementById("imgAssignBtn");
+  const moveBtn=document.getElementById("imgMoveBtn");
+  const delBtn=document.getElementById("imgDelBtn");
+  const n=imgSelected.size;
+  if(cnt)cnt.textContent=n+" selected";
+  if(assignBtn)assignBtn.disabled=n===0;
+  if(moveBtn)moveBtn.disabled=n===0;
+  if(delBtn)delBtn.disabled=n===0;
+}
+
+function imgCreateFolder(){
+  const input=document.getElementById("imgNewFolderName");
+  const name=(input?.value||"").trim();
+  if(!name)return toast("Enter a folder name",true);
+  if(!STATE.imgFolders)STATE.imgFolders={};
+  const fid="f-"+Date.now();
+  STATE.imgFolders[fid]={name,images:[]};
+  input.value="";
+  renderImgFolders();
+  toast("Folder '"+name+"' created");
+}
+
+function imgDeleteFolder(fid){
+  if(!STATE.imgFolders||!STATE.imgFolders[fid])return;
+  const name=STATE.imgFolders[fid].name||fid;
+  if(!confirm("Delete folder '"+name+"'? Images won't be deleted, just unorganized."))return;
+  delete STATE.imgFolders[fid];
+  if(imgActiveFolder===fid)imgActiveFolder=null;
+  renderImgFolders();
+  renderImgGrid();
+  toast("Folder deleted");
+}
+
+function imgRenameFolder(fid){
+  const f=STATE.imgFolders?.[fid];
+  if(!f)return;
+  const name=prompt("Rename folder:",f.name||"");
+  if(name===null)return;
+  f.name=name.trim()||f.name;
+  renderImgFolders();
+  toast("Folder renamed");
+}
+
+function openMoveToFolder(){
+  if(!imgSelected.size)return;
+  const folders=getImgFolders();
+  const folderIds=Object.keys(folders).sort((a,b)=>(folders[a].name||a).localeCompare(folders[b].name||b));
+  if(!folderIds.length)return toast("Create a folder first",true);
+  document.getElementById("amTitle").textContent="Move "+imgSelected.size+" image"+(imgSelected.size>1?"s":"")+" to folder";
+  let html=`<div class="am-section">
+    <span class="am-section-lbl">Select Folder</span>
+    <button class="am-opt" onclick="imgMoveToFolder(null)">
+      <span class="img-folder-ico">&#x2609;</span> Unsorted (remove from folder)
+    </button>`;
+  folderIds.forEach(fid=>{
+    html+=`<button class="am-opt" onclick="imgMoveToFolder('${fid}')">
+      <span class="img-folder-ico">&#x1f4c1;</span> ${esc(folders[fid].name||fid)}
+    </button>`;
+  });
+  html+="</div>";
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+}
+
+function imgMoveToFolder(fid){
+  if(!STATE.imgFolders)STATE.imgFolders={};
+  Object.values(STATE.imgFolders).forEach(f=>{
+    if(f.images)f.images=f.images.filter(id=>!imgSelected.has(id));
+  });
+  if(fid&&STATE.imgFolders[fid]){
+    if(!STATE.imgFolders[fid].images)STATE.imgFolders[fid].images=[];
+    imgSelected.forEach(id=>{
+      if(!STATE.imgFolders[fid].images.includes(id))STATE.imgFolders[fid].images.push(id);
+    });
+  }
+  closeAssignModal();
+  imgSelected=new Set();
+  renderImgFolders();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast("Images moved");
+}
+
+function openAssignModal(){
+  if(!imgSelected.size)return;
+  const n=imgSelected.size;
+  document.getElementById("amTitle").textContent="Assign "+n+" image"+(n>1?"s":"")+" to...";
+  const series=getSeries();
+  let html=`<div class="am-section">
+    <span class="am-section-lbl">Gallery Series</span>
+    ${series.map(s=>`<button class="am-opt" onclick="imgAssignToSeries('${s.id}')">
+      <span style="font-size:9px;color:var(--dim);width:20px">${s.num}</span> ${esc(s.title)}
+    </button>`).join("")}
+  </div>`;
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+}
+
+function closeAssignModal(){document.getElementById("assignModal").classList.remove("open");}
+
+function imgAssignToSeries(sid){
+  if(!STATE.photos[sid])STATE.photos[sid]=[];
+  let added=0;
+  imgSelected.forEach(cfId=>{
+    if(!STATE.photos[sid].includes(cfId)){
+      STATE.photos[sid].push(cfId);
+      added++;
+    }
+    if(!CF_PHOTOS[cfId]){
+      const img=imgAllImages.find(i=>i.id===cfId);
+      CF_PHOTOS[cfId]={id:cfId,filename:img?.filename||cfId};
+      if(!STATE.cf)STATE.cf={assetMeta:{}};
+      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+      STATE.cf.assetMeta[cfId]=CF_PHOTOS[cfId];
+    }
+  });
+  closeAssignModal();
+  imgSelected=new Set();
+  renderSidebar();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast(added+" image"+(added>1?"s":"")+" assigned to series — Save & Publish to go live");
+}
+
+async function imgDeleteSelected(){
+  if(!imgSelected.size)return;
+  if(!confirm("Delete "+imgSelected.size+" image"+(imgSelected.size>1?"s":"")+" from Cloudflare? This cannot be undone."))return;
+  let deleted=0;
+  for(const cfId of imgSelected){
+    try{
+      const res=await fetch("/api/images/"+cfId,{method:"DELETE"});
+      if(res.ok){
+        deleted++;
+        imgAllImages=imgAllImages.filter(i=>i.id!==cfId);
+        delete CF_PHOTOS[cfId];
+        if(STATE.cf?.assetMeta)delete STATE.cf.assetMeta[cfId];
+        Object.values(STATE.photos||{}).forEach(ids=>{
+          const idx=ids.indexOf(cfId);
+          if(idx>=0)ids.splice(idx,1);
+        });
+        if(STATE.imgFolders){
+          Object.values(STATE.imgFolders).forEach(f=>{
+            if(f.images)f.images=f.images.filter(id=>id!==cfId);
+          });
+        }
+      }
+    }catch{}
+  }
+  imgSelected=new Set();
+  renderSidebar();
+  renderImgFolders();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast(deleted+" image"+(deleted>1?"s":"")+" deleted");
+}
+
+async function imgUploadFiles(files){
+  const progress=document.getElementById("imgUploadProgress");
+  let uploaded=0;
+  const total=Array.from(files).filter(f=>f.type.startsWith("image/")).length;
+  if(!total)return toast("No image files selected",true);
+  if(progress)progress.innerHTML=`<div class="upload-item"><span class="upload-item-name">Uploading ${total} file${total>1?"s":""}...</span><span class="upload-item-status busy">0 / ${total}</span></div><div class="upload-bar"><div class="upload-bar-fill" id="imgUploadBarFill"></div></div>`;
+  for(const file of files){
+    if(!file.type.startsWith("image/"))continue;
+    try{
+      const fd=new FormData();
+      fd.append("file",file);
+      const res=await fetch("/api/images/upload",{method:"POST",body:fd});
+      if(!res.ok){const errData=await res.json().catch(()=>({}));throw new Error(errData.error||"Upload failed");}
+      const data=await res.json();
+      const cfId=data.id;
+      const meta={id:cfId,filename:data.filename||file.name};
+      if(data.exif&&Object.keys(data.exif).length>0)meta.exif=data.exif;
+      if(!STATE.cf)STATE.cf={assetMeta:{}};
+      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+      STATE.cf.assetMeta[cfId]=meta;
+      CF_PHOTOS[cfId]=meta;
+      imgAllImages.push({id:cfId,filename:data.filename||file.name,uploaded:new Date().toISOString(),variants:data.variants||[]});
+      if(imgActiveFolder&&imgActiveFolder!=="__unassigned"&&STATE.imgFolders?.[imgActiveFolder]){
+        if(!STATE.imgFolders[imgActiveFolder].images)STATE.imgFolders[imgActiveFolder].images=[];
+        STATE.imgFolders[imgActiveFolder].images.push(cfId);
+      }
+      uploaded++;
+      const bar=document.getElementById("imgUploadBarFill");
+      if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";
+      const statusEl=progress?.querySelector(".upload-item-status");
+      if(statusEl){statusEl.textContent=uploaded+" / "+total;if(uploaded===total)statusEl.className="upload-item-status ok";}
+    }catch(err){
+      if(progress)progress.innerHTML+=`<div class="upload-item"><span class="upload-item-name">${esc(file.name)}</span><span class="upload-item-status err">${esc(err.message)}</span></div>`;
+    }
+  }
+  if(uploaded>0){
+    renderImgFolders();
+    renderImgGrid();
+    toast(uploaded+" image"+(uploaded>1?"s":"")+" uploaded");
+  }
 }
 
 // HELPERS
