@@ -792,11 +792,7 @@ function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]
 
 // HOMEPAGE & PORTFOLIO SLOTS
 const HOME_SLOTS=[
-  {id:"hero",label:"Hero Background"},{id:"carousel1",label:"Carousel Slide 1"},
-  {id:"carousel2",label:"Carousel Slide 2"},{id:"carousel3",label:"Carousel Slide 3"},
-  {id:"mountain",label:"Full-Width Photo"},{id:"qrow1",label:"Quote Row 1"},
-  {id:"qrow2",label:"Quote Row 2"},{id:"qrow3",label:"Quote Row 3"},
-  {id:"qrow4",label:"Quote Row 4"},{id:"portrait",label:"Contact Portrait"},
+  {id:"hero_bg",label:"Hero Background (Optional)"},
 ];
 function getPortfolioWorks(){
   if(!STATE.portfolioWorks)STATE.portfolioWorks=[];
@@ -889,20 +885,86 @@ function removePortfolioWork(idx){
 
 // SETTINGS
 function showSettingsPanel(){
-  setPanel("Settings","Gallery Names & Descriptions","");
-  document.getElementById("panelBody").innerHTML=`<div class="settings-grid">${getSeries().map(s=>{
-    const coverAid=STATE.series?.[s.id]?.coverAssetId;
-    const coverThumb=coverAid?TIA.photoUrl(coverAid,"thumb"):"";
-    return`<div class="card">
-      ${coverThumb?`<img src="${coverThumb}" style="width:100%;aspect-ratio:16/7;object-fit:cover;display:block;margin-bottom:12px">`:
-        `<div style="width:100%;aspect-ratio:16/7;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2">No cover</div>`}
-      <span class="field-lbl">Series ${s.num} Title</span>
-      <input class="input" style="margin-bottom:10px" value="${esc(s.title)}" oninput="updateSeries('${s.id}','title',this.value)">
-      <span class="field-lbl">Subtitle</span>
-      <input class="input" style="margin-bottom:10px" value="${esc(s.subtitle)}" oninput="updateSeries('${s.id}','subtitle',this.value)">
-      <span class="field-lbl">Description</span>
-      <textarea class="textarea" oninput="updateSeries('${s.id}','description',this.value)">${esc(s.description||"")}</textarea></div>`;
-  }).join("")}</div>`;
+  setPanel("Settings","Connectivity & Configuration","");
+  const cfHash=TIA.CF_HASH||STATE.cf?.hash||"";
+  const maskedHash=cfHash?cfHash.slice(0,6)+"****"+cfHash.slice(-4):"Not configured";
+  const totalImages=Object.keys(STATE.cf?.assetMeta||{}).length;
+  const configUrl=localStorage.getItem("tia_config_url")||TIA.CONFIG_URL;
+  const cloudName=TIA.CLOUD||"Not configured";
+  const galleriesCount=getSeries().length;
+  const worksCount=getPortfolioWorks().length;
+  let totalPhotos=0;
+  if(STATE.photos){Object.values(STATE.photos).forEach(arr=>{if(Array.isArray(arr))totalPhotos+=arr.length;});}
+  const lastSave=TIA._latestConfigUrl?new Date().toLocaleString():(localStorage.getItem("tia_last_save")||"Never");
+
+  document.getElementById("panelBody").innerHTML=`
+    <div class="settings-grid">
+      <div class="card" data-testid="card-cf-connection">
+        <span class="sec-lbl">Cloudflare Images Connection</span>
+        <div style="margin-bottom:12px">
+          <span class="field-lbl">Delivery Hash</span>
+          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-hash">${esc(maskedHash)}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span class="field-lbl">Total Images</span>
+          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-image-count">${totalImages}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span class="field-lbl">Connection Status</span>
+          <div id="cfStatus" style="font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:6px 0" data-testid="text-cf-status">
+            ${cfHash?'<span style="color:var(--green)">Connected</span>':'<span style="color:var(--red)">Not Connected</span>'}
+          </div>
+        </div>
+        <button class="btn pri" onclick="testCfConnection()" data-testid="btn-test-connection">Test Connection</button>
+      </div>
+      <div class="card" data-testid="card-config-storage">
+        <span class="sec-lbl">Config Storage</span>
+        <div style="margin-bottom:12px">
+          <span class="field-lbl">Config URL</span>
+          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;font-size:10px;word-break:break-all" data-testid="text-config-url">${esc(configUrl)}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span class="field-lbl">Cloudinary Cloud</span>
+          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cloud-name">${esc(cloudName)}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <span class="field-lbl">Last Save</span>
+          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-last-save">${esc(lastSave)}</div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:80px">
+            <span class="field-lbl">Galleries</span>
+            <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center" data-testid="text-galleries-count">${galleriesCount}</div>
+          </div>
+          <div style="flex:1;min-width:80px">
+            <span class="field-lbl">Portfolio Works</span>
+            <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center" data-testid="text-works-count">${worksCount}</div>
+          </div>
+          <div style="flex:1;min-width:80px">
+            <span class="field-lbl">Photos Assigned</span>
+            <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center" data-testid="text-photos-count">${totalPhotos}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function testCfConnection(){
+  const statusEl=document.getElementById("cfStatus");
+  if(!statusEl)return;
+  statusEl.innerHTML='<span style="color:var(--gold)">Testing...</span>';
+  fetch("/api/images/list").then(res=>{
+    if(res.ok){
+      statusEl.innerHTML='<span style="color:var(--green)">Connected</span>';
+      toast("Cloudflare connection successful");
+    } else {
+      statusEl.innerHTML='<span style="color:var(--red)">Not Connected (HTTP '+res.status+')</span>';
+      toast("Connection failed","err");
+    }
+  }).catch(err=>{
+    statusEl.innerHTML='<span style="color:var(--red)">Not Connected</span>';
+    toast("Connection failed: "+err.message,"err");
+  });
 }
 
 // PICKER
