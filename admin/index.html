@@ -512,7 +512,7 @@ async function init(){
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
   setSyncStatus("ok","Synced");
-  renderSidebar();handleOAuthReturn();switchTab("lightroom");
+  renderSidebar();await handleOAuthReturn();switchTab("lightroom");
 }
 
 // SAVE
@@ -630,12 +630,50 @@ function saveLrClientId(){
 function lrAuthorize(){
   const clientId=STATE.lr.clientId;
   if(!clientId)return toast("Save Client ID first",true);
-  const redirect=encodeURIComponent(location.origin+"/admin/");
-  const scope=encodeURIComponent("lr_partner_apis openid");
+  const redirectUri=location.origin+"/admin/";
+  const redirect=encodeURIComponent(redirectUri);
+  const scope=encodeURIComponent("openid,AdobeID,lr_partner_apis,lr_partner_rendition_apis");
   sessionStorage.setItem("lr_oauth","1");
-  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=token`;
+  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=code`;
 }
-function handleOAuthReturn(){
+async function handleOAuthReturn(){
+  const queryParams=new URLSearchParams(window.location.search);
+  const authCode=queryParams.get("code");
+
+  if(authCode){
+    try{
+      const tokenResponse=await fetch(`${getApiBase()}/adobe/token`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        credentials:"include",
+        body:JSON.stringify({
+          code:authCode,
+          redirectUri:location.origin+"/admin/",
+        }),
+      });
+
+      if(!tokenResponse.ok){
+        const payload=await tokenResponse.json().catch(()=>({}));
+        throw new Error(payload?.error||"Adobe token exchange failed");
+      }
+
+      const tokenData=await tokenResponse.json();
+      STATE.lr.accessToken=tokenData.access_token;
+      STATE.lr.refreshToken=tokenData.refresh_token;
+      STATE.lr.tokenExpiry=Date.now()+(Number(tokenData.expires_in||3600)*1000);
+      history.replaceState({},"",location.pathname);
+      saveAll();
+      toast("Connected to Lightroom");
+      showLightroomPanel();
+      return;
+    }catch(err){
+      history.replaceState({},"",location.pathname);
+      toast(err.message||"Adobe login failed",true);
+      showLightroomPanel();
+      return;
+    }
+  }
+
   const params=new URLSearchParams(window.location.hash.replace("#",""));
   const token=params.get("access_token");
   if(!token)return;

@@ -3,9 +3,35 @@ import axios from 'axios';
 
 const router = express.Router();
 
+const allowedRedirectOrigins = [
+  process.env.CLIENT_URL,
+  'https://mission-gallery-app.web.app',
+  'https://mission-gallery-app.firebaseapp.com',
+  'http://localhost:5173',
+].filter(Boolean);
+
+const fallbackClientUrl = (process.env.CLIENT_URL || 'https://mission-gallery-app.web.app').replace(/\/$/, '');
+
+const getRedirectUri = (requestedRedirectUri) => {
+  if (typeof requestedRedirectUri === 'string' && requestedRedirectUri.trim()) {
+    try {
+      const parsed = new URL(requestedRedirectUri.trim());
+      const isAllowedOrigin = allowedRedirectOrigins.includes(parsed.origin);
+      const isAllowedPath = parsed.pathname === '/test/lightroom' || parsed.pathname === '/admin' || parsed.pathname === '/admin/';
+      if (isAllowedOrigin && isAllowedPath) {
+        return parsed.toString();
+      }
+    } catch {
+      // fall through to default
+    }
+  }
+
+  return `${fallbackClientUrl}/test/lightroom`.replace('http:', 'https:');
+};
+
 // Exchange authorization code for access token
 router.post('/token', async (req, res) => {
-  const { code } = req.body;
+  const { code, redirectUri: requestedRedirectUri } = req.body;
   
   if (!code) {
     return res.status(400).json({ error: 'Authorization code required' });
@@ -14,7 +40,11 @@ router.post('/token', async (req, res) => {
   try {
     const clientId = process.env.ADOBE_CLIENT_ID || process.env.VITE_ADOBE_CLIENT_ID;
     const clientSecret = process.env.ADOBE_CLIENT_SECRET;
-    const redirectUri = `${process.env.CLIENT_URL}/test/lightroom`.replace('http:', 'https:');
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ error: 'Adobe client credentials are not configured' });
+    }
+
+    const redirectUri = getRedirectUri(requestedRedirectUri);
     
     console.log('Token exchange params:', {
       clientId: clientId?.substring(0, 10) + '...',
