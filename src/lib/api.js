@@ -1,6 +1,13 @@
 import axios from 'axios';
 
-const normalizedBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const defaultHostedApiUrl = 'https://mission-gallery.onrender.com/api';
+const envApiUrl = import.meta.env.VITE_API_URL || '';
+const fallbackApiUrl = window.location.hostname === 'mission-gallery-app.web.app'
+  || window.location.hostname === 'mission-gallery-app.firebaseapp.com'
+  ? defaultHostedApiUrl
+  : '';
+
+const normalizedBaseUrl = (envApiUrl || fallbackApiUrl).replace(/\/$/, '');
 const normalizedAuthBaseUrl = normalizedBaseUrl.endsWith('/api')
   ? normalizedBaseUrl.slice(0, -4)
   : normalizedBaseUrl;
