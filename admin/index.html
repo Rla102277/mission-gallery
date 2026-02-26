@@ -664,7 +664,7 @@ function showSeriesView(sid){
   const s=getSeries().find(x=>x.id===sid);
   const photos=getSeriesPhotos(sid);
   const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick=\"switchTab('lightroom')\">+ Import from Lightroom</button>");
+  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick="switchTab('lightroom')">+ Import from Lightroom</button>");
   let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
     <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
     <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
