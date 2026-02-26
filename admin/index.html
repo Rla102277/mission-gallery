@@ -633,7 +633,9 @@ async function lrAuthorize(){
   try{
     const configRes=await fetch(`${getApiBase()}/adobe/config`,{credentials:"include"});
     if(configRes.ok){
-      const config=await configRes.json();
+      const configText=await configRes.text();
+      let config={};
+      try{config=configText?JSON.parse(configText):{};}catch{}
       if(config?.clientId){
         clientId=config.clientId;
         STATE.lr.clientId=clientId;
@@ -668,13 +670,21 @@ async function handleOAuthReturn(){
         }),
       });
 
+      const payloadText=await tokenResponse.text();
+      let payload={};
+      try{payload=payloadText?JSON.parse(payloadText):{};}catch{}
+
       if(!tokenResponse.ok){
-        const payload=await tokenResponse.json().catch(()=>({}));
         const providerMsg=payload?.details?.error_description||payload?.details?.error;
-        throw new Error(providerMsg||payload?.error||"Adobe token exchange failed");
+        const rawMsg=(payloadText||"").trim();
+        throw new Error(providerMsg||payload?.error||rawMsg||`Adobe token exchange failed (${tokenResponse.status})`);
       }
 
-      const tokenData=await tokenResponse.json();
+      const tokenData=payload;
+      if(!tokenData?.access_token){
+        const rawMsg=(payloadText||"").trim();
+        throw new Error(rawMsg||"Adobe token response missing access_token");
+      }
       STATE.lr.accessToken=tokenData.access_token;
       STATE.lr.refreshToken=tokenData.refresh_token;
       STATE.lr.tokenExpiry=Date.now()+(Number(tokenData.expires_in||3600)*1000);
