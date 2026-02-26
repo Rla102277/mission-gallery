@@ -129,24 +129,41 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .lr-photo.sel .lr-check{display:flex}
 .lr-log{background:var(--bg);border:1px solid var(--border);padding:14px;font-size:11px;line-height:1.9;font-family:monospace;color:rgba(237,233,226,.55);max-height:180px;overflow-y:auto;margin-top:12px;display:none}
 .lr-log.show{display:block}
-/* UPLOAD */
-.upload-zone{border:2px dashed var(--border2);padding:50px 30px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:16px}
+/* UPLOAD - full page */
+.upload-page{display:grid;grid-template-rows:auto 1fr;height:100%;gap:0}
+.upload-top{padding:20px 24px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.upload-top-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.upload-top-title{font-size:20px;font-weight:300;flex:1}
+.upload-top-stats{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}
+.upload-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.upload-zone{border:2px dashed var(--border2);padding:40px 30px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;flex:1;min-width:280px}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(201,162,39,.04)}
-.upload-zone-ico{font-size:32px;opacity:.15;margin-bottom:12px}
-.upload-zone-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.35;margin-bottom:6px}
+.upload-zone-ico{font-size:28px;opacity:.15;margin-bottom:8px}
+.upload-zone-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.35;margin-bottom:4px}
 .upload-zone-sub{font-size:10px;opacity:.2}
-.upload-progress{margin-top:14px}
+.upload-series-pick{display:flex;flex-direction:column;gap:6px;min-width:220px}
+.upload-bottom{overflow-y:auto;padding:20px 24px}
+.upload-progress{margin-bottom:16px}
 .upload-item{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);margin-bottom:4px}
 .upload-item-name{flex:1;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .upload-item-status{font-size:9px;letter-spacing:2px;text-transform:uppercase}
 .upload-item-status.ok{color:var(--green)}.upload-item-status.err{color:var(--red)}.upload-item-status.busy{color:var(--gold)}
-.upload-target{display:flex;gap:10px;align-items:center;margin-bottom:16px}
-.cl-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:5px;margin-top:16px}
+.upload-bar{height:3px;background:var(--border);margin-top:4px;border-radius:2px;overflow:hidden}
+.upload-bar-fill{height:100%;background:var(--gold);transition:width .3s;width:0}
+.upload-series-section{margin-bottom:24px}
+.upload-series-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.upload-series-title{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.upload-series-cnt{font-size:9px;letter-spacing:2px;color:var(--dim)}
+.cl-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
 .cl-photo{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;border:2px solid transparent;border-radius:1px}
+.cl-photo:hover{border-color:rgba(255,255,255,.15)}
 .cl-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.cl-photo-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cl-photo-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);color:var(--red);font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.cl-photo-lbl{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:9px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-photo-del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);color:var(--red);font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1}
 .cl-photo:hover .cl-photo-del{display:flex}
+.upload-empty{padding:60px 30px;text-align:center;border:1px solid var(--border);background:var(--surface2)}
+.upload-empty-ico{font-size:36px;opacity:.08;margin-bottom:12px}
+.upload-empty-lbl{font-size:9px;letter-spacing:5px;text-transform:uppercase;opacity:.2}
 /* MISC */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .empty{padding:50px 0;text-align:center}
@@ -301,16 +318,22 @@ const TIA = {
 
   _state: null,
 
-  // ── Load config from Cloudinary ───────────────────────────
+  // ── Load config ──────────────────────────────────────────
   async load() {
-    try {
-      const res = await fetch(TIA.CONFIG_URL + '?t=' + Date.now());
-      if (res.ok) {
-        TIA._state = await res.json();
-        localStorage.setItem(TIA.STORE_KEY, JSON.stringify(TIA._state));
-        return TIA._state;
-      }
-    } catch {}
+    const urls = [
+      localStorage.getItem('tia_config_url'),
+      TIA.CONFIG_URL
+    ].filter(Boolean);
+    for (const url of urls) {
+      try {
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+        if (res.ok) {
+          TIA._state = await res.json();
+          localStorage.setItem(TIA.STORE_KEY, JSON.stringify(TIA._state));
+          return TIA._state;
+        }
+      } catch {}
+    }
     try {
       const cached = localStorage.getItem(TIA.STORE_KEY);
       if (cached) { TIA._state = JSON.parse(cached); return TIA._state; }
@@ -339,12 +362,15 @@ const TIA = {
     fd.append('file',          dataUri);
     fd.append('upload_preset', TIA.PRESET);
     fd.append('folder',        TIA.FOLDER);
-    fd.append('public_id',     'tia-config');
+    fd.append('public_id',     'tia-config-' + Date.now());
     fd.append('resource_type', 'raw');
-    fd.append('overwrite',     'true');
-    fd.append('invalidate',    'true');
     const res = await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/raw/upload`, { method:'POST', body:fd });
     if (!res.ok) throw new Error('Config push failed: ' + await res.text());
+    const data = await res.json();
+    if (data.secure_url) {
+      TIA._latestConfigUrl = data.secure_url;
+      localStorage.setItem('tia_config_url', data.secure_url);
+    }
   },
 
   // ── Series helpers ─────────────────────────────────────────
@@ -407,7 +433,8 @@ let authed = sessionStorage.getItem("tia_auth") === "1";
 function doLogin() {
   const p = document.getElementById("authPass").value;
   // PIN: tia2026
-  if (p.toLowerCase() === "tia2026") {
+  const lp = p.toLowerCase();
+  if (lp === "tia2026" || lp === "tai2026") {
     sessionStorage.setItem("tia_auth","1");
     authed = true;
     document.getElementById("authScreen").style.display = "none";
@@ -513,46 +540,77 @@ function setView(id){
   else showSeriesView(id);
 }
 function setPanel(eye,title,acts=""){
+  document.querySelector(".ph").style.display="";
   document.getElementById("phEye").textContent=eye;
   document.getElementById("phTitle").textContent=title;
   document.getElementById("phActs").innerHTML=acts;
 }
 
-// UPLOAD PANEL (Cloudinary)
+// UPLOAD PANEL (Cloudinary) - full page
 function showUploadPanel(){
-  setPanel("Cloudinary","Upload Photos","");
+  document.getElementById("phEye").textContent="";
+  document.getElementById("phTitle").textContent="";
+  document.getElementById("phActs").innerHTML="";
+  document.querySelector(".ph").style.display="none";
   document.getElementById("sidebar").style.display="none";
-  const clPhotos=Object.values(CL_PHOTOS);
-  document.getElementById("panelBody").innerHTML=`
-<div class="lr-step">
-  <span class="lr-step-num">Upload to Cloudinary</span>
-  <div class="upload-target">
-    <span class="field-lbl" style="margin-bottom:0;white-space:nowrap">Assign to Series &rarr;</span>
-    <select class="input" id="clTargetSeries" style="width:240px">
-      ${getSeries().map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
-    </select>
-  </div>
-  <div class="upload-zone" id="uploadZone"
-    onclick="document.getElementById('uploadInput').click()"
-    ondragover="event.preventDefault();this.classList.add('drag')"
-    ondragleave="this.classList.remove('drag')"
-    ondrop="event.preventDefault();this.classList.remove('drag');handleUploadFiles(event.dataTransfer.files)">
-    <div class="upload-zone-ico">&#x2191;</div>
-    <div class="upload-zone-lbl">Drop photos here or click to browse</div>
-    <div class="upload-zone-sub">JPG, PNG, WebP &mdash; max 20MB each</div>
-  </div>
-  <input type="file" id="uploadInput" multiple accept="image/*" style="display:none" onchange="handleUploadFiles(this.files)">
-  <div class="upload-progress" id="uploadProgress"></div>
-</div>
-<div class="lr-step">
-  <span class="lr-step-num">Uploaded Photos (${clPhotos.length})</span>
-  ${clPhotos.length?`<div class="cl-photo-grid">${clPhotos.map(p=>`
-    <div class="cl-photo">
-      <img src="${TIA.clUrl(p.publicId,'thumb')}" loading="lazy" alt="">
-      <div class="cl-photo-lbl">${esc(p.filename||p.publicId)}</div>
-    </div>`).join("")}</div>`
-  :`<p style="font-size:11px;opacity:.3;margin-top:8px">No photos uploaded yet</p>`}
-</div>`;
+  const totalPhotos=Object.keys(CL_PHOTOS).length+Object.keys(LR_PHOTOS).length;
+  const series=getSeries();
+  let libraryHtml="";
+  let hasPhotos=false;
+  series.forEach(s=>{
+    const photos=getSeriesPhotos(s.id);
+    if(!photos.length)return;
+    hasPhotos=true;
+    libraryHtml+=`<div class="upload-series-section">
+      <div class="upload-series-header">
+        <span class="upload-series-title">${s.num} &mdash; ${esc(s.title)}</span>
+        <span class="upload-series-cnt">${photos.length} photo${photos.length>1?"s":""}</span>
+      </div>
+      <div class="cl-photo-grid">${photos.map(p=>`
+        <div class="cl-photo">
+          ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
+          <div class="cl-photo-lbl">${esc(p.filename)}</div>
+          <div class="cl-photo-del" onclick="event.stopPropagation();removePhotoFromSeries('${s.id}','${p.assetId}')" title="Remove from series">&times;</div>
+        </div>`).join("")}</div>
+    </div>`;
+  });
+  document.getElementById("panelBody").innerHTML=`<div class="upload-page">
+    <div class="upload-top">
+      <div class="upload-top-row">
+        <div class="upload-top-title">Photo Library</div>
+        <div class="upload-top-stats">${totalPhotos} photo${totalPhotos!==1?"s":""} across ${series.length} series</div>
+      </div>
+      <div class="upload-controls">
+        <div class="upload-series-pick">
+          <span class="field-lbl">Upload to series</span>
+          <select class="input" id="clTargetSeries">
+            ${series.map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
+          </select>
+        </div>
+        <div class="upload-zone" id="uploadZone"
+          onclick="document.getElementById('uploadInput').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="event.preventDefault();this.classList.remove('drag');handleUploadFiles(event.dataTransfer.files)">
+          <div class="upload-zone-ico">&#x2191;</div>
+          <div class="upload-zone-lbl">Drop photos here or click to browse</div>
+          <div class="upload-zone-sub">JPG, PNG, WebP &mdash; up to 10MB each</div>
+        </div>
+        <input type="file" id="uploadInput" multiple accept="image/*" style="display:none" onchange="handleUploadFiles(this.files)">
+      </div>
+      <div class="upload-progress" id="uploadProgress"></div>
+    </div>
+    <div class="upload-bottom">
+      ${hasPhotos?libraryHtml:`<div class="upload-empty"><div class="upload-empty-ico">&#x1f5bc;</div><div class="upload-empty-lbl">No photos yet &mdash; upload above to get started</div></div>`}
+    </div>
+  </div>`;
+}
+
+function removePhotoFromSeries(sid,pid){
+  if(!STATE.photos[sid])return;
+  STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==pid);
+  renderSidebar();showUploadPanel();
+  toast("Photo removed from series");
 }
 
 async function handleUploadFiles(files){
@@ -560,19 +618,22 @@ async function handleUploadFiles(files){
   if(!sid)return toast("Select a series first",true);
   const progress=document.getElementById("uploadProgress");
   if(!STATE.photos[sid])STATE.photos[sid]=[];
+  if(!STATE.cl)STATE.cl={};
   if(!STATE.cl.assetMeta)STATE.cl.assetMeta={};
   let uploaded=0;
+  const total=Array.from(files).filter(f=>f.type.startsWith("image/")).length;
+  if(!total)return toast("No image files selected",true);
+  if(progress)progress.innerHTML=`<div class="upload-item"><span class="upload-item-name">Preparing ${total} file${total>1?"s":""}...</span><span class="upload-item-status busy">0 / ${total}</span></div><div class="upload-bar"><div class="upload-bar-fill" id="uploadBarFill"></div></div>`;
   for(const file of files){
     if(!file.type.startsWith("image/"))continue;
     const itemId="up-"+Date.now()+"-"+uploaded;
-    if(progress)progress.innerHTML+=`<div class="upload-item" id="${itemId}"><span class="upload-item-name">${esc(file.name)}</span><span class="upload-item-status busy">Uploading...</span></div>`;
     try{
       const fd=new FormData();
       fd.append("file",file);
       fd.append("upload_preset",TIA.PRESET);
       fd.append("folder",TIA.FOLDER);
       const res=await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/image/upload`,{method:"POST",body:fd});
-      if(!res.ok)throw new Error("Upload failed: "+res.status);
+      if(!res.ok){const errText=await res.text();throw new Error("Upload failed: "+errText);}
       const data=await res.json();
       const pid=data.public_id;
       const meta={publicId:pid,filename:file.name};
@@ -580,18 +641,20 @@ async function handleUploadFiles(files){
       CL_PHOTOS[pid]=meta;
       if(!STATE.photos[sid].includes(pid))STATE.photos[sid].push(pid);
       uploaded++;
-      const el=document.getElementById(itemId);
-      if(el)el.querySelector(".upload-item-status").className="upload-item-status ok";
-      if(el)el.querySelector(".upload-item-status").textContent="Done";
+      const bar=document.getElementById("uploadBarFill");
+      if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";
+      const statusEl=progress?.querySelector(".upload-item-status");
+      if(statusEl){statusEl.textContent=uploaded+" / "+total;if(uploaded===total)statusEl.className="upload-item-status ok";}
+      const nameEl=progress?.querySelector(".upload-item-name");
+      if(nameEl)nameEl.textContent=file.name;
     }catch(err){
-      const el=document.getElementById(itemId);
-      if(el)el.querySelector(".upload-item-status").className="upload-item-status err";
-      if(el)el.querySelector(".upload-item-status").textContent=err.message;
+      if(progress)progress.innerHTML+=`<div class="upload-item"><span class="upload-item-name">${esc(file.name)}</span><span class="upload-item-status err">${esc(err.message)}</span></div>`;
     }
   }
   if(uploaded>0){
     renderSidebar();
-    toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded to "+sid+" - Save & Publish to go live");
+    setTimeout(()=>showUploadPanel(),1500);
+    toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded - Save & Publish to go live");
   }
 }
 

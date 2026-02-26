@@ -72,16 +72,22 @@ const TIA = {
 
   _state: null,
 
-  // ── Load config from Cloudinary ───────────────────────────
+  // ── Load config ──────────────────────────────────────────
   async load() {
-    try {
-      const res = await fetch(TIA.CONFIG_URL + '?t=' + Date.now());
-      if (res.ok) {
-        TIA._state = await res.json();
-        localStorage.setItem(TIA.STORE_KEY, JSON.stringify(TIA._state));
-        return TIA._state;
-      }
-    } catch {}
+    const urls = [
+      localStorage.getItem('tia_config_url'),
+      TIA.CONFIG_URL
+    ].filter(Boolean);
+    for (const url of urls) {
+      try {
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+        if (res.ok) {
+          TIA._state = await res.json();
+          localStorage.setItem(TIA.STORE_KEY, JSON.stringify(TIA._state));
+          return TIA._state;
+        }
+      } catch {}
+    }
     try {
       const cached = localStorage.getItem(TIA.STORE_KEY);
       if (cached) { TIA._state = JSON.parse(cached); return TIA._state; }
@@ -110,12 +116,15 @@ const TIA = {
     fd.append('file',          dataUri);
     fd.append('upload_preset', TIA.PRESET);
     fd.append('folder',        TIA.FOLDER);
-    fd.append('public_id',     'tia-config');
+    fd.append('public_id',     'tia-config-' + Date.now());
     fd.append('resource_type', 'raw');
-    fd.append('overwrite',     'true');
-    fd.append('invalidate',    'true');
     const res = await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/raw/upload`, { method:'POST', body:fd });
     if (!res.ok) throw new Error('Config push failed: ' + await res.text());
+    const data = await res.json();
+    if (data.secure_url) {
+      TIA._latestConfigUrl = data.secure_url;
+      localStorage.setItem('tia_config_url', data.secure_url);
+    }
   },
 
   // ── Series helpers ─────────────────────────────────────────
