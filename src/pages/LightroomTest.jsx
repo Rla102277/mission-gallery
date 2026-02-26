@@ -27,6 +27,23 @@ export default function LightroomTest() {
   const [accessToken, setAccessToken] = useState(null);
   const [tokenInfo, setTokenInfo] = useState(null);
   const [adobeClientId, setAdobeClientId] = useState(import.meta.env.VITE_ADOBE_CLIENT_ID || '');
+
+  const resolveAdobeClientId = async () => {
+    if (adobeClientId) return adobeClientId;
+
+    try {
+      const response = await fetch(getApiUrl('/api/adobe/config'), { credentials: 'include' });
+      if (!response.ok) return '';
+      const data = await response.json();
+      if (data?.clientId) {
+        setAdobeClientId(data.clientId);
+        return data.clientId;
+      }
+      return '';
+    } catch {
+      return '';
+    }
+  };
   
   // Simple gallery link management (Option A)
   const [galleryLinks, setGalleryLinks] = useState([]);
@@ -70,17 +87,17 @@ export default function LightroomTest() {
     loadAdobeConfig();
   }, []);
 
-  const handleAdobeLogin = () => {
+  const handleAdobeLogin = async () => {
     const { scopes, redirectUri } = ADOBE_IMS_CONFIG;
-    const clientId = adobeClientId;
+    const clientId = await resolveAdobeClientId();
     
     console.log('Adobe Client ID:', clientId);
     console.log('Redirect URI:', redirectUri);
     console.log('Scopes:', scopes);
     
     if (!clientId) {
-      setError('Adobe Client ID not configured. Please add VITE_ADOBE_CLIENT_ID to your .env file');
-      alert('Adobe Client ID not configured. Please restart your dev server after adding VITE_ADOBE_CLIENT_ID to .env');
+      setError('Adobe Lightroom is not configured on backend. Set ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET on your backend service.');
+      alert('Adobe Lightroom is not configured on backend. Set ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET in Render env, then redeploy backend.');
       return;
     }
     
