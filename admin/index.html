@@ -112,23 +112,6 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .pk-cell img{width:100%;height:100%;object-fit:cover;display:block}
 .pk-cell-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pk-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
-/* LR */
-.lr-step{background:var(--surface2);border:1px solid var(--border);padding:18px;margin-bottom:14px}
-.lr-step-num{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:block}
-.lr-connected{display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(90,158,111,.1);border:1px solid rgba(90,158,111,.25)}
-.lr-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
-.lr-album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:240px;overflow-y:auto}
-.lr-album{background:var(--bg);border:1px solid var(--border);padding:12px;cursor:pointer}
-.lr-album:hover{border-color:var(--border2);background:var(--surface2)}.lr-album.sel{border-color:var(--gold);background:rgba(201,162,39,.06)}
-.lr-album-name{font-size:12px;margin-bottom:4px}.lr-album-cnt{font-size:9px;letter-spacing:2px;color:var(--dim)}
-.lr-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;max-height:300px;overflow-y:auto;margin-top:12px}
-.lr-photo{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;border:2px solid transparent;cursor:pointer}
-.lr-photo:hover{border-color:rgba(255,255,255,.2)}.lr-photo.sel{border-color:var(--gold)}
-.lr-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.lr-check{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:10px;color:#000;font-weight:700}
-.lr-photo.sel .lr-check{display:flex}
-.lr-log{background:var(--bg);border:1px solid var(--border);padding:14px;font-size:11px;line-height:1.9;font-family:monospace;color:rgba(237,233,226,.55);max-height:180px;overflow-y:auto;margin-top:12px;display:none}
-.lr-log.show{display:block}
 /* UPLOAD - full page */
 .upload-page{display:grid;grid-template-rows:auto 1fr;height:100%;gap:0}
 .upload-top{padding:20px 24px;border-bottom:1px solid var(--border);background:var(--surface2)}
@@ -259,7 +242,6 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <button class="tb-tab" data-tab="images" onclick="switchTab('images')">Images</button>
       <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
       <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
-      <button class="tb-tab" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
       <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
@@ -548,7 +530,6 @@ let activeView=null,activeTab="upload";
 let LR_PHOTOS={};
 let CL_PHOTOS={};
 let CF_PHOTOS={};
-let lrAlbums=[],lrAlbumPhotos=[],lrSelected=new Set(),lrCurrentAlbum=null;
 
 function getSeries(){return TIA.getSeries();}
 function getPhotoMeta(aid){
@@ -590,7 +571,7 @@ async function init(){
   Object.assign(CF_PHOTOS,STATE.cf.assetMeta);
   try{const cfgRes=await fetch("/api/images/config");const cfg=await cfgRes.json();if(cfg.hash){TIA.CF_HASH=cfg.hash;STATE.cf.hash=cfg.hash;}}catch{}
   setSyncStatus("ok","Synced");
-  renderSidebar();handleOAuthReturn();switchTab("galleries");
+  renderSidebar();switchTab("galleries");
 }
 
 // SAVE
@@ -627,7 +608,6 @@ function switchTab(tab){
     else{const first=getSeries()[0];if(first){setView(first.id);}else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}}
   }
   else if(tab==="images")showImagesPanel();
-  else if(tab==="lightroom")showLightroomPanel();
   else if(tab==="homepage")showHomeSlots();
   else if(tab==="portfolio")showPortfolioSlots();
   else if(tab==="settings")showSettingsPanel();
@@ -694,192 +674,6 @@ async function handleUploadFiles(files,sid){
     setTimeout(()=>showSeriesView(sid),1500);
     toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded - Save & Publish to go live");
   }
-}
-
-// LIGHTROOM PANEL (optional)
-function showLightroomPanel(){
-  setPanel("Adobe Creative Cloud","Lightroom Connection","");
-  document.getElementById("sidebar").style.display="none";
-  const lr=STATE.lr||{};
-  const connected=!!lr.accessToken;
-  document.getElementById("panelBody").innerHTML=`
-<div class="lr-step">
-  <span class="lr-step-num">Step 1 &mdash; Adobe Developer App (one-time setup)</span>
-  <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">
-    Go to <a href="https://developer.adobe.com/console" target="_blank">developer.adobe.com/console</a>
-    &rarr; Create project &rarr; Add API &rarr; <strong>Lightroom</strong> &rarr; OAuth Web App.<br>
-    Set redirect URI to: <code style="background:rgba(255,255,255,.06);padding:2px 6px;font-size:10px">${location.origin}/admin/</code>
-  </p>
-  <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
-    <div><span class="field-lbl">Client ID (API Key)</span>
-      <input class="input" id="lrClientId" value="${lr.clientId||'afd0ee2721d04f0c8fd9ac505713e014'}" placeholder="Paste your Client ID here"></div>
-    <button class="btn pri" onclick="saveLrClientId()">Save</button>
-  </div>
-</div>
-<div class="lr-step">
-  <span class="lr-step-num">Step 2 &mdash; Connect to Lightroom</span>
-  ${connected
-    ?`<div class="lr-connected"><div class="lr-dot"></div>
-       <span style="font-size:11px;color:var(--green)">Connected to Adobe Lightroom</span>
-       <button class="btn red" onclick="lrDisconnect()" style="margin-left:auto;padding:4px 12px">Disconnect</button></div>`
-    :`<button class="btn gold" onclick="lrAuthorize()" ${lr.clientId?"":"disabled"}>Authorize with Adobe &rarr;</button>
-       ${!lr.clientId?"<p style='font-size:10px;opacity:.3;margin-top:8px'>Save Client ID first</p>":""}`}
-</div>
-<div class="lr-step">
-  <span class="lr-step-num">Step 3 &mdash; Import Album to Series</span>
-  ${!connected
-    ?"<p style='font-size:12px;color:var(--muted)'>Connect to Lightroom first</p>"
-    :`<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
-        <button class="btn pri" onclick="lrLoadAlbums()">Load Albums</button>
-        <span style="font-size:10px;opacity:.3">Select an album, pick photos, assign to a series</span></div>
-      <div id="lrAlbumList"><p style="font-size:11px;opacity:.3">Click Load Albums to begin</p></div>
-      <div id="lrPhotoSection" style="display:none;margin-top:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div>
-            <span class="field-lbl" style="margin-bottom:4px">Click photos to select</span>
-            <div style="font-size:9px;letter-spacing:3px;color:var(--dim)">
-              <span id="lrSelCount">0</span> selected &nbsp;&middot;&nbsp;
-              <button onclick="lrSelAll()" style="border:none;background:none;color:var(--gold);font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase">All</button>
-              &nbsp;&middot;&nbsp;
-              <button onclick="lrSelNone()" style="border:none;background:none;color:var(--dim);font-size:9px;letter-spacing:3px;cursor:pointer;text-transform:uppercase">None</button>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span class="field-lbl" style="margin-bottom:0;white-space:nowrap">Import to &rarr;</span>
-            <select class="input" id="lrTargetSeries" style="width:200px">
-              ${getSeries().map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
-            </select>
-            <button class="btn gold" id="lrImportBtn" onclick="lrImport()" disabled>Import Selected</button>
-          </div>
-        </div>
-        <div class="lr-photo-grid" id="lrPhotoGrid"></div>
-      </div>`}
-</div>
-<div class="lr-log" id="lrLog"></div>`;
-}
-
-// ADOBE OAUTH - implicit flow (no server needed)
-function saveLrClientId(){
-  const id=document.getElementById("lrClientId")?.value?.trim();
-  if(!id)return;STATE.lr.clientId=id;saveAll();toast("Client ID saved");showLightroomPanel();
-}
-function lrAuthorize(){
-  const clientId=STATE.lr.clientId;
-  if(!clientId)return toast("Save Client ID first",true);
-  const redirect=encodeURIComponent(location.origin+"/admin/");
-  const scope=encodeURIComponent("lr_partner_apis openid");
-  sessionStorage.setItem("lr_oauth","1");
-  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=token`;
-}
-function handleOAuthReturn(){
-  const params=new URLSearchParams(window.location.hash.replace("#",""));
-  const token=params.get("access_token");
-  if(!token)return;
-  history.replaceState({},"",location.pathname);
-  STATE.lr.accessToken=token;
-  STATE.lr.tokenExpiry=Date.now()+(Number(params.get("expires_in")||3600)*1000);
-  saveAll();toast("Connected to Lightroom");showLightroomPanel();
-}
-function lrDisconnect(){delete STATE.lr.accessToken;delete STATE.lr.tokenExpiry;saveAll();toast("Disconnected");showLightroomPanel();}
-
-// LR API
-async function lrFetch(path){
-  const token=STATE.lr.accessToken,clientId=STATE.lr.clientId;
-  if(!token)throw new Error("Not connected");
-  const res=await fetch("https://lr.adobe.io"+path,{headers:{"Authorization":"Bearer "+token,"X-API-Key":clientId}});
-  if(res.status===401){delete STATE.lr.accessToken;throw new Error("Session expired - reconnect");}
-  if(!res.ok)throw new Error("LR API error "+res.status);
-  return res.json();
-}
-
-async function lrLoadAlbums(){
-  const el=document.getElementById("lrAlbumList");
-  if(el)el.innerHTML="<p style='font-size:11px;opacity:.4'>Loading albums...</p>";
-  try{
-    const data=await lrFetch("/v2/albums?subtype=project&limit=100");
-    lrAlbums=data.resources||[];
-    if(!lrAlbums.length){el.innerHTML="<p style='font-size:11px;opacity:.3'>No albums found</p>";return;}
-    el.innerHTML=`<div class="lr-album-grid">${lrAlbums.map(a=>`
-      <div class="lr-album" onclick="lrSelectAlbum('${a.id}')">
-        <div class="lr-album-name">${a.payload?.name||"Untitled"}</div>
-        <div class="lr-album-cnt">${a.payload?.assetCount||"?"} photos</div>
-      </div>`).join("")}</div>`;
-  }catch(err){el.innerHTML=`<p style="font-size:11px;color:var(--red)">${err.message}</p>`;toast(err.message,true);}
-}
-
-async function lrSelectAlbum(albumId){
-  lrCurrentAlbum=albumId;lrAlbumPhotos=[];lrSelected=new Set();
-  document.querySelectorAll(".lr-album").forEach(el=>{
-    el.classList.toggle("sel",(el.getAttribute("onclick")||"").includes("'"+albumId+"'"));
-  });
-  const sec=document.getElementById("lrPhotoSection");
-  const grid=document.getElementById("lrPhotoGrid");
-  if(sec)sec.style.display="block";
-  if(grid)grid.innerHTML="<div style='grid-column:1/-1;padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase'>Loading...</div>";
-  try{
-    const data=await lrFetch("/v2/albums/"+albumId+"/assets?subtype=image&limit=200");
-    lrAlbumPhotos=data.resources||[];renderLrPhotoGrid();
-  }catch(err){if(grid)grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px">${err.message}</div>`;}
-}
-
-function getLrThumbUrl(asset){
-  const clientId=STATE.lr.clientId;
-  const links=asset.links||{};
-  const href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
-  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
-  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+clientId;
-}
-function getLrFullUrl(asset){
-  const clientId=STATE.lr.clientId;
-  const links=asset.links||{};
-  const href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
-  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
-  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+clientId;
-}
-
-function renderLrPhotoGrid(){
-  const grid=document.getElementById("lrPhotoGrid"),cnt=document.getElementById("lrSelCount"),btn=document.getElementById("lrImportBtn");
-  if(!grid)return;
-  if(cnt)cnt.textContent=lrSelected.size;
-  if(btn)btn.disabled=lrSelected.size===0;
-  if(!lrAlbumPhotos.length){grid.innerHTML="<div style='grid-column:1/-1;padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase'>No photos</div>";return;}
-  grid.innerHTML=lrAlbumPhotos.map(a=>`
-    <div class="lr-photo ${lrSelected.has(a.id)?"sel":""}" id="lrp-${a.id}" onclick="lrTogglePhoto('${a.id}')">
-      <img src="${getLrThumbUrl(a)}" loading="lazy" alt="">
-      <div class="lr-check">✓</div></div>`).join("");
-}
-function lrTogglePhoto(id){
-  if(lrSelected.has(id))lrSelected.delete(id);else lrSelected.add(id);
-  const el=document.getElementById("lrp-"+id);if(el)el.classList.toggle("sel",lrSelected.has(id));
-  const cnt=document.getElementById("lrSelCount"),btn=document.getElementById("lrImportBtn");
-  if(cnt)cnt.textContent=lrSelected.size;if(btn)btn.disabled=lrSelected.size===0;
-}
-function lrSelAll(){lrAlbumPhotos.forEach(a=>lrSelected.add(a.id));renderLrPhotoGrid();}
-function lrSelNone(){lrSelected.clear();renderLrPhotoGrid();}
-
-async function lrImport(){
-  const sid=document.getElementById("lrTargetSeries")?.value;
-  if(!sid||!lrSelected.size)return;
-  const btn=document.getElementById("lrImportBtn");if(btn)btn.disabled=true;
-  const logEl=document.getElementById("lrLog");if(logEl){logEl.innerHTML="";logEl.classList.add("show");}
-  lrLog("Importing "+lrSelected.size+" photos to series "+sid+"...");
-  if(!STATE.photos[sid])STATE.photos[sid]=[];
-  if(!STATE.lr.assetMeta)STATE.lr.assetMeta={};
-  let imported=0;
-  for(const assetId of lrSelected){
-    const asset=lrAlbumPhotos.find(a=>a.id===assetId);if(!asset)continue;
-    const filename=asset.payload?.importSource?.fileName||assetId;
-    const urlThumb=getLrThumbUrl(asset);
-    const url2048=getLrFullUrl(asset);
-    STATE.lr.assetMeta[assetId]={filename,assetId,url2048,urlThumb};
-    LR_PHOTOS[assetId]=STATE.lr.assetMeta[assetId];
-    if(!STATE.photos[sid].includes(assetId))STATE.photos[sid].push(assetId);
-    imported++;lrLog("  + "+filename);
-  }
-  lrLog("Done: "+imported+" photos assigned to series "+sid);
-  lrLog("Click Save & Publish to push to live site.");
-  renderSidebar();if(btn)btn.disabled=false;
-  toast(imported+" photos imported - Save & Publish to go live");
 }
 
 // SERIES VIEW
@@ -1403,7 +1197,6 @@ async function imgUploadFiles(files){
 }
 
 // HELPERS
-function lrLog(msg){const el=document.getElementById("lrLog");if(el){el.innerHTML+=msg+"<br>";el.scrollTop=el.scrollHeight;}}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function toast(msg,isErr=false){
   const t=document.getElementById("toast");t.textContent=msg;
