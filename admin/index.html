@@ -94,15 +94,18 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .slot-info{padding:8px 12px 10px;display:flex;align-items:center;justify-content:space-between}
 .slot-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
 .slot-act{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}.slot.filled .slot-act{color:var(--green)}
-/* PORTFOLIO GRID */
-.pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.pf-card{background:var(--surface2);border:1px solid var(--border);overflow:hidden}
-.pf-card:hover{border-color:var(--border2)}
-.pf-card-img{width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--bg)}
-.pf-card-img img{width:100%;height:100%;object-fit:cover;display:block}
-.pf-card-info{padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.pf-card-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.pf-card-actions{display:flex;gap:3px;flex-shrink:0}
+/* PORTFOLIO WORKS */
+.pf-works{display:flex;flex-direction:column;gap:10px}
+.pf-work-card{display:flex;gap:14px;background:var(--surface2);border:1px solid var(--border);overflow:hidden}
+.pf-work-card:hover{border-color:var(--border2)}
+.pf-work-cover{width:180px;min-height:120px;flex-shrink:0;cursor:pointer;background:var(--bg);overflow:hidden}
+.pf-work-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.pf-work-cover .slot-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px}
+.pf-work-body{flex:1;padding:12px 14px 12px 0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.pf-work-title{font-size:14px;font-weight:500;color:var(--text)}
+.pf-work-sub{font-size:11px;color:var(--muted);font-style:italic}
+.pf-work-meta{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.pf-work-actions{display:flex;gap:4px;margin-top:6px}
 .btn.sm{padding:3px 6px;font-size:10px;min-width:0}
 /* PICKER */
 #picker{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
@@ -268,7 +271,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <div class="sb-div"></div>
       <div class="sb-group">
         <button class="sb-item" data-view="home-slots" onclick="setView('home-slots')"><span class="sb-num">H</span><span class="sb-name">Homepage Slots</span></button>
-        <button class="sb-item" data-view="portfolio-slots" onclick="setView('portfolio-slots')"><span class="sb-num">P</span><span class="sb-name">Portfolio Shots</span></button>
+        <button class="sb-item" data-view="portfolio-slots" onclick="setView('portfolio-slots')"><span class="sb-num">P</span><span class="sb-name">Portfolio Works</span></button>
       </div>
     </aside>
     <div class="main">
@@ -577,6 +580,7 @@ async function init(){
   STATE.imgFolders=STATE.imgFolders||{};
   delete STATE.portfolioEntries;
   delete STATE.portfolio;
+  delete STATE.portfolioPhotos;
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
   Object.assign(CL_PHOTOS,STATE.cl.assetMeta);
@@ -794,30 +798,33 @@ const HOME_SLOTS=[
   {id:"qrow2",label:"Quote Row 2"},{id:"qrow3",label:"Quote Row 3"},
   {id:"qrow4",label:"Quote Row 4"},{id:"portrait",label:"Contact Portrait"},
 ];
-function getPortfolioPhotos(){
-  if(!STATE.portfolioPhotos)STATE.portfolioPhotos=[];
-  return STATE.portfolioPhotos;
+function getPortfolioWorks(){
+  if(!STATE.portfolioWorks)STATE.portfolioWorks=[];
+  return STATE.portfolioWorks;
 }
 function showHomeSlots(){setPanel("Homepage","Photo Assignments","");document.getElementById("panelBody").innerHTML=`<div class="slots">${HOME_SLOTS.map(s=>slotCard(s.id,s.label,"home")).join("")}</div>`;}
 function showPortfolioSlots(){
-  setPanel("Portfolio","Selected Shots","<button class='btn pri' onclick='addPortfolioPhoto()' data-testid='btn-add-portfolio-photo'>+ Add Photo</button>");
-  const photos=getPortfolioPhotos();
+  setPanel("Portfolio","Featured Works","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Work</button>");
+  const works=getPortfolioWorks();
   let html;
-  if(!photos.length){
-    html=`<div class="empty"><p>No portfolio photos selected yet. Click "+ Add Photo" to pick shots for your portfolio.</p></div>`;
+  if(!works.length){
+    html=`<div class="empty"><p>No portfolio works yet. Click "+ Add Work" to create your first featured work.</p></div>`;
   } else {
-    html=`<div class="pf-grid">${photos.map((cfId,i)=>{
-      const thumb=TIA.photoUrl(cfId,"thumb");
-      const meta=TIA.getState()?.cf?.assetMeta?.[cfId];
-      const name=meta?.filename||cfId.slice(0,12);
-      return`<div class="pf-card" data-testid="portfolio-photo-${i}">
-        <div class="pf-card-img">${thumb?`<img src="${thumb}" alt="${esc(name)}" loading="lazy">`:`<div class="slot-empty"><div class="slot-empty-ico">?</div></div>`}</div>
-        <div class="pf-card-info">
-          <span class="pf-card-name">${esc(name)}</span>
-          <div class="pf-card-actions">
-            ${i>0?`<button class="btn sm" onclick="movePortfolioPhoto(${i},-1)" data-testid="btn-move-up-${i}" title="Move up">&#8593;</button>`:""}
-            ${i<photos.length-1?`<button class="btn sm" onclick="movePortfolioPhoto(${i},1)" data-testid="btn-move-down-${i}" title="Move down">&#8595;</button>`:""}
-            <button class="btn sm red" onclick="removePortfolioPhoto(${i})" data-testid="btn-remove-portfolio-${i}" title="Remove">&#x2715;</button>
+    html=`<div class="pf-works">${works.map((w,i)=>{
+      const thumb=w.coverAssetId?TIA.photoUrl(w.coverAssetId,"thumb"):"";
+      return`<div class="pf-work-card" data-testid="portfolio-work-${i}">
+        <div class="pf-work-cover" onclick="openPicker('${w.id}','portfolio','Cover for ${esc(w.title||"Untitled")}')">
+          ${thumb?`<img src="${thumb}" alt="" loading="lazy">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">Set cover photo</div></div>`}
+        </div>
+        <div class="pf-work-body">
+          <div class="pf-work-title">${esc(w.title||"Untitled")}</div>
+          <div class="pf-work-sub">${esc(w.subtitle||"")}</div>
+          <div class="pf-work-meta">${esc(w.type||"Series")} · ${esc(w.location||"")}</div>
+          <div class="pf-work-actions">
+            <button class="btn" onclick="editPortfolioWork(${i})" data-testid="btn-edit-work-${i}">Edit</button>
+            ${i>0?`<button class="btn sm" onclick="movePortfolioWork(${i},-1)" data-testid="btn-move-work-up-${i}">&#8593;</button>`:""}
+            ${i<works.length-1?`<button class="btn sm" onclick="movePortfolioWork(${i},1)" data-testid="btn-move-work-down-${i}">&#8595;</button>`:""}
+            <button class="btn sm red" onclick="removePortfolioWork(${i})" data-testid="btn-remove-work-${i}">&#x2715;</button>
           </div>
         </div>
       </div>`;
@@ -834,22 +841,50 @@ function slotCard(slotId,label,ctx){
     <div class="slot-info"><span class="slot-name">${label}</span><span class="slot-act">${filled?"Set - click to change":"Click to assign"}</span></div></div>`;
 }
 
-function addPortfolioPhoto(){
-  openPicker("portfolio-add","portfolio","Portfolio Shot");
+function addPortfolioWork(){
+  const title=prompt("Work title:");
+  if(!title||!title.trim())return;
+  const works=getPortfolioWorks();
+  works.push({id:"pw-"+Date.now(),title:title.trim(),subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:""});
+  showPortfolioSlots();
+  toast("Work added — click it to set a cover photo, then Edit to fill in details");
 }
-function movePortfolioPhoto(idx,dir){
-  const photos=getPortfolioPhotos();
+function editPortfolioWork(idx){
+  const works=getPortfolioWorks();
+  const w=works[idx];
+  if(!w)return;
+  const f=(label,val)=>{const r=prompt(label,val);return r===null?null:r;};
+  const title=f("Title:",w.title);if(title===null)return;
+  const subtitle=f("Subtitle:",w.subtitle);if(subtitle===null)return;
+  const type=f("Type (e.g. Triptych, Diptych, Series):",w.type);if(type===null)return;
+  const description=f("Description:",w.description);if(description===null)return;
+  const camera=f("Camera:",w.camera);if(camera===null)return;
+  const location=f("Location:",w.location);if(location===null)return;
+  const format=f("Format (e.g. Three 16×24\" prints):",w.format);if(format===null)return;
+  w.title=title.trim()||w.title;
+  w.subtitle=subtitle.trim();
+  w.type=type.trim()||w.type;
+  w.description=description.trim();
+  w.camera=camera.trim();
+  w.location=location.trim();
+  w.format=format.trim();
+  showPortfolioSlots();
+  toast("Work updated");
+}
+function movePortfolioWork(idx,dir){
+  const works=getPortfolioWorks();
   const target=idx+dir;
-  if(target<0||target>=photos.length)return;
-  [photos[idx],photos[target]]=[photos[target],photos[idx]];
+  if(target<0||target>=works.length)return;
+  [works[idx],works[target]]=[works[target],works[idx]];
   showPortfolioSlots();
 }
-function removePortfolioPhoto(idx){
-  const photos=getPortfolioPhotos();
-  if(!photos[idx])return;
-  photos.splice(idx,1);
+function removePortfolioWork(idx){
+  const works=getPortfolioWorks();
+  if(!works[idx])return;
+  if(!confirm("Remove '"+works[idx].title+"' from portfolio?"))return;
+  works.splice(idx,1);
   showPortfolioSlots();
-  toast("Photo removed from portfolio");
+  toast("Work removed from portfolio");
 }
 
 // SETTINGS
@@ -905,8 +940,9 @@ function confirmPick(){
   if(!pkActive||!pkSlotId)return;
   if(pkCtx==="home"){STATE.home[pkSlotId]=pkActive;}
   if(pkCtx==="portfolio"){
-    const photos=getPortfolioPhotos();
-    if(!photos.includes(pkActive)){photos.push(pkActive);}
+    const works=getPortfolioWorks();
+    const w=works.find(w=>w.id===pkSlotId);
+    if(w)w.coverAssetId=pkActive;
   }
   saveAll();closePicker();
   if(activeTab==="homepage")showHomeSlots();
