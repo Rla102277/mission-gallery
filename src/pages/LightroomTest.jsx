@@ -32,7 +32,7 @@ export default function LightroomTest() {
     if (adobeClientId) return adobeClientId;
 
     try {
-      const response = await fetch(getApiUrl('/api/adobe/config'), { credentials: 'include' });
+      const response = await fetch(getApiUrl('/adobe/config'), { credentials: 'include' });
       if (!response.ok) return '';
       const data = await response.json();
       if (data?.clientId) {
@@ -73,7 +73,7 @@ export default function LightroomTest() {
 
     const loadAdobeConfig = async () => {
       try {
-        const response = await fetch(getApiUrl('/api/adobe/config'), { credentials: 'include' });
+        const response = await fetch(getApiUrl('/adobe/config'), { credentials: 'include' });
         if (!response.ok) return;
         const data = await response.json();
         if (data?.clientId) {
@@ -133,7 +133,7 @@ export default function LightroomTest() {
     setLoading(true);
     try {
       console.log('Exchanging code for token:', code.substring(0, 20) + '...');
-      const response = await api.post('/api/adobe/token', {
+      const response = await api.post('/adobe/token', {
         code,
         redirectUri: ADOBE_IMS_CONFIG.redirectUri,
       });
@@ -543,7 +543,7 @@ export default function LightroomTest() {
                       const baseUrl = localStorage.getItem('lr_base_url') || 'https://lr.adobe.io/v2/';
                       // The href is relative to the catalog base, so we need to use the catalog base URL
                       const lrUrl = thumbnailHref ? `${baseUrl}${thumbnailHref}` : null;
-                      const thumbnailUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${accessToken}`) : null;
+                      const thumbnailUrl = lrUrl ? getApiUrl(`/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${accessToken}`) : null;
                       
                       const captureDate = photo.asset?.payload?.captureDate;
                       const fileName = photo.asset?.payload?.importSource?.fileName || 'Photo';
