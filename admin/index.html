@@ -129,6 +129,24 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .lr-photo.sel .lr-check{display:flex}
 .lr-log{background:var(--bg);border:1px solid var(--border);padding:14px;font-size:11px;line-height:1.9;font-family:monospace;color:rgba(237,233,226,.55);max-height:180px;overflow-y:auto;margin-top:12px;display:none}
 .lr-log.show{display:block}
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border2);padding:50px 30px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:16px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:rgba(201,162,39,.04)}
+.upload-zone-ico{font-size:32px;opacity:.15;margin-bottom:12px}
+.upload-zone-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.35;margin-bottom:6px}
+.upload-zone-sub{font-size:10px;opacity:.2}
+.upload-progress{margin-top:14px}
+.upload-item{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);margin-bottom:4px}
+.upload-item-name{flex:1;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-item-status{font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.upload-item-status.ok{color:var(--green)}.upload-item-status.err{color:var(--red)}.upload-item-status.busy{color:var(--gold)}
+.upload-target{display:flex;gap:10px;align-items:center;margin-bottom:16px}
+.cl-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:5px;margin-top:16px}
+.cl-photo{position:relative;aspect-ratio:3/2;background:var(--surface2);overflow:hidden;border:2px solid transparent;border-radius:1px}
+.cl-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cl-photo-lbl{position:absolute;bottom:0;left:0;right:0;padding:3px 5px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);font-size:8px;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-photo-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);color:var(--red);font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.cl-photo:hover .cl-photo-del{display:flex}
 /* MISC */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .empty{padding:50px 0;text-align:center}
@@ -157,10 +175,11 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <span class="tb-sync" id="syncStatus">&mdash;</span>
     </div>
     <div class="tb-nav">
-      <button class="tb-tab active" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
+      <button class="tb-tab active" data-tab="upload" onclick="switchTab('upload')">Upload</button>
       <button class="tb-tab" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
       <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
       <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
+      <button class="tb-tab" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
       <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
@@ -185,7 +204,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
         <div><div class="ph-eye" id="phEye"></div><div class="ph-title" id="phTitle">Photo Manager</div></div>
         <div class="ph-acts" id="phActs"></div>
       </div>
-      <div class="pb" id="panelBody"><div class="empty"><p>Choose Lightroom to connect</p></div></div>
+      <div class="pb" id="panelBody"><div class="empty"><p>Upload photos or browse collections</p></div></div>
     </div>
   </div>
 </div>
@@ -209,11 +228,10 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v4
+// TIA-DATA.JS  v5
 //
-// Photo SOR: Adobe Lightroom (CC subscription)
+// Photo sources: Cloudinary (primary) + Adobe Lightroom (optional)
 // Config store: Cloudinary raw JSON (tia-config.json)
-// No photo uploads to Cloudinary — Adobe CDN serves images
 //
 // Config JSON at:
 //   https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json
@@ -221,9 +239,10 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 // Config schema:
 // {
 //   series:    { s1: { title, subtitle, description, coverAssetId } }
-//   photos:    { s1: [ assetId, assetId, ... ] }
-//   home:      { hero: assetId, carousel1: assetId, ... }
-//   portfolio: { 'pf-s1': assetId, ... }
+//   photos:    { s1: [ id, id, ... ] }
+//   home:      { hero: id, carousel1: id, ... }
+//   portfolio: { 'pf-s1': id, ... }
+//   cl:        { assetMeta: { publicId: { publicId, filename } } }
 //   lr:        { assetMeta: { assetId: { url2048, urlThumb, filename } } }
 // }
 // ═══════════════════════════════════════════════════════════════
@@ -236,8 +255,20 @@ const TIA = {
   CONFIG_PID: 'tia/tia-config',
   CONFIG_URL: 'https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json',
 
-  // ── Adobe CDN URL builders ─────────────────────────────────
-  // Lightroom asset URLs come from assetMeta stored in config
+  // ── Cloudinary image URL builder ──────────────────────────
+  clUrl(photoId, size) {
+    const meta = TIA.getState().cl?.assetMeta?.[photoId];
+    if (!meta) return '';
+    const pid = meta.publicId || photoId;
+    const base = `https://res.cloudinary.com/${TIA.CLOUD}/image/upload`;
+    if (size === 'thumb') return `${base}/c_fill,w_400,h_267/${pid}`;
+    if (size === 'cover') return `${base}/c_fill,w_1200,h_600/${pid}`;
+    if (size === 'hero')  return `${base}/c_fill,w_1920,h_1080/${pid}`;
+    if (size === 'full')  return `${base}/${pid}`;
+    return `${base}/${pid}`;
+  },
+
+  // ── Adobe CDN URL builders (optional) ───────────────────
   lrUrl(assetId, size) {
     const meta = TIA.getState().lr?.assetMeta?.[assetId];
     if (!meta) return '';
@@ -246,11 +277,15 @@ const TIA = {
     return meta.url2048 || meta.urlThumb || '';
   },
 
-  // Convenience — pick best size for context
-  thumb(assetId)  { return TIA.lrUrl(assetId, 'thumb');  },
-  cover(assetId)  { return TIA.lrUrl(assetId, 'cover')  || TIA.lrUrl(assetId, ''); },
-  hero(assetId)   { return TIA.lrUrl(assetId, 'full')   || TIA.lrUrl(assetId, ''); },
-  full(assetId)   { return TIA.lrUrl(assetId, 'full');   },
+  // ── Resolve URL — checks Cloudinary first, then Lightroom ─
+  photoUrl(id, size) {
+    return TIA.clUrl(id, size) || TIA.lrUrl(id, size);
+  },
+
+  thumb(assetId)  { return TIA.photoUrl(assetId, 'thumb');  },
+  cover(assetId)  { return TIA.photoUrl(assetId, 'cover'); },
+  hero(assetId)   { return TIA.photoUrl(assetId, 'full'); },
+  full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
   // ── Series definitions ─────────────────────────────────────
   DEFAULT_SERIES: [
@@ -372,7 +407,7 @@ let authed = sessionStorage.getItem("tia_auth") === "1";
 function doLogin() {
   const p = document.getElementById("authPass").value;
   // PIN: tia2026
-  if (p === "tia2026") {
+  if (p.toLowerCase() === "tia2026") {
     sessionStorage.setItem("tia_auth","1");
     authed = true;
     document.getElementById("authScreen").style.display = "none";
@@ -394,22 +429,29 @@ if (authed) {
 
 // STATE
 let STATE={};
-let activeView=null,activeTab="lightroom";
+let activeView=null,activeTab="upload";
 let LR_PHOTOS={};
+let CL_PHOTOS={};
 let lrAlbums=[],lrAlbumPhotos=[],lrSelected=new Set(),lrCurrentAlbum=null;
 
 function getSeries(){return TIA.getSeries();}
+function getPhotoMeta(aid){
+  const cl=CL_PHOTOS[aid]||STATE.cl?.assetMeta?.[aid];
+  if(cl) return{filename:cl.filename||aid,thumbUrl:TIA.clUrl(aid,'thumb'),fullUrl:TIA.clUrl(aid,'full')};
+  const lr=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
+  return{filename:lr.filename||aid,thumbUrl:lr.urlThumb||"",fullUrl:lr.url2048||""};
+}
 function getSeriesPhotos(sid){
   return(STATE.photos?.[sid]||[]).map(aid=>{
-    const m=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
-    return{assetId:aid,filename:m.filename||aid,thumbUrl:m.urlThumb||"",fullUrl:m.url2048||""};
+    const m=getPhotoMeta(aid);
+    return{assetId:aid,filename:m.filename,thumbUrl:m.thumbUrl,fullUrl:m.fullUrl};
   });
 }
 function allPhotos(){
   const all=[];
   Object.values(STATE.photos||{}).forEach(ids=>ids.forEach(aid=>{
-    const m=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
-    all.push({assetId:aid,...m});
+    const m=getPhotoMeta(aid);
+    all.push({assetId:aid,filename:m.filename,urlThumb:m.thumbUrl,url2048:m.fullUrl});
   }));
   return all;
 }
@@ -421,11 +463,12 @@ async function init(){
   STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
   STATE.home=STATE.home||{};STATE.portfolio=STATE.portfolio||{};
   STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
-  // Pre-baked Adobe Client ID
+  STATE.cl=STATE.cl||{};STATE.cl.assetMeta=STATE.cl.assetMeta||{};
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
+  Object.assign(CL_PHOTOS,STATE.cl.assetMeta);
   setSyncStatus("ok","Synced");
-  renderSidebar();handleOAuthReturn();switchTab("lightroom");
+  renderSidebar();handleOAuthReturn();switchTab("upload");
 }
 
 // SAVE
@@ -433,6 +476,7 @@ async function saveAll(){
   setSyncStatus("busy","Saving...");setSaveBtn(true,"Saving...");
   try{
     STATE.lr.assetMeta={...STATE.lr.assetMeta,...LR_PHOTOS};
+    STATE.cl.assetMeta={...STATE.cl.assetMeta,...CL_PHOTOS};
     await TIA.save(STATE);
     setSyncStatus("ok","Published");toast("Saved & published");
   }catch(err){setSyncStatus("err","Failed");toast("Save failed: "+err.message,true);}
@@ -454,7 +498,8 @@ function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
   document.getElementById("sidebar").style.display=["galleries","settings"].includes(tab)?"":"none";
-  if(tab==="lightroom")showLightroomPanel();
+  if(tab==="upload")showUploadPanel();
+  else if(tab==="lightroom")showLightroomPanel();
   else if(tab==="homepage")showHomeSlots();
   else if(tab==="portfolio")showPortfolioSlots();
   else if(tab==="settings")showSettingsPanel();
@@ -473,7 +518,84 @@ function setPanel(eye,title,acts=""){
   document.getElementById("phActs").innerHTML=acts;
 }
 
-// LIGHTROOM PANEL
+// UPLOAD PANEL (Cloudinary)
+function showUploadPanel(){
+  setPanel("Cloudinary","Upload Photos","");
+  document.getElementById("sidebar").style.display="none";
+  const clPhotos=Object.values(CL_PHOTOS);
+  document.getElementById("panelBody").innerHTML=`
+<div class="lr-step">
+  <span class="lr-step-num">Upload to Cloudinary</span>
+  <div class="upload-target">
+    <span class="field-lbl" style="margin-bottom:0;white-space:nowrap">Assign to Series &rarr;</span>
+    <select class="input" id="clTargetSeries" style="width:240px">
+      ${getSeries().map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
+    </select>
+  </div>
+  <div class="upload-zone" id="uploadZone"
+    onclick="document.getElementById('uploadInput').click()"
+    ondragover="event.preventDefault();this.classList.add('drag')"
+    ondragleave="this.classList.remove('drag')"
+    ondrop="event.preventDefault();this.classList.remove('drag');handleUploadFiles(event.dataTransfer.files)">
+    <div class="upload-zone-ico">&#x2191;</div>
+    <div class="upload-zone-lbl">Drop photos here or click to browse</div>
+    <div class="upload-zone-sub">JPG, PNG, WebP &mdash; max 20MB each</div>
+  </div>
+  <input type="file" id="uploadInput" multiple accept="image/*" style="display:none" onchange="handleUploadFiles(this.files)">
+  <div class="upload-progress" id="uploadProgress"></div>
+</div>
+<div class="lr-step">
+  <span class="lr-step-num">Uploaded Photos (${clPhotos.length})</span>
+  ${clPhotos.length?`<div class="cl-photo-grid">${clPhotos.map(p=>`
+    <div class="cl-photo">
+      <img src="${TIA.clUrl(p.publicId,'thumb')}" loading="lazy" alt="">
+      <div class="cl-photo-lbl">${esc(p.filename||p.publicId)}</div>
+    </div>`).join("")}</div>`
+  :`<p style="font-size:11px;opacity:.3;margin-top:8px">No photos uploaded yet</p>`}
+</div>`;
+}
+
+async function handleUploadFiles(files){
+  const sid=document.getElementById("clTargetSeries")?.value;
+  if(!sid)return toast("Select a series first",true);
+  const progress=document.getElementById("uploadProgress");
+  if(!STATE.photos[sid])STATE.photos[sid]=[];
+  if(!STATE.cl.assetMeta)STATE.cl.assetMeta={};
+  let uploaded=0;
+  for(const file of files){
+    if(!file.type.startsWith("image/"))continue;
+    const itemId="up-"+Date.now()+"-"+uploaded;
+    if(progress)progress.innerHTML+=`<div class="upload-item" id="${itemId}"><span class="upload-item-name">${esc(file.name)}</span><span class="upload-item-status busy">Uploading...</span></div>`;
+    try{
+      const fd=new FormData();
+      fd.append("file",file);
+      fd.append("upload_preset",TIA.PRESET);
+      fd.append("folder",TIA.FOLDER);
+      const res=await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/image/upload`,{method:"POST",body:fd});
+      if(!res.ok)throw new Error("Upload failed: "+res.status);
+      const data=await res.json();
+      const pid=data.public_id;
+      const meta={publicId:pid,filename:file.name};
+      STATE.cl.assetMeta[pid]=meta;
+      CL_PHOTOS[pid]=meta;
+      if(!STATE.photos[sid].includes(pid))STATE.photos[sid].push(pid);
+      uploaded++;
+      const el=document.getElementById(itemId);
+      if(el)el.querySelector(".upload-item-status").className="upload-item-status ok";
+      if(el)el.querySelector(".upload-item-status").textContent="Done";
+    }catch(err){
+      const el=document.getElementById(itemId);
+      if(el)el.querySelector(".upload-item-status").className="upload-item-status err";
+      if(el)el.querySelector(".upload-item-status").textContent=err.message;
+    }
+  }
+  if(uploaded>0){
+    renderSidebar();
+    toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded to "+sid+" - Save & Publish to go live");
+  }
+}
+
+// LIGHTROOM PANEL (optional)
 function showLightroomPanel(){
   setPanel("Adobe Creative Cloud","Lightroom Connection","");
   document.getElementById("sidebar").style.display="none";
@@ -664,14 +786,14 @@ function showSeriesView(sid){
   const s=getSeries().find(x=>x.id===sid);
   const photos=getSeriesPhotos(sid);
   const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick=\"switchTab('lightroom')\">+ Import from Lightroom</button>");
+  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick=\"switchTab('upload')\">+ Upload Photos</button>");
   let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
     <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
     <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
     <div style="grid-column:span 2"><span class="field-lbl">Description</span>
       <textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)">${esc(s?.description||"")}</textarea></div></div>`;
   if(!photos.length){
-    html+="<div class='empty'><p>No photos yet - use Lightroom tab to import</p></div>";
+    html+="<div class='empty'><p>No photos yet - use Upload tab to add photos</p></div>";
   }else{
     html+=`<div class="sec-lbl"><span>${photos.length} photos &mdash; click Cover to set the cover image</span></div><div class="pg">`;
     photos.forEach(p=>{

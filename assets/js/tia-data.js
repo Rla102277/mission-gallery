@@ -1,9 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v4
+// TIA-DATA.JS  v5
 //
-// Photo SOR: Adobe Lightroom (CC subscription)
+// Photo sources: Cloudinary (primary) + Adobe Lightroom (optional)
 // Config store: Cloudinary raw JSON (tia-config.json)
-// No photo uploads to Cloudinary — Adobe CDN serves images
 //
 // Config JSON at:
 //   https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json
@@ -11,9 +10,10 @@
 // Config schema:
 // {
 //   series:    { s1: { title, subtitle, description, coverAssetId } }
-//   photos:    { s1: [ assetId, assetId, ... ] }
-//   home:      { hero: assetId, carousel1: assetId, ... }
-//   portfolio: { 'pf-s1': assetId, ... }
+//   photos:    { s1: [ id, id, ... ] }
+//   home:      { hero: id, carousel1: id, ... }
+//   portfolio: { 'pf-s1': id, ... }
+//   cl:        { assetMeta: { publicId: { publicId, filename } } }
 //   lr:        { assetMeta: { assetId: { url2048, urlThumb, filename } } }
 // }
 // ═══════════════════════════════════════════════════════════════
@@ -26,8 +26,20 @@ const TIA = {
   CONFIG_PID: 'tia/tia-config',
   CONFIG_URL: 'https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json',
 
-  // ── Adobe CDN URL builders ─────────────────────────────────
-  // Lightroom asset URLs come from assetMeta stored in config
+  // ── Cloudinary image URL builder ──────────────────────────
+  clUrl(photoId, size) {
+    const meta = TIA.getState().cl?.assetMeta?.[photoId];
+    if (!meta) return '';
+    const pid = meta.publicId || photoId;
+    const base = `https://res.cloudinary.com/${TIA.CLOUD}/image/upload`;
+    if (size === 'thumb') return `${base}/c_fill,w_400,h_267/${pid}`;
+    if (size === 'cover') return `${base}/c_fill,w_1200,h_600/${pid}`;
+    if (size === 'hero')  return `${base}/c_fill,w_1920,h_1080/${pid}`;
+    if (size === 'full')  return `${base}/${pid}`;
+    return `${base}/${pid}`;
+  },
+
+  // ── Adobe CDN URL builders (optional) ───────────────────
   lrUrl(assetId, size) {
     const meta = TIA.getState().lr?.assetMeta?.[assetId];
     if (!meta) return '';
@@ -36,11 +48,15 @@ const TIA = {
     return meta.url2048 || meta.urlThumb || '';
   },
 
-  // Convenience — pick best size for context
-  thumb(assetId)  { return TIA.lrUrl(assetId, 'thumb');  },
-  cover(assetId)  { return TIA.lrUrl(assetId, 'cover')  || TIA.lrUrl(assetId, ''); },
-  hero(assetId)   { return TIA.lrUrl(assetId, 'full')   || TIA.lrUrl(assetId, ''); },
-  full(assetId)   { return TIA.lrUrl(assetId, 'full');   },
+  // ── Resolve URL — checks Cloudinary first, then Lightroom ─
+  photoUrl(id, size) {
+    return TIA.clUrl(id, size) || TIA.lrUrl(id, size);
+  },
+
+  thumb(assetId)  { return TIA.photoUrl(assetId, 'thumb');  },
+  cover(assetId)  { return TIA.photoUrl(assetId, 'cover'); },
+  hero(assetId)   { return TIA.photoUrl(assetId, 'full'); },
+  full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
   // ── Series definitions ─────────────────────────────────────
   DEFAULT_SERIES: [
@@ -116,7 +132,7 @@ const TIA = {
       full:     TIA.full(aid),
       cover:    TIA.cover(aid),
       hero:     TIA.hero(aid),
-      filename: state.lr?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
+      filename: state.cl?.assetMeta?.[aid]?.filename || state.lr?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
     }));
   },
 
