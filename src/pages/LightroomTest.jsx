@@ -12,6 +12,7 @@ import {
 
 // Adobe IMS (Identity Management Services) configuration
 const ADOBE_IMS_CONFIG = {
+  clientId: import.meta.env.VITE_ADOBE_CLIENT_ID || '',
   scopes: 'openid,AdobeID,lr_partner_apis,lr_partner_rendition_apis',
   redirectUri: window.location.origin + '/test/lightroom' // Will be https://localhost:5173/test/lightroom
 };
@@ -26,24 +27,6 @@ export default function LightroomTest() {
   const [error, setError] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [tokenInfo, setTokenInfo] = useState(null);
-  const [adobeClientId, setAdobeClientId] = useState(import.meta.env.VITE_ADOBE_CLIENT_ID || '');
-
-  const resolveAdobeClientId = async () => {
-    if (adobeClientId) return adobeClientId;
-
-    try {
-      const response = await fetch(getApiUrl('/adobe/config'), { credentials: 'include' });
-      if (!response.ok) return '';
-      const data = await response.json();
-      if (data?.clientId) {
-        setAdobeClientId(data.clientId);
-        return data.clientId;
-      }
-      return '';
-    } catch {
-      return '';
-    }
-  };
   
   // Simple gallery link management (Option A)
   const [galleryLinks, setGalleryLinks] = useState([]);
@@ -70,34 +53,18 @@ export default function LightroomTest() {
     if (savedLinks) {
       setGalleryLinks(JSON.parse(savedLinks));
     }
-
-    const loadAdobeConfig = async () => {
-      try {
-        const response = await fetch(getApiUrl('/adobe/config'), { credentials: 'include' });
-        if (!response.ok) return;
-        const data = await response.json();
-        if (data?.clientId) {
-          setAdobeClientId(data.clientId);
-        }
-      } catch {
-        // keep env/local fallback if backend config is unavailable
-      }
-    };
-
-    loadAdobeConfig();
   }, []);
 
-  const handleAdobeLogin = async () => {
-    const { scopes, redirectUri } = ADOBE_IMS_CONFIG;
-    const clientId = await resolveAdobeClientId();
+  const handleAdobeLogin = () => {
+    const { clientId, scopes, redirectUri } = ADOBE_IMS_CONFIG;
     
     console.log('Adobe Client ID:', clientId);
     console.log('Redirect URI:', redirectUri);
     console.log('Scopes:', scopes);
     
     if (!clientId) {
-      setError('Adobe Lightroom is not configured on backend. Set ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET on your backend service.');
-      alert('Adobe Lightroom is not configured on backend. Set ADOBE_CLIENT_ID and ADOBE_CLIENT_SECRET in Render env, then redeploy backend.');
+      setError('Adobe Client ID not configured. Please add VITE_ADOBE_CLIENT_ID to your .env file');
+      alert('Adobe Client ID not configured. Please restart your dev server after adding VITE_ADOBE_CLIENT_ID to .env');
       return;
     }
     
@@ -133,10 +100,7 @@ export default function LightroomTest() {
     setLoading(true);
     try {
       console.log('Exchanging code for token:', code.substring(0, 20) + '...');
-      const response = await api.post('/adobe/token', {
-        code,
-        redirectUri: ADOBE_IMS_CONFIG.redirectUri,
-      });
+      const response = await api.post('/api/adobe/token', { code });
 
       const data = response.data;
       console.log('Token exchange response:', data);
@@ -167,7 +131,7 @@ export default function LightroomTest() {
       const accountResponse = await fetch('https://lr.adobe.io/v2/account', {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': adobeClientId
+          'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
 
@@ -199,7 +163,7 @@ export default function LightroomTest() {
       const catalogResponse = await fetch('https://lr.adobe.io/v2/catalog', {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': adobeClientId
+          'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
       
@@ -244,7 +208,7 @@ export default function LightroomTest() {
       const response = await fetch(`https://lr.adobe.io/v2/catalogs/${catalogId}/albums`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': adobeClientId
+          'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
 
@@ -284,7 +248,7 @@ export default function LightroomTest() {
       const response = await fetch(`https://lr.adobe.io/v2/catalogs/${catalogId}/albums/${albumId}/assets?embed=asset`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': adobeClientId
+          'X-API-Key': ADOBE_IMS_CONFIG.clientId
         }
       });
 
@@ -543,7 +507,7 @@ export default function LightroomTest() {
                       const baseUrl = localStorage.getItem('lr_base_url') || 'https://lr.adobe.io/v2/';
                       // The href is relative to the catalog base, so we need to use the catalog base URL
                       const lrUrl = thumbnailHref ? `${baseUrl}${thumbnailHref}` : null;
-                      const thumbnailUrl = lrUrl ? getApiUrl(`/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${accessToken}`) : null;
+                      const thumbnailUrl = lrUrl ? getApiUrl(`/api/adobe/image-proxy?url=${encodeURIComponent(lrUrl)}&token=${accessToken}`) : null;
                       
                       const captureDate = photo.asset?.payload?.captureDate;
                       const fileName = photo.asset?.payload?.importSource?.fileName || 'Photo';

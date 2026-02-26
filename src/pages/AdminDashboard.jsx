@@ -22,7 +22,6 @@ import GearEditor from '../components/GearEditor';
 import LightroomTest from './LightroomTest';
 import PortfolioManager from '../components/PortfolioManager';
 import MentorEditManager from '../components/MentorEditManager';
-import StaticSiteManager from '../components/StaticSiteManager';
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -231,16 +230,6 @@ function AdminDashboard() {
             Portfolios
           </button>
           <button
-            onClick={() => setActiveTab('static')}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === 'static'
-                ? 'text-amber-500 border-b-2 border-amber-500'
-                : 'text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            Static Site
-          </button>
-          <button
             onClick={() => setActiveTab('gear')}
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'gear'
@@ -401,8 +390,6 @@ function AdminDashboard() {
         )}
 
         {activeTab === 'portfolios' && <PortfolioManager galleries={galleries} />}
-
-        {activeTab === 'static' && <StaticSiteManager />}
 
         {activeTab === 'gear' && <GearEditor />}
 

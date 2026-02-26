@@ -17,11 +17,6 @@ const editableSections = {
 router.get('/', ensureAuth, async (req, res) => {
   try {
     const missions = await Mission.find({ userId: req.user._id }).sort({ createdAt: -1 });
-    res.json(missions);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 // Update mission brief section
 router.put('/:id/sections/:sectionKey', ensureAuth, async (req, res) => {
@@ -46,25 +41,6 @@ router.put('/:id/sections/:sectionKey', ensureAuth, async (req, res) => {
   }
 });
 
-// Bulk delete missions
-router.post('/bulk-delete', ensureAuth, async (req, res) => {
-  try {
-    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
-    if (ids.length === 0) {
-      return res.status(400).json({ error: 'No mission IDs provided' });
-    }
-
-    const result = await Mission.deleteMany({
-      _id: { $in: ids },
-      userId: req.user._id,
-    });
-
-    res.json({ deletedCount: result.deletedCount || 0 });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // AI enhance mission brief section
 router.post('/:id/sections/:sectionKey/enhance', ensureAuth, async (req, res) => {
   try {
@@ -85,6 +61,11 @@ router.post('/:id/sections/:sectionKey/enhance', ensureAuth, async (req, res) =>
     res.json({ field: fieldName, value: enhanced });
   } catch (error) {
     console.error('Error enhancing mission section:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+    res.json(missions);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

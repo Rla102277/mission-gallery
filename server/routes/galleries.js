@@ -19,23 +19,6 @@ router.get('/', ensureAuth, async (req, res) => {
   }
 });
 
-// Toggle gallery public/private visibility
-router.put('/:id/visibility', ensureAuth, async (req, res) => {
-  try {
-    const gallery = await Gallery.findOne({ _id: req.params.id, userId: req.user._id });
-    if (!gallery) {
-      return res.status(404).json({ error: 'Gallery not found' });
-    }
-
-    gallery.isPublic = Boolean(req.body?.isPublic);
-    await gallery.save();
-
-    res.json(gallery);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Get all public galleries (no auth required)
 router.get('/public/all', async (req, res) => {
   try {
@@ -417,25 +400,6 @@ router.delete('/:id', ensureAuth, async (req, res) => {
       return res.status(404).json({ error: 'Gallery not found' });
     }
     res.json({ message: 'Gallery deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Bulk delete galleries
-router.post('/bulk-delete', ensureAuth, async (req, res) => {
-  try {
-    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
-    if (ids.length === 0) {
-      return res.status(400).json({ error: 'No gallery IDs provided' });
-    }
-
-    const result = await Gallery.deleteMany({
-      _id: { $in: ids },
-      userId: req.user._id,
-    });
-
-    res.json({ deletedCount: result.deletedCount || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
