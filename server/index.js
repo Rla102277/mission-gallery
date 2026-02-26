@@ -6,7 +6,6 @@ import passport from 'passport';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 // Load environment variables
 dotenv.config();
@@ -24,11 +23,9 @@ import portfolioRoutes from './routes/portfolios.js';
 import mentorRoutes from './routes/mentor.js';
 import cloudinaryRoutes from './routes/cloudinary.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 const PORT = process.env.PORT || 5000;
+const isFirebaseRuntime = Boolean(process.env.FUNCTION_TARGET || process.env.K_SERVICE);
 
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
@@ -112,22 +109,23 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mission-gallery')
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-    
-    // Start server
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📸 Mission Gallery API ready`);
-    });
-  })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  });
+let dbConnectionPromise;
+
+export const initializeDatabase = () => {
+  if (!dbConnectionPromise) {
+    dbConnectionPromise = mongoose
+      .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mission-gallery')
+      .then(() => {
+        console.log('✅ Connected to MongoDB');
+      })
+      .catch((error) => {
+        console.error('❌ MongoDB connection error:', error);
+        throw error;
+      });
+  }
+
+  return dbConnectionPromise;
+};
 
 // Error handling
 app.use((err, req, res, next) => {
@@ -137,3 +135,18 @@ app.use((err, req, res, next) => {
   }
   res.status(500).json({ error: err.message || 'Something went wrong!' });
 });
+
+if (!isFirebaseRuntime) {
+  initializeDatabase()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log('📸 Mission Gallery API ready');
+      });
+    })
+    .catch(() => {
+      process.exit(1);
+    });
+}
+
+export { app };
