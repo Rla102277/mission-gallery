@@ -53,41 +53,18 @@
     .gear-item { font-family:'Playfair Display',serif; font-style:italic; font-size:14px; color:rgba(255,255,255,0.45); }
     .gear-item::after { content:'·'; margin-left:32px; color:rgba(255,255,255,0.15); }
     .gear-item:last-child::after { content:''; }
-    /* WORK BLOCKS */
-    .work-section { border-top:1px solid rgba(0,0,0,0.08); }
-    .work-block { display:grid; grid-template-columns:1fr 1fr; min-height:600px; max-width:var(--max); margin:0 auto; }
-    .work-block.reverse .work-text { order:2; }
-    .work-block.reverse .work-visual { order:1; }
-    .work-visual { position:relative; overflow:hidden; min-height:500px; }
-    .wv-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.8s var(--ease),filter 0.6s; filter:brightness(0.88); }
-    .work-visual:hover .wv-img { transform:scale(1.03); filter:brightness(0.75); }
-    .wv-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
-    .wv-ph-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.18); text-align:center; padding:16px; }
-    .work-text { padding:80px 72px; display:flex; flex-direction:column; justify-content:center; background:var(--sage-light); }
-    .wt-series { font-size:8px; letter-spacing:6px; text-transform:uppercase; color:rgba(0,0,0,0.25); margin-bottom:16px; display:block; }
-    .wt-type-badge { display:inline-block; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:rgba(0,0,0,0.3); border:1px solid rgba(0,0,0,0.12); padding:3px 10px; margin-bottom:24px; }
-    .wt-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(26px,3vw,44px); line-height:1.1; color:var(--ink); margin-bottom:8px; }
-    .wt-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(15px,1.5vw,18px); color:rgba(0,0,0,0.4); margin-bottom:28px; }
-    .wt-body { font-size:15px; line-height:1.9; color:rgba(0,0,0,0.45); margin-bottom:32px; }
-    .wt-rule { width:40px; height:1px; background:rgba(0,0,0,0.12); margin-bottom:28px; }
-    .wt-specs { margin-bottom:36px; }
-    .wts-row { display:flex; gap:12px; margin-bottom:6px; }
-    .wts-key { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(0,0,0,0.25); width:64px; flex-shrink:0; }
-    .wts-val { font-family:'Playfair Display',serif; font-style:italic; font-size:14px; color:rgba(0,0,0,0.5); }
-    .wt-cta { display:inline-flex; align-items:center; gap:12px; font-size:9px; letter-spacing:5px; text-transform:uppercase; color:rgba(0,0,0,0.5); padding:14px 28px; border:1px solid rgba(0,0,0,0.2); transition:all 0.3s; align-self:flex-start; }
-    .wt-cta:hover { background:var(--ink); color:var(--cream); border-color:var(--ink); }
-    /* DARK treatment */
-    .work-block.dark-text .work-text { background:var(--sage-dark); }
-    .work-block.dark-text .wt-series { color:rgba(255,255,255,0.25); }
-    .work-block.dark-text .wt-type-badge { color:rgba(255,255,255,0.3); border-color:rgba(255,255,255,0.12); }
-    .work-block.dark-text .wt-title { color:var(--cream); }
-    .work-block.dark-text .wt-sub { color:rgba(255,255,255,0.4); }
-    .work-block.dark-text .wt-body { color:rgba(255,255,255,0.4); }
-    .work-block.dark-text .wt-rule { background:rgba(255,255,255,0.1); }
-    .work-block.dark-text .wts-key { color:rgba(255,255,255,0.2); }
-    .work-block.dark-text .wts-val { color:rgba(255,255,255,0.45); }
-    .work-block.dark-text .wt-cta { color:rgba(255,255,255,0.4); border-color:rgba(255,255,255,0.15); }
-    .work-block.dark-text .wt-cta:hover { background:var(--cream); color:var(--ink); border-color:var(--cream); }
+    /* PORTFOLIO SHOTS */
+    .portfolio-grid { max-width:var(--max); margin:0 auto; padding:0 48px; }
+    .portfolio-shot { margin-bottom:4px; position:relative; overflow:hidden; background:var(--sage-dark); }
+    .portfolio-shot img { width:100%; display:block; transition:transform 0.8s var(--ease),filter 0.6s; filter:brightness(0.92); }
+    .portfolio-shot:hover img { transform:scale(1.02); filter:brightness(0.82); }
+    .portfolio-shot .ps-overlay { position:absolute; bottom:0; left:0; right:0; padding:28px 36px; background:linear-gradient(transparent,rgba(0,0,0,0.5)); opacity:0; transition:opacity 0.4s var(--ease); }
+    .portfolio-shot:hover .ps-overlay { opacity:1; }
+    .ps-filename { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.6); }
+    .ps-inquire { display:inline-flex; align-items:center; gap:10px; font-size:8px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,0.5); padding:10px 20px; border:1px solid rgba(255,255,255,0.25); margin-top:12px; transition:all 0.3s; }
+    .ps-inquire:hover { background:var(--cream); color:var(--ink); border-color:var(--cream); }
+    .portfolio-empty { text-align:center; padding:120px 48px; }
+    .portfolio-empty p { font-family:'Playfair Display',serif; font-style:italic; font-size:20px; color:rgba(0,0,0,0.3); }
     /* INQUIRY */
     .inquiry-section { background:var(--sage-dark); color:var(--cream); padding:100px 80px; text-align:center; }
     .inq-eyebrow { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:20px; display:block; }
@@ -113,10 +90,8 @@
       .hamburger { display:flex; }
       .statement-section { grid-template-columns:1fr; gap:40px; padding:100px 24px 60px; }
       .gear-strip { padding:24px; gap:20px; }
-      .work-block { grid-template-columns:1fr; }
-      .work-block.reverse .work-text,.work-block.reverse .work-visual { order:unset; }
-      .work-text { padding:48px 24px; }
-      .work-visual { min-height:320px; }
+      .portfolio-grid { padding:0 16px; }
+      .portfolio-shot .ps-overlay { opacity:1; padding:16px 20px; }
       .inquiry-section { padding:60px 24px; }
       footer { padding:28px 24px; }
     }
@@ -174,7 +149,7 @@
   </div>
 </div>
 
-<section class="work-section" id="workSection"></section>
+<section class="portfolio-grid" id="portfolioGrid"></section>
 
 <section class="inquiry-section" data-reveal>
   <span class="inq-eyebrow">Original Fine Art Prints</span>
@@ -200,61 +175,26 @@
 document.addEventListener('DOMContentLoaded', async () => {
   await TIA.load();
   const state = TIA.getState();
-  const entries = state.portfolioEntries || [
-    {id:"pf-s1",seriesId:"s1",title:"Solitude & Scale",subtitle:"The Secret Lagoon",type:"Triptych",description:"A progression from immensity to intimacy."},
-    {id:"pf-s3",seriesId:"s3",title:"Blue Trilogy",subtitle:"The impossible blues of Iceland ice",type:"Triptych",description:"This blue does not exist in nature."},
-    {id:"pf-s2",seriesId:"s2",title:"Glacial Contrasts",subtitle:"Ice in two realms",type:"Diptych",description:"Same glacial ice. Two states."},
-    {id:"pf-s5",seriesId:"s5",title:"The Human Element",subtitle:"Presence at the edge of the world",type:"Diptych",description:"The landscape doesn't need us."},
-    {id:"pf-s7",seriesId:"s7",title:"Peninsular Panorama",subtitle:"Snæfellsnes in three moods",type:"Triptych",description:"Three visits to the same peninsula."},
-  ];
-  const section = document.getElementById('workSection');
-  const series = TIA.getSeries();
-  const gradients = [
-    'linear-gradient(145deg,#0a1828 0%,#060e1a 100%)',
-    'linear-gradient(145deg,#040a18 0%,#020610 100%)',
-    'linear-gradient(145deg,#0a1020 0%,#050810 100%)',
-    'linear-gradient(145deg,#281804 0%,#1a1002 100%)',
-    'linear-gradient(145deg,#181410 0%,#0e0c08 100%)',
-    'linear-gradient(145deg,#0d1a10 0%,#060e08 100%)',
-    'linear-gradient(145deg,#1a0d1a 0%,#0e060e 100%)',
-    'linear-gradient(145deg,#1a1a0a 0%,#0e0e06 100%)',
-  ];
-  section.innerHTML = entries.map((e, i) => {
-    const isReverse = i % 2 === 1;
-    const isDark = i % 2 === 1;
-    const s = e.seriesId ? series.find(x => x.id === e.seriesId) : null;
-    const coverUrl = TIA.getPortfolioUrl(e.id, 'cover')
-                  || (e.seriesId ? TIA.getCoverUrl(e.seriesId, 'cover') : '');
-    const title = e.title || s?.title || 'Untitled';
-    const subtitle = e.subtitle || s?.subtitle || '';
-    const type = e.type || s?.type || 'Series';
-    const description = e.description || s?.description || '';
-    const camera = s?.camera || '';
-    const location = s?.location || '';
-    const grad = gradients[i % gradients.length];
-    return `
-    <div class="work-block${isReverse ? ' reverse' : ''}${isDark ? ' dark-text' : ''}" data-reveal>
-      <div class="work-visual" style="background:${grad}">
-        ${coverUrl
-          ? `<img class="wv-img" src="${coverUrl}" alt="${title}">`
-          : `<div class="wv-placeholder"><div class="wv-ph-label">${title}</div></div>`}
-      </div>
-      <div class="work-text">
-        ${s ? `<span class="wt-series">Series ${s.num || ''}</span>` : ''}
-        <span class="wt-type-badge">${type}</span>
-        <h2 class="wt-title">${title}</h2>
-        <p class="wt-sub">${subtitle}</p>
-        <p class="wt-body">${description}</p>
-        <div class="wt-rule"></div>
-        ${camera || location ? `<div class="wt-specs">
-          ${camera ? `<div class="wts-row"><span class="wts-key">Camera</span><span class="wts-val">${camera}</span></div>` : ''}
-          ${location ? `<div class="wts-row"><span class="wts-key">Location</span><span class="wts-val">${location}</span></div>` : ''}
-          <div class="wts-row"><span class="wts-key">Edition</span><span class="wts-val">Limited — inquire for availability</span></div>
-        </div>` : ''}
-        <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry — ${title}" class="wt-cta">Inquire About This Print &nbsp;&#8594;</a>
-      </div>
-    </div>`;
-  }).join('');
+  const photos = state.portfolioPhotos || [];
+  const section = document.getElementById('portfolioGrid');
+
+  if (!photos.length) {
+    section.innerHTML = '<div class="portfolio-empty" data-reveal><p>Portfolio coming soon.</p></div>';
+  } else {
+    section.innerHTML = photos.map(cfId => {
+      const url = TIA.photoUrl(cfId, 'full');
+      const meta = state.cf?.assetMeta?.[cfId];
+      const name = meta?.filename || '';
+      return `
+      <div class="portfolio-shot" data-reveal data-testid="portfolio-shot-${cfId}">
+        <img src="${url}" alt="${name}" loading="lazy">
+        <div class="ps-overlay">
+          ${name ? `<span class="ps-filename">${name.replace(/\.[^.]+$/, '')}</span>` : ''}
+          <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry${name ? ' — ' + name.replace(/\.[^.]+$/, '') : ''}" class="ps-inquire">Inquire About This Print &nbsp;&#8594;</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis'); });

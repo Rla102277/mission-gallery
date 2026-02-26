@@ -173,11 +173,6 @@ const TIA = {
     return aid ? (TIA[size]?.(aid) || TIA.lrUrl(aid, '')) : '';
   },
 
-  getPortfolioUrl(pfKey, size = 'cover') {
-    const aid = TIA.getState().portfolio?.[pfKey];
-    return aid ? (TIA[size]?.(aid) || TIA.lrUrl(aid, '')) : '';
-  },
-
   applyAll() {
     document.querySelectorAll('[data-tia]').forEach(el => {
       const slot = el.dataset.tia;
@@ -185,7 +180,6 @@ const TIA = {
       const size = el.dataset.tiaSize || (el.tagName === 'IMG' ? 'cover' : 'hero');
       let url = '';
       if (ctx === 'home')      url = TIA.getHomeUrl(slot, size);
-      if (ctx === 'portfolio') url = TIA.getPortfolioUrl(slot, size);
       if (ctx === 'series')    url = TIA.getCoverUrl(slot, size);
       if (!url) return;
       if (el.tagName === 'IMG') el.src = url;

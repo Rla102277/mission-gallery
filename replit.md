@@ -37,17 +37,16 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
   - "+ New Gallery" button at bottom of sidebar
 - **Images tab**: Browse all CF images, organize into virtual folders, assign to series, upload, delete
 - **Homepage tab**: Assign photos to homepage slots (hero, carousel, etc.)
-- **Portfolio tab**: Dynamic featured work entries — add/edit/remove entries, link to galleries, set cover photos
-  - `STATE.portfolioEntries` array stores portfolio entries with id, seriesId, title, subtitle, type, description
-  - Portfolio page (pages/portfolio.html) renders dynamically from this data
+- **Portfolio tab**: Select individual single shots for portfolio — add/remove/reorder photos
+  - `STATE.portfolioPhotos` array stores Cloudflare Image IDs of selected shots
+  - Portfolio page (pages/portfolio.html) renders full-width single shots from this data
 - **Settings tab**: Edit series titles, subtitles, descriptions
 
 ## Data Model (STATE object)
 - `series` — Gallery metadata keyed by series ID (s1-s8 for defaults, g-{timestamp} for custom)
 - `photos` — Photo arrays keyed by series ID (Cloudflare Image IDs)
 - `home` — Homepage slot assignments (slot ID → CF image ID)
-- `portfolio` — Portfolio cover assignments (pf-{id} → CF image ID)
-- `portfolioEntries` — Array of portfolio featured work entries
+- `portfolioPhotos` — Array of CF image IDs for portfolio single shots
 - `imgFolders` — Virtual folder organization for Images tab
 - `cf.assetMeta` — Cloudflare Images metadata (including EXIF data)
 - `cl.assetMeta` — Legacy Cloudinary metadata
