@@ -4,68 +4,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Infinite Arch — Prints</title>
+  <meta name="description" content="Fine art landscape prints by Randy Allen. Museum-quality archival prints, hand-finished and signed.">
   <link rel="stylesheet" href="/assets/css/tia.css">
   <style>
-    .coming-soon {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0 40px;
-      gap: 20px;
+    .page-content { padding-top: 0; }
+
+    .cs-hero {
+      height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      position: relative; padding: 0 40px; overflow: hidden;
+      background:
+        radial-gradient(ellipse at 30% 25%, rgba(201,162,39,0.045) 0%, transparent 55%),
+        radial-gradient(ellipse at 70% 80%, rgba(30,50,90,0.2) 0%, transparent 50%),
+        linear-gradient(160deg, #080c12 0%, #0d0d0d 40%, #0a0c09 100%);
     }
-    .cs-label {
-      font-size: 9px;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      opacity: 0.25;
+    .cs-hero::after {
+      content:''; position:absolute; left:0; right:0; top:50%; height:1px;
+      background:linear-gradient(to right,transparent,rgba(201,162,39,0.06),rgba(245,240,232,0.04),rgba(201,162,39,0.06),transparent);
+      pointer-events:none;
     }
-    .cs-rule { width: 40px; height: 1px; background: rgba(245,240,232,0.2); }
+
+    .cs-eyebrow {
+      font-size: 9px; letter-spacing: 7px; text-transform: uppercase;
+      opacity: 0.22; margin-bottom: 32px;
+    }
     .cs-title {
-      font-family: "Playfair Display", serif;
-      font-weight: 900;
-      font-size: clamp(52px, 8vw, 96px);
-      letter-spacing: -3px;
-      line-height: 0.9;
-      opacity: 0.15;
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(56px, 9vw, 110px); letter-spacing: -4px;
+      line-height: 0.88; margin-bottom: 20px;
+    }
+    .cs-rule {
+      width: 60px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      margin: 24px auto;
     }
     .cs-sub {
-      font-family: "Playfair Display", serif;
-      font-style: italic;
-      font-size: clamp(16px, 2vw, 22px);
-      opacity: 0.25;
-      letter-spacing: 2px;
+      font-family: var(--font-display); font-style: italic;
+      font-size: clamp(17px, 2.5vw, 24px); opacity: 0.5;
+      letter-spacing: 3px; margin-bottom: 16px;
     }
+    .cs-body {
+      font-size: 15px; line-height: 1.9; opacity: 0.35;
+      max-width: 480px; margin: 0 auto 40px;
+    }
+
+    .cs-details {
+      display: flex; flex-direction: column; gap: 10px;
+      align-items: center; margin-bottom: 48px;
+    }
+    .cs-detail {
+      font-size: 10px; letter-spacing: 5px; text-transform: uppercase;
+      opacity: 0.2;
+    }
+    .cs-detail-rule { width: 20px; height: 1px; background: var(--rule-dark); }
+
+    .cs-notify {
+      display: inline-flex; align-items: center; gap: 16px;
+      font-family: var(--font-body); font-size: 11px;
+      letter-spacing: 4px; text-transform: uppercase; opacity: 0.5;
+      border: 1px solid var(--rule-dark); padding: 14px 32px;
+      transition: all 0.4s; cursor: default;
+    }
+
     .cs-back {
-      font-size: 10px;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      opacity: 0.3;
-      margin-top: 40px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      position: absolute; bottom: 48px;
+      font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
+      opacity: 0.2; display: flex; align-items: center; gap: 12px;
       transition: opacity 0.3s;
     }
-    .cs-back:hover { opacity: 0.7; }
-    .cs-back-line { width: 28px; height: 1px; background: rgba(245,240,232,0.5); transition: width 0.4s; }
+    .cs-back:hover { opacity: 0.6; }
+    .cs-back-line { width: 28px; height: 1px; background: var(--cream); transition: width 0.4s; }
     .cs-back:hover .cs-back-line { width: 48px; }
   </style>
 </head>
 <body>
 <div class="page-content">
-  <div class="coming-soon">
-    <span class="cs-label">The Infinite Arch</span>
+  <section class="cs-hero" data-testid="section-prints-hero">
+    <span class="cs-eyebrow" data-testid="text-prints-eyebrow">The Infinite Arch</span>
+    <h1 class="cs-title" data-testid="text-prints-title">Prints</h1>
     <div class="cs-rule"></div>
-    <h1 class="cs-title">Prints</h1>
-    <p class="cs-sub">Fine art prints coming soon</p>
-    <a href="/" class="cs-back">
+    <p class="cs-sub" data-testid="text-prints-subtitle">Coming Soon</p>
+    <p class="cs-body" data-testid="text-prints-body">Museum-quality archival prints, hand-finished and signed. Each edition is produced in limited runs with meticulous attention to tonal accuracy.</p>
+    <div class="cs-details" data-testid="section-prints-details">
+      <span class="cs-detail" data-testid="text-prints-detail-1">Archival Pigment on Cotton Rag</span>
+      <div class="cs-detail-rule"></div>
+      <span class="cs-detail" data-testid="text-prints-detail-2">Limited Editions &middot; Signed & Numbered</span>
+      <div class="cs-detail-rule"></div>
+      <span class="cs-detail" data-testid="text-prints-detail-3">Custom Framing Available</span>
+    </div>
+    <div class="cs-notify" data-testid="text-prints-launch">Launching 2026</div>
+    <a href="/" class="cs-back" data-testid="link-back-home">
       <div class="cs-back-line"></div>
       Return Home
     </a>
-  </div>
+  </section>
 </div>
 <script src="/assets/js/components.js"></script>
 <script src="/assets/js/tia.js"></script>

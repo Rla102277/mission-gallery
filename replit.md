@@ -11,14 +11,25 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - **Server**: Express with multer — proxies uploads to Cloudflare Images API (protects API token)
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
 
+## Design System
+- **Color Palette**: Dark ink (#0d0d0d) background, cream (#f5f0e8) text, gold (#c9a227) accents
+- **Typography**: Playfair Display (headings), Cormorant Garamond (body)
+- **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
+- **CSS Loading Order**: tia.css FIRST, then page-specific inline `<style>` blocks (so page-specific rules override base)
+
 ## Key Files
-- `index.html` — Main site homepage
-- `pages/` — Site pages (about, gallery, portfolio, prints, contact, hope-hike)
+- `index.html` — Homepage: full-bleed hero with animated wordmark, philosophy, 2×2 collections grid, featured projects, process cards, Hope Hike callout, services, newsletter, quote strip. Dynamic content from portfolioWorks.
+- `pages/portfolio.html` — Portfolio: dark hero + section intro + 2×2 tile grid from portfolioWorks data, hover reveal animations
+- `pages/about.html` — Artist Statement: cream/warm background (intentionally different from dark pages), with dark mode toggle
+- `pages/gallery.html` — Interactive gallery viewer: self-contained with its own nav, sage-light background, series navigation, lightbox, dynamic photo loading from TIA data layer
+- `pages/contact.html` — Contact page: dark hero with email link, polished layout
+- `pages/prints.html` — Prints page: dark "coming soon" with archival print details
+- `pages/hope-hike.html` — Hope Hike expedition page: dark hero with Guadalupe Peak stats, date, purpose quote
 - `admin/index.html` — Admin panel (PIN-protected, case-insensitive "tia2026")
 - `assets/js/tia-data.js` — TIA data layer v6 (CF Images + Cloudinary URL resolution, dynamic series support)
-- `assets/js/tia.js` — Frontend site logic
-- `assets/js/components.js` — Reusable UI components
-- `assets/css/tia.css` — Site styles
+- `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions)
+- `assets/js/components.js` — Injects shared nav and footer across all pages (except gallery which has its own)
+- `assets/css/tia.css` — Global styles: dark theme tokens, nav, footer, page-content wrapper, grain overlay
 - `assets/svg/` — SVG brand assets (wordmarks, medallions)
 - `server/index.ts` — Express server with Cloudflare Images API proxy + static files
 - `script/build.cjs` — Production build script (includes CF API endpoints)
@@ -36,11 +47,11 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
   - Custom galleries can be created/deleted freely
   - "+ New Gallery" button at bottom of sidebar
 - **Images tab**: Browse all CF images, organize into virtual folders, assign to series, upload, delete
-- **Homepage tab**: Assign photos to homepage slots (hero, carousel, etc.)
+- **Homepage tab**: Assign photos to homepage slots (hero background only — homepage uses CSS gradients + portfolioWorks covers for tiles)
 - **Portfolio tab**: Create/edit/remove/reorder featured work blocks — each with cover photo, title, subtitle, type, description, camera, location, format
   - `STATE.portfolioWorks` array stores work objects with {id, title, subtitle, type, description, camera, location, format, coverAssetId}
-  - Portfolio page (pages/portfolio.html) renders alternating two-column work blocks (photo + text) from this data
-- **Settings tab**: Edit series titles, subtitles, descriptions
+  - Both homepage and portfolio page dynamically render from this data
+- **Settings tab**: Shows CF connectivity status (delivery hash, image count, test connection) and config storage info (URL, cloud name, last save, counts)
 
 ## Data Model (STATE object)
 - `series` — Gallery metadata keyed by series ID (s1-s8 for defaults, g-{timestamp} for custom)
