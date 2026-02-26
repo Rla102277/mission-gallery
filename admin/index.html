@@ -164,6 +164,19 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .upload-empty{padding:60px 30px;text-align:center;border:1px solid var(--border);background:var(--surface2)}
 .upload-empty-ico{font-size:36px;opacity:.08;margin-bottom:12px}
 .upload-empty-lbl{font-size:9px;letter-spacing:5px;text-transform:uppercase;opacity:.2}
+/* EXIF */
+.exif-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.exif-tag{font-size:8px;letter-spacing:1px;color:var(--dim);background:rgba(255,255,255,.04);border:1px solid var(--border);padding:1px 6px;border-radius:1px;white-space:nowrap}
+.pc-info{position:absolute;bottom:0;left:0;right:0;padding:5px 6px 4px;background:linear-gradient(to top,rgba(0,0,0,.9) 60%,transparent);display:flex;flex-direction:column;gap:2px}
+.pc-name{font-size:9px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-exif{display:flex;gap:4px;flex-wrap:wrap}
+.pc-exif span{font-size:7px;letter-spacing:.5px;color:rgba(237,233,226,.35)}
+/* INLINE UPLOAD */
+.gallery-upload{margin-bottom:18px;border:2px dashed var(--border2);padding:24px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.gallery-upload:hover,.gallery-upload.drag{border-color:var(--gold);background:rgba(201,162,39,.04)}
+.gallery-upload-ico{font-size:22px;opacity:.12;margin-bottom:6px}
+.gallery-upload-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.3;margin-bottom:3px}
+.gallery-upload-sub{font-size:10px;opacity:.18}
 /* MISC */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .empty{padding:50px 0;text-align:center}
@@ -192,8 +205,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <span class="tb-sync" id="syncStatus">&mdash;</span>
     </div>
     <div class="tb-nav">
-      <button class="tb-tab active" data-tab="upload" onclick="switchTab('upload')">Upload</button>
-      <button class="tb-tab" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
+      <button class="tb-tab active" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
       <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
       <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
       <button class="tb-tab" data-tab="lightroom" onclick="switchTab('lightroom')">Lightroom</button>
@@ -513,7 +525,7 @@ async function init(){
   Object.assign(CF_PHOTOS,STATE.cf.assetMeta);
   try{const cfgRes=await fetch("/api/images/config");const cfg=await cfgRes.json();if(cfg.hash){TIA.CF_HASH=cfg.hash;STATE.cf.hash=cfg.hash;}}catch{}
   setSyncStatus("ok","Synced");
-  renderSidebar();handleOAuthReturn();switchTab("upload");
+  renderSidebar();handleOAuthReturn();switchTab("galleries");
 }
 
 // SAVE
@@ -545,7 +557,10 @@ function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
   document.getElementById("sidebar").style.display=["galleries","settings"].includes(tab)?"":"none";
-  if(tab==="upload")showUploadPanel();
+  if(tab==="galleries"){
+    if(activeView)showSeriesView(activeView);
+    else{const first=getSeries()[0];if(first){setView(first.id);}else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}}
+  }
   else if(tab==="lightroom")showLightroomPanel();
   else if(tab==="homepage")showHomeSlots();
   else if(tab==="portfolio")showPortfolioSlots();
@@ -566,87 +581,23 @@ function setPanel(eye,title,acts=""){
   document.getElementById("phActs").innerHTML=acts;
 }
 
-// UPLOAD PANEL (Cloudinary) - full page
-function showUploadPanel(){
-  document.getElementById("phEye").textContent="";
-  document.getElementById("phTitle").textContent="";
-  document.getElementById("phActs").innerHTML="";
-  document.querySelector(".ph").style.display="none";
-  document.getElementById("sidebar").style.display="none";
-  const totalPhotos=Object.keys(CL_PHOTOS).length+Object.keys(LR_PHOTOS).length;
-  const series=getSeries();
-  let libraryHtml="";
-  let hasPhotos=false;
-  series.forEach(s=>{
-    const photos=getSeriesPhotos(s.id);
-    if(!photos.length)return;
-    hasPhotos=true;
-    libraryHtml+=`<div class="upload-series-section">
-      <div class="upload-series-header">
-        <span class="upload-series-title">${s.num} &mdash; ${esc(s.title)}</span>
-        <span class="upload-series-cnt">${photos.length} photo${photos.length>1?"s":""}</span>
-      </div>
-      <div class="cl-photo-grid">${photos.map(p=>`
-        <div class="cl-photo">
-          ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
-          <div class="cl-photo-lbl">${esc(p.filename)}</div>
-          <div class="cl-photo-del" onclick="event.stopPropagation();removePhotoFromSeries('${s.id}','${p.assetId}')" title="Remove from series">&times;</div>
-        </div>`).join("")}</div>
-    </div>`;
-  });
-  document.getElementById("panelBody").innerHTML=`<div class="upload-page">
-    <div class="upload-top">
-      <div class="upload-top-row">
-        <div class="upload-top-title">Photo Library</div>
-        <div class="upload-top-stats">${totalPhotos} photo${totalPhotos!==1?"s":""} across ${series.length} series</div>
-      </div>
-      <div class="upload-controls">
-        <div class="upload-series-pick">
-          <span class="field-lbl">Upload to series</span>
-          <select class="input" id="clTargetSeries">
-            ${series.map(s=>`<option value="${s.id}">${s.num} &mdash; ${s.title}</option>`).join("")}
-          </select>
-        </div>
-        <div class="upload-zone" id="uploadZone"
-          onclick="document.getElementById('uploadInput').click()"
-          ondragover="event.preventDefault();this.classList.add('drag')"
-          ondragleave="this.classList.remove('drag')"
-          ondrop="event.preventDefault();this.classList.remove('drag');handleUploadFiles(event.dataTransfer.files)">
-          <div class="upload-zone-ico">&#x2191;</div>
-          <div class="upload-zone-lbl">Drop photos here or click to browse</div>
-          <div class="upload-zone-sub">JPG, PNG, WebP &mdash; up to 10MB each</div>
-        </div>
-        <input type="file" id="uploadInput" multiple accept="image/*" style="display:none" onchange="handleUploadFiles(this.files)">
-      </div>
-      <div class="upload-progress" id="uploadProgress"></div>
-    </div>
-    <div class="upload-bottom">
-      ${hasPhotos?libraryHtml:`<div class="upload-empty"><div class="upload-empty-ico">&#x1f5bc;</div><div class="upload-empty-lbl">No photos yet &mdash; upload above to get started</div></div>`}
-    </div>
-  </div>`;
-}
-
 function removePhotoFromSeries(sid,pid){
   if(!STATE.photos[sid])return;
   STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==pid);
-  renderSidebar();showUploadPanel();
+  renderSidebar();showSeriesView(sid);
   toast("Photo removed from series");
 }
 
-async function handleUploadFiles(files){
-  const sid=document.getElementById("clTargetSeries")?.value;
-  if(!sid)return toast("Select a series first",true);
+async function handleUploadFiles(files,sid){
+  if(!sid)return toast("No series selected",true);
   const progress=document.getElementById("uploadProgress");
   if(!STATE.photos[sid])STATE.photos[sid]=[];
-  if(!STATE.cl)STATE.cl={};
-  if(!STATE.cl.assetMeta)STATE.cl.assetMeta={};
   let uploaded=0;
   const total=Array.from(files).filter(f=>f.type.startsWith("image/")).length;
   if(!total)return toast("No image files selected",true);
-  if(progress)progress.innerHTML=`<div class="upload-item"><span class="upload-item-name">Preparing ${total} file${total>1?"s":""}...</span><span class="upload-item-status busy">0 / ${total}</span></div><div class="upload-bar"><div class="upload-bar-fill" id="uploadBarFill"></div></div>`;
+  if(progress)progress.innerHTML=`<div class="upload-item"><span class="upload-item-name">Uploading ${total} file${total>1?"s":""}...</span><span class="upload-item-status busy">0 / ${total}</span></div><div class="upload-bar"><div class="upload-bar-fill" id="uploadBarFill"></div></div>`;
   for(const file of files){
     if(!file.type.startsWith("image/"))continue;
-    const itemId="up-"+Date.now()+"-"+uploaded;
     try{
       const fd=new FormData();
       fd.append("file",file);
@@ -655,6 +606,7 @@ async function handleUploadFiles(files){
       const data=await res.json();
       const cfId=data.id;
       const meta={id:cfId,filename:data.filename||file.name};
+      if(data.exif&&Object.keys(data.exif).length>0)meta.exif=data.exif;
       if(!STATE.cf)STATE.cf={assetMeta:{}};
       if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
       STATE.cf.assetMeta[cfId]=meta;
@@ -673,7 +625,7 @@ async function handleUploadFiles(files){
   }
   if(uploaded>0){
     renderSidebar();
-    setTimeout(()=>showUploadPanel(),1500);
+    setTimeout(()=>showSeriesView(sid),1500);
     toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded - Save & Publish to go live");
   }
 }
@@ -865,22 +817,49 @@ async function lrImport(){
 }
 
 // SERIES VIEW
+function formatExposure(t){if(!t)return"";if(t>=1)return t+"s";const d=Math.round(1/t);return"1/"+d;}
+function exifTags(aid){
+  const meta=CF_PHOTOS[aid]||STATE.cf?.assetMeta?.[aid];
+  if(!meta?.exif)return"";
+  const e=meta.exif;const tags=[];
+  if(e.make&&e.model){const m=e.model.startsWith(e.make)?e.model:`${e.make} ${e.model}`;tags.push(m);}
+  else if(e.model)tags.push(e.model);
+  if(e.lens)tags.push(e.lens);
+  if(e.focalLength)tags.push(Math.round(e.focalLength)+"mm");
+  if(e.fNumber)tags.push("f/"+e.fNumber);
+  if(e.exposureTime)tags.push(formatExposure(e.exposureTime));
+  if(e.iso)tags.push("ISO "+e.iso);
+  if(e.dateTime){try{const d=new Date(e.dateTime);tags.push(d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}));}catch{}}
+  return tags.map(t=>`<span>${esc(t)}</span>`).join("");
+}
 function showSeriesView(sid){
   const s=getSeries().find(x=>x.id===sid);
   const photos=getSeriesPhotos(sid);
   const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick=\"switchTab('upload')\">+ Upload Photos</button>");
+  setPanel("Series "+s?.num,s?.title||sid,"");
   let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
     <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
     <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
     <div style="grid-column:span 2"><span class="field-lbl">Description</span>
       <textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)">${esc(s?.description||"")}</textarea></div></div>`;
+  html+=`<div class="gallery-upload" id="galleryUpload"
+    onclick="document.getElementById('galleryUploadInput').click()"
+    ondragover="event.preventDefault();this.classList.add('drag')"
+    ondragleave="this.classList.remove('drag')"
+    ondrop="event.preventDefault();this.classList.remove('drag');handleUploadFiles(event.dataTransfer.files,'${sid}')">
+    <div class="gallery-upload-ico">&#x2191;</div>
+    <div class="gallery-upload-lbl">Drop photos here or click to browse</div>
+    <div class="gallery-upload-sub">JPG, PNG, WebP &mdash; up to 20MB each &mdash; EXIF data will be read automatically</div>
+  </div>
+  <input type="file" id="galleryUploadInput" multiple accept="image/*" style="display:none" onchange="handleUploadFiles(this.files,'${sid}')">
+  <div id="uploadProgress"></div>`;
   if(!photos.length){
-    html+="<div class='empty'><p>No photos yet - use Upload tab to add photos</p></div>";
+    html+="<div class='empty'><p>No photos yet &mdash; drop files above to add photos</p></div>";
   }else{
-    html+=`<div class="sec-lbl"><span>${photos.length} photos &mdash; click Cover to set the cover image</span></div><div class="pg">`;
+    html+=`<div class="sec-lbl"><span>${photos.length} photo${photos.length!==1?"s":""} &mdash; click to set cover or remove</span></div><div class="pg">`;
     photos.forEach(p=>{
       const isCover=p.assetId===cover;
+      const exif=exifTags(p.assetId);
       html+=`<div class="pc ${isCover?"cover":""}">
         ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
         ${isCover?`<div class="pc-badge cover">Cover</div>`:""}
@@ -888,7 +867,7 @@ function showSeriesView(sid){
           <button class="pc-btn" onclick="setCover('${sid}','${p.assetId}')">Cover</button>
           <button class="pc-btn" onclick="removePhoto('${sid}','${p.assetId}')">Remove</button>
         </div>
-        <div class="pc-lbl">${p.filename}</div></div>`;
+        <div class="pc-info"><div class="pc-name">${esc(p.filename)}</div>${exif?`<div class="pc-exif">${exif}</div>`:""}</div></div>`;
     });
     html+="</div>";
   }
@@ -915,8 +894,7 @@ function showHomeSlots(){setPanel("Homepage","Photo Assignments","");document.ge
 function showPortfolioSlots(){setPanel("Portfolio","Featured Work Covers","");document.getElementById("panelBody").innerHTML=`<div class="slots">${PF_SLOTS.map(s=>slotCard(s.id,s.label,"portfolio")).join("")}</div>`;}
 function slotCard(slotId,label,ctx){
   const aid=ctx==="home"?STATE.home?.[slotId]:STATE.portfolio?.[slotId];
-  const meta=aid?(LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]):null;
-  const thumb=meta?.urlThumb||"";
+  const thumb=aid?TIA.photoUrl(aid,"thumb"):"";
   const filled=!!thumb;
   return`<div class="slot ${filled?"filled":""}" onclick="openPicker('${slotId}','${ctx}','${esc(label)}')">
     ${filled?`<img class="slot-img" src="${thumb}" alt="">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">No photo assigned</div></div>`}
@@ -928,9 +906,9 @@ function showSettingsPanel(){
   setPanel("Settings","Gallery Names & Descriptions","");
   document.getElementById("panelBody").innerHTML=`<div class="settings-grid">${getSeries().map(s=>{
     const coverAid=STATE.series?.[s.id]?.coverAssetId;
-    const meta=coverAid?(LR_PHOTOS[coverAid]||STATE.lr?.assetMeta?.[coverAid]):null;
+    const coverThumb=coverAid?TIA.photoUrl(coverAid,"thumb"):"";
     return`<div class="card">
-      ${meta?.urlThumb?`<img src="${meta.urlThumb}" style="width:100%;aspect-ratio:16/7;object-fit:cover;display:block;margin-bottom:12px">`:
+      ${coverThumb?`<img src="${coverThumb}" style="width:100%;aspect-ratio:16/7;object-fit:cover;display:block;margin-bottom:12px">`:
         `<div style="width:100%;aspect-ratio:16/7;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2">No cover</div>`}
       <span class="field-lbl">Series ${s.num} Title</span>
       <input class="input" style="margin-bottom:10px" value="${esc(s.title)}" oninput="updateSeries('${s.id}','title',this.value)">
