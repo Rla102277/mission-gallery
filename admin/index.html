@@ -592,10 +592,48 @@ function setSyncStatus(s,l){const e=document.getElementById("syncStatus");if(e){
 
 // SIDEBAR
 function renderSidebar(){
-  document.getElementById("seriesList").innerHTML=getSeries().map(s=>{
+  const series=getSeries();
+  let html=series.map(s=>{
     const cnt=(STATE.photos?.[s.id]||[]).length;
-    return`<button class="sb-item ${activeView===s.id?"active":""}" data-view="${s.id}" onclick="setView('${s.id}')"><span class="sb-num">${s.num}</span><span class="sb-name">${s.title}</span><span class="sb-cnt ${cnt>0?"has":""}">${cnt||""}</span></button>`;
+    return`<button class="sb-item ${activeView===s.id?"active":""}" data-view="${s.id}" onclick="setView('${s.id}')"><span class="sb-num">${s.num||"—"}</span><span class="sb-name">${s.title}</span><span class="sb-cnt ${cnt>0?"has":""}">${cnt||""}</span></button>`;
   }).join("");
+  html+=`<button class="sb-item" onclick="createNewGallery()" style="opacity:.4;border-top:1px solid var(--border);margin-top:6px;padding-top:10px"><span class="sb-num">+</span><span class="sb-name">New Gallery</span></button>`;
+  document.getElementById("seriesList").innerHTML=html;
+}
+
+function createNewGallery(){
+  const title=prompt("New gallery title:");
+  if(!title||!title.trim())return;
+  const id="g-"+Date.now();
+  const series=getSeries();
+  const num=String(series.length+1).padStart(2,"0");
+  if(!STATE.series)STATE.series={};
+  STATE.series[id]={title:title.trim(),num,subtitle:"",description:"",type:"Series",camera:"",location:""};
+  if(!STATE.photos)STATE.photos={};
+  STATE.photos[id]=[];
+  renderSidebar();
+  setView(id);
+  toast("Gallery '"+title.trim()+"' created — Save & Publish to go live");
+}
+
+function deleteGallery(sid){
+  const s=getSeries().find(x=>x.id===sid);
+  if(!s)return;
+  const isDefault=TIA.DEFAULT_SERIES.find(d=>d.id===sid);
+  if(isDefault)return toast("Default galleries can't be deleted",true);
+  if(!confirm("Delete gallery '"+s.title+"'? This removes the gallery and its photo assignments (photos stay in Cloudflare)."))return;
+  delete STATE.series[sid];
+  delete STATE.photos[sid];
+  Object.keys(STATE.portfolio||{}).forEach(k=>{
+    if(k==="pf-"+sid)delete STATE.portfolio[k];
+  });
+  if(STATE.portfolioEntries){
+    STATE.portfolioEntries=STATE.portfolioEntries.filter(e=>e.seriesId!==sid);
+  }
+  activeView=null;
+  renderSidebar();
+  switchTab("galleries");
+  toast("Gallery deleted — Save & Publish to apply");
 }
 
 // ROUTING
@@ -696,10 +734,15 @@ function showSeriesView(sid){
   const s=getSeries().find(x=>x.id===sid);
   const photos=getSeriesPhotos(sid);
   const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-  setPanel("Series "+s?.num,s?.title||sid,"");
+  const isCustom=!TIA.DEFAULT_SERIES.find(d=>d.id===sid);
+  setPanel("Series "+(s?.num||"—"),s?.title||sid,isCustom?`<button class="btn red" onclick="deleteGallery('${sid}')" data-testid="btn-delete-gallery">Delete Gallery</button>`:"");
   let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
     <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
     <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
+    <div><span class="field-lbl">Type</span><input class="input" value="${esc(s?.type||"")}" placeholder="e.g. Triptych, Diptych, Series" oninput="updateSeries('${sid}','type',this.value)"></div>
+    <div><span class="field-lbl">Number</span><input class="input" value="${esc(s?.num||"")}" placeholder="e.g. 09" oninput="updateSeries('${sid}','num',this.value)"></div>
+    <div><span class="field-lbl">Camera</span><input class="input" value="${esc(s?.camera||"")}" placeholder="e.g. GFX 100S II" oninput="updateSeries('${sid}','camera',this.value)"></div>
+    <div><span class="field-lbl">Location</span><input class="input" value="${esc(s?.location||"")}" placeholder="e.g. Iceland" oninput="updateSeries('${sid}','location',this.value)"></div>
     <div style="grid-column:span 2"><span class="field-lbl">Description</span>
       <textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)">${esc(s?.description||"")}</textarea></div></div>`;
   html+=`<div class="gallery-upload" id="galleryUpload"
@@ -745,13 +788,38 @@ const HOME_SLOTS=[
   {id:"qrow2",label:"Quote Row 2"},{id:"qrow3",label:"Quote Row 3"},
   {id:"qrow4",label:"Quote Row 4"},{id:"portrait",label:"Contact Portrait"},
 ];
-const PF_SLOTS=[
-  {id:"pf-s1",label:"Featured 1 - Solitude & Scale"},{id:"pf-s3",label:"Featured 2 - Blue Trilogy"},
-  {id:"pf-s2",label:"Featured 3 - Glacial Contrasts"},{id:"pf-s5",label:"Featured 4 - Human Element"},
-  {id:"pf-s7",label:"Featured 5 - Peninsular Panorama"},
-];
+function getPortfolioEntries(){
+  if(!STATE.portfolioEntries||!STATE.portfolioEntries.length){
+    STATE.portfolioEntries=[
+      {id:"pf-s1",seriesId:"s1",title:"Solitude & Scale",subtitle:"The Secret Lagoon — three frames that ask the same question from different distances",type:"Triptych",description:"A progression from immensity to intimacy. B&W to warm color to golden signature. Fjallsárlón at dusk, before the other photographers arrived."},
+      {id:"pf-s3",seriesId:"s3",title:"Blue Trilogy",subtitle:"The impossible blues of Iceland ice",type:"Triptych",description:"This blue does not exist in nature. And yet here it is. Three images, three environments, one color: the ancient compressed blue of glacial ice."},
+      {id:"pf-s2",seriesId:"s2",title:"Glacial Contrasts",subtitle:"Ice in two realms — floating serenity versus grounded drama",type:"Diptych",description:"Same glacial ice. Two states. The ice doesn't change — only the relationship between ice and ground."},
+      {id:"pf-s5",seriesId:"s5",title:"The Human Element",subtitle:"Presence at the edge of the world",type:"Diptych",description:"The landscape doesn't need us. That's the point. Humans enter the frame as scale."},
+      {id:"pf-s7",seriesId:"s7",title:"Peninsular Panorama",subtitle:"Snæfellsnes in three moods",type:"Triptych",description:"Three visits to the same peninsula. Three different versions of the same place."},
+    ];
+  }
+  return STATE.portfolioEntries;
+}
 function showHomeSlots(){setPanel("Homepage","Photo Assignments","");document.getElementById("panelBody").innerHTML=`<div class="slots">${HOME_SLOTS.map(s=>slotCard(s.id,s.label,"home")).join("")}</div>`;}
-function showPortfolioSlots(){setPanel("Portfolio","Featured Work Covers","");document.getElementById("panelBody").innerHTML=`<div class="slots">${PF_SLOTS.map(s=>slotCard(s.id,s.label,"portfolio")).join("")}</div>`;}
+function showPortfolioSlots(){
+  setPanel("Portfolio","Featured Work","<button class='btn pri' onclick='addPortfolioEntry()'>+ Add Featured Work</button>");
+  const entries=getPortfolioEntries();
+  let html=`<div class="slots">${entries.map((e,i)=>{
+    const aid=STATE.portfolio?.[e.id];
+    const thumb=aid?TIA.photoUrl(aid,"thumb"):"";
+    const filled=!!thumb;
+    return`<div class="slot ${filled?"filled":""}" style="cursor:default">
+      ${filled?`<img class="slot-img" src="${thumb}" alt="">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">No cover photo</div></div>`}
+      <div class="slot-label">${esc(e.title)}</div>
+      <div style="display:flex;gap:4px;margin-top:6px">
+        <button class="btn" onclick="openPicker('${e.id}','portfolio','${esc(e.title)}')">Set Cover</button>
+        <button class="btn" onclick="editPortfolioEntry(${i})">Edit</button>
+        <button class="btn red" onclick="removePortfolioEntry(${i})">Remove</button>
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+  document.getElementById("panelBody").innerHTML=html;
+}
 function slotCard(slotId,label,ctx){
   const aid=ctx==="home"?STATE.home?.[slotId]:STATE.portfolio?.[slotId];
   const thumb=aid?TIA.photoUrl(aid,"thumb"):"";
@@ -759,6 +827,59 @@ function slotCard(slotId,label,ctx){
   return`<div class="slot ${filled?"filled":""}" onclick="openPicker('${slotId}','${ctx}','${esc(label)}')">
     ${filled?`<img class="slot-img" src="${thumb}" alt="">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">No photo assigned</div></div>`}
     <div class="slot-info"><span class="slot-name">${label}</span><span class="slot-act">${filled?"Set - click to change":"Click to assign"}</span></div></div>`;
+}
+
+function addPortfolioEntry(){
+  const title=prompt("Featured work title:");
+  if(!title||!title.trim())return;
+  const entries=getPortfolioEntries();
+  const id="pf-"+Date.now();
+  const series=getSeries();
+  const seriesOpts=series.map(s=>s.num+" — "+s.title+" ("+s.id+")").join("\n");
+  const seriesChoice=prompt("Link to gallery? Enter gallery number or leave blank:\n"+seriesOpts);
+  let seriesId="";
+  if(seriesChoice){
+    const match=series.find(s=>s.num===seriesChoice.trim()||s.id===seriesChoice.trim()||s.title.toLowerCase()===seriesChoice.trim().toLowerCase());
+    if(match)seriesId=match.id;
+  }
+  entries.push({id,seriesId,title:title.trim(),subtitle:"",type:"Series",description:""});
+  showPortfolioSlots();
+  toast("Portfolio entry added — set a cover photo and Save & Publish");
+}
+function editPortfolioEntry(idx){
+  const entries=getPortfolioEntries();
+  const e=entries[idx];
+  if(!e)return;
+  const title=prompt("Title:",e.title);if(title===null)return;
+  const subtitle=prompt("Subtitle:",e.subtitle);if(subtitle===null)return;
+  const type=prompt("Type (e.g. Triptych, Diptych, Series):",e.type);if(type===null)return;
+  const description=prompt("Description:",e.description);if(description===null)return;
+  const series=getSeries();
+  const currentName=e.seriesId?series.find(s=>s.id===e.seriesId)?.title||e.seriesId:"none";
+  const seriesChoice=prompt("Linked gallery (current: "+currentName+").\nEnter gallery number, ID, or leave blank to unlink:",e.seriesId||"");
+  if(seriesChoice!==null){
+    if(!seriesChoice.trim())e.seriesId="";
+    else{
+      const match=series.find(s=>s.num===seriesChoice.trim()||s.id===seriesChoice.trim()||s.title.toLowerCase()===seriesChoice.trim().toLowerCase());
+      if(match)e.seriesId=match.id;
+    }
+  }
+  e.title=title.trim()||e.title;
+  e.subtitle=subtitle.trim();
+  e.type=type.trim()||e.type;
+  e.description=description.trim();
+  showPortfolioSlots();
+  toast("Portfolio entry updated");
+}
+function removePortfolioEntry(idx){
+  const entries=getPortfolioEntries();
+  if(!entries[idx])return;
+  if(!confirm("Remove '"+entries[idx].title+"' from portfolio?"))return;
+  const id=entries[idx].id;
+  entries.splice(idx,1);
+  if(STATE.portfolio)delete STATE.portfolio[id];
+  showPortfolioSlots();
+  toast("Portfolio entry removed");
 }
 
 // SETTINGS

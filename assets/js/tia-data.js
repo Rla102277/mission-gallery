@@ -142,7 +142,10 @@ const TIA = {
   // ── Series helpers ─────────────────────────────────────────
   getSeries() {
     const state = TIA.getState();
-    return TIA.DEFAULT_SERIES.map(s => ({ ...s, ...(state.series?.[s.id] || {}) }));
+    const defaults = TIA.DEFAULT_SERIES.map(s => ({ ...s, ...(state.series?.[s.id] || {}) }));
+    const customIds = Object.keys(state.series || {}).filter(id => !TIA.DEFAULT_SERIES.find(d => d.id === id));
+    const custom = customIds.map(id => ({ id, ...state.series[id] })).filter(s => s.title);
+    return [...defaults, ...custom];
   },
 
   getPhotos(seriesId) {
