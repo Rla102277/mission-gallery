@@ -37,6 +37,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_IMAGES_TOKEN = process.env.CF_IMAGES_TOKEN;
 const CF_IMAGES_HASH = process.env.CF_IMAGES_HASH;
+var CF_HASH = CF_IMAGES_HASH;
 
 function extractExif(buffer) {
   try {
@@ -104,7 +105,7 @@ app.get("/api/images/list", async function(req, res) {
 });
 
 app.get("/api/images/config", function(req, res) {
-  res.json({ hash: CF_HASH, accountId: CF_ACCOUNT_ID ? "configured" : "missing" });
+  res.json({ hash: CF_HASH || "", accountId: CF_ACCOUNT_ID ? "configured" : "missing" });
 });
 
 app.post("/api/images/upload", upload.single("file"), async function(req, res) {
@@ -149,10 +150,6 @@ app.delete("/api/images/:id", async function(req, res) {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-app.get("/api/images/config", function(req, res) {
-  res.json({ hash: CF_IMAGES_HASH || "" });
 });
 
 app.use(express.static(path.join(__dirname, "public")));
