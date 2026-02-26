@@ -23,6 +23,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .auth-field label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
 .auth-field input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
 .auth-btn{width:100%;margin-top:20px;padding:12px;background:var(--sage);border:none;color:var(--cream);font-size:9px;letter-spacing:5px;text-transform:uppercase;cursor:pointer}
+.auth-note{font-size:10px;line-height:1.6;color:var(--muted);margin-top:10px}
 .auth-err{color:var(--red);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:10px;display:none}
 .auth-err.show{display:block}
 /* SHELL */
@@ -143,10 +144,14 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 <div id="authScreen">
   <div class="auth-box">
     <span class="auth-logo">The Infinite Arch &middot; Admin</span>
-    <h1 class="auth-h">Photo Manager</h1>
-    <div class="auth-field"><label>Access Code</label><input type="password" id="authPass" autocomplete="off" autofocus onkeydown="if(event.key==='Enter')doLogin()" placeholder="Enter access code"></div>
-    <button class="auth-btn" onclick="doLogin()">Enter</button>
-    <div class="auth-err" id="authErr">Incorrect code</div>
+    <h1 class="auth-h">Admin Sign In</h1>
+    <div class="auth-field">
+      <label>Backend API URL</label>
+      <input type="text" id="backendUrl" autocomplete="off" placeholder="https://your-backend-url.com/api">
+    </div>
+    <button class="auth-btn" onclick="startGoogleLogin()">Continue with Google</button>
+    <p class="auth-note">Set your backend API URL once, then authenticate with Google.</p>
+    <div class="auth-err" id="authErr">Authentication failed</div>
   </div>
 </div>
 
@@ -366,31 +371,113 @@ const TIA = {
 
 
 // AUTH
-// AUTH
-let authed = sessionStorage.getItem("tia_auth") === "1";
+const AUTH_TOKEN_KEY = "tia_auth_token";
+const API_BASE_KEY = "tia_api_base";
 
-function doLogin() {
-  const p = document.getElementById("authPass").value;
-  // PIN: tia2026
-  if (p === "tia2026") {
-    sessionStorage.setItem("tia_auth","1");
-    authed = true;
-    document.getElementById("authScreen").style.display = "none";
-    document.getElementById("app").classList.add("show");
-    init();
-  } else {
-    document.getElementById("authErr").classList.add("show");
-    document.getElementById("authPass").value = "";
-    document.getElementById("authPass").focus();
+const normalizeApiBase = (url) => {
+  const trimmed = (url || "").trim();
+  if (!trimmed) return "";
+  const noSlash = trimmed.replace(/\/$/, "");
+  return noSlash.endsWith("/api") ? noSlash : `${noSlash}/api`;
+};
+
+const getApiBase = () => {
+  const saved = localStorage.getItem(API_BASE_KEY) || "";
+  const normalizedSaved = normalizeApiBase(saved);
+  if (normalizedSaved) return normalizedSaved;
+  return normalizeApiBase(`${window.location.origin}/api`);
+};
+
+const getAuthBase = () => {
+  const apiBase = getApiBase();
+  return apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
+};
+
+const setAuthError = (message = "") => {
+  const el = document.getElementById("authErr");
+  if (!el) return;
+  if (!message) {
+    el.textContent = "";
+    el.classList.remove("show");
+    return;
+  }
+  el.textContent = message;
+  el.classList.add("show");
+};
+
+const showAdminApp = () => {
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("app").classList.add("show");
+};
+
+async function verifyTokenAndEnter() {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (!token) return false;
+
+  try {
+    const response = await fetch(`${getAuthBase()}/auth/user`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error("Invalid token");
+
+    showAdminApp();
+    return true;
+  } catch (error) {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    setAuthError("Session expired. Please sign in again.");
+    return false;
   }
 }
 
-function doLogout() { sessionStorage.removeItem("tia_auth"); location.reload(); }
+async function startGoogleLogin() {
+  const input = document.getElementById("backendUrl");
+  const enteredApiBase = normalizeApiBase(input?.value || "");
 
-if (authed) {
-  document.getElementById("authScreen").style.display = "none";
-  document.getElementById("app").classList.add("show");
+  if (!enteredApiBase) {
+    setAuthError("Enter your backend API URL first.");
+    return;
+  }
+
+  localStorage.setItem(API_BASE_KEY, enteredApiBase);
+  setAuthError("");
+
+  try {
+    const health = await fetch(`${enteredApiBase}/health`, { credentials: "include" });
+    if (!health.ok) throw new Error("Backend health check failed");
+  } catch (error) {
+    setAuthError("Cannot reach backend. Verify URL and CORS settings.");
+    return;
+  }
+
+  const authUrl = `${getAuthBase()}/auth/google?returnTo=/admin/`;
+  window.location.href = authUrl;
 }
+
+function doLogout() {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  sessionStorage.removeItem("lr_oauth");
+  window.location.reload();
+}
+
+const tokenFromUrl = new URLSearchParams(window.location.search).get("token");
+if (tokenFromUrl) {
+  localStorage.setItem(AUTH_TOKEN_KEY, tokenFromUrl);
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+const backendInput = document.getElementById("backendUrl");
+if (backendInput) {
+  backendInput.value = getApiBase();
+}
+
+(async function bootstrapAuth() {
+  const isAuthed = await verifyTokenAndEnter();
+  if (isAuthed) {
+    init();
+  }
+})();
 
 // STATE
 let STATE={};

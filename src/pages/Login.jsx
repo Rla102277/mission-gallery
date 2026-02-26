@@ -1,18 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, authError, backendHealthy, checkBackendHealth, apiBaseUrl, authBaseUrl } = useAuth();
   const navigate = useNavigate();
+  const [isCheckingBackend, setIsCheckingBackend] = useState(false);
 
   useEffect(() => {
     if (user) navigate('/admin');
   }, [user, navigate]);
 
+  const handleRetryBackendCheck = async () => {
+    setIsCheckingBackend(true);
+    await checkBackendHealth();
+    setIsCheckingBackend(false);
+  };
+
+  const backendStateLabel = backendHealthy === null
+    ? 'Checking backend...'
+    : backendHealthy
+      ? 'Backend connected'
+      : 'Backend unreachable';
+
+  const backendStateColor = backendHealthy
+    ? 'rgba(118, 191, 129, 0.95)'
+    : 'rgba(222, 111, 111, 0.95)';
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 360, textAlign: 'center' }}>
+      <div style={{ width: 420, maxWidth: '92vw', textAlign: 'center' }}>
         {/* Wordmark */}
         <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', marginBottom: 52 }}>
           <div style={{ width: 1, height: 48, background: 'rgba(245,240,232,0.15)', marginBottom: 24 }} />
@@ -22,7 +39,59 @@ export default function Login() {
           <div style={{ width: 80, height: 1, background: 'rgba(245,240,232,0.15)', marginTop: 16 }} />
         </div>
 
-        <p className="label-sm" style={{ marginBottom: 40 }}>Admin Access</p>
+        <p className="label-sm" style={{ marginBottom: 22 }}>Admin Access</p>
+
+        <div
+          style={{
+            border: `1px solid ${backendStateColor}`,
+            background: 'rgba(245,240,232,0.04)',
+            borderRadius: 10,
+            padding: '12px 14px',
+            marginBottom: 14,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            textAlign: 'left',
+          }}
+        >
+          <div>
+            <p style={{ margin: 0, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.7 }}>Connection</p>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: backendStateColor }}>{backendStateLabel}</p>
+          </div>
+          <button
+            onClick={handleRetryBackendCheck}
+            disabled={isCheckingBackend}
+            style={{
+              border: '1px solid rgba(245,240,232,0.25)',
+              background: 'transparent',
+              color: 'var(--cream)',
+              padding: '8px 10px',
+              borderRadius: 8,
+              fontSize: 11,
+              letterSpacing: 1,
+              cursor: 'pointer',
+              opacity: isCheckingBackend ? 0.5 : 0.85,
+            }}
+          >
+            {isCheckingBackend ? 'Checking' : 'Retry'}
+          </button>
+        </div>
+
+        {authError && (
+          <div
+            style={{
+              marginBottom: 14,
+              border: '1px solid rgba(222,111,111,0.75)',
+              background: 'rgba(222,111,111,0.12)',
+              borderRadius: 10,
+              padding: '12px 14px',
+              textAlign: 'left',
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.45 }}>{authError}</p>
+          </div>
+        )}
 
         <button
           onClick={login}
@@ -38,7 +107,12 @@ export default function Login() {
           Continue with Google
         </button>
 
-        <p style={{ fontSize: 11, opacity: 0.2, marginTop: 28, fontFamily: "'Cormorant Garamond', serif", letterSpacing: 1 }}>
+        <div style={{ marginTop: 22, textAlign: 'left', opacity: 0.55 }}>
+          <p style={{ fontSize: 10, margin: 0, letterSpacing: 0.8 }}>API: {apiBaseUrl || 'Same-origin /api (not configured)'}</p>
+          <p style={{ fontSize: 10, margin: '4px 0 0', letterSpacing: 0.8 }}>Auth: {authBaseUrl || 'Same-origin /auth (not configured)'}</p>
+        </div>
+
+        <p style={{ fontSize: 11, opacity: 0.25, marginTop: 16, fontFamily: "'Cormorant Garamond', serif", letterSpacing: 1 }}>
           Authorized access only
         </p>
       </div>

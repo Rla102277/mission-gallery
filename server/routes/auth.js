@@ -4,14 +4,29 @@ import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  const requestedReturnTo = typeof req.query.returnTo === 'string' ? req.query.returnTo : '';
+  const safeReturnTo = requestedReturnTo.startsWith('/') ? requestedReturnTo : '';
+
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    state: safeReturnTo,
+  })(req, res, next);
+});
 
 const defaultClientUrl = 'https://mission-gallery-app.web.app';
+const getClientUrl = () => process.env.CLIENT_URL || defaultClientUrl;
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login', session: false }),
+  passport.authenticate('google', {
+    failureRedirect: `${getClientUrl()}/login?error=oauth_failed`,
+    session: false,
+  }),
   (req, res) => {
+    const requestedReturnTo = typeof req.query.state === 'string' ? req.query.state : '';
+    const safeReturnTo = requestedReturnTo.startsWith('/') ? requestedReturnTo : '';
+
     // Create JWT token
     const token = jwt.sign(
       { 
@@ -24,7 +39,9 @@ router.get(
     );
     
     // Redirect with token in URL (will be stored in localStorage by frontend)
-    const redirectUrl = `${process.env.CLIENT_URL || defaultClientUrl}?token=${token}`;
+    const redirectBase = `${getClientUrl()}${safeReturnTo}`;
+    const joiner = redirectBase.includes('?') ? '&' : '?';
+    const redirectUrl = `${redirectBase}${joiner}token=${token}`;
     res.redirect(redirectUrl);
   }
 );
@@ -34,7 +51,7 @@ router.get('/logout', (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Logout failed' });
     }
-    res.redirect(process.env.CLIENT_URL || defaultClientUrl);
+    res.redirect(getClientUrl());
   });
 });
 

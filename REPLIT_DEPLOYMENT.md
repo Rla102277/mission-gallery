@@ -24,9 +24,13 @@ Click on "Secrets" (lock icon) in the left sidebar and add these variables:
 ```
 MONGODB_URI=mongodb+srv://your-connection-string
 SESSION_SECRET=your-random-secret-key-here
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 GROQ_API_KEY=your-groq-api-key
 ADOBE_CLIENT_ID=your-adobe-client-id
 ADOBE_CLIENT_SECRET=your-adobe-client-secret
+CLIENT_URL=https://your-repl-name.your-username.repl.co
+CALLBACK_URL=https://your-repl-name.your-username.repl.co/auth/google/callback
 ```
 
 ### Optional Variables:
@@ -37,12 +41,7 @@ ANTHROPIC_API_KEY=your-anthropic-key (if using Claude)
 TOGETHER_API_KEY=your-together-key (if using Together AI)
 ```
 
-### URLs (Replit will provide these):
-
-```
-CLIENT_URL=https://your-repl-name.your-username.repl.co
-CALLBACK_URL=https://your-repl-name.your-username.repl.co/auth/google/callback
-```
+The `CLIENT_URL` and `CALLBACK_URL` values must match your deployed frontend URL and Google OAuth redirect settings exactly.
 
 ## Step 3: MongoDB Atlas Setup
 

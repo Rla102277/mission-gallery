@@ -1,6 +1,9 @@
 import axios from 'axios';
 
 const normalizedBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const normalizedAuthBaseUrl = normalizedBaseUrl.endsWith('/api')
+  ? normalizedBaseUrl.slice(0, -4)
+  : normalizedBaseUrl;
 
 axios.defaults.withCredentials = true;
 if (normalizedBaseUrl) {
@@ -30,5 +33,18 @@ export const getApiUrl = (path = '') => {
   }
   return `${normalizedBaseUrl}${path.startsWith('/') ? path : `/${path}`}`;
 };
+
+export const getAuthUrl = (path = '') => {
+  if (!normalizedAuthBaseUrl) {
+    return path || '';
+  }
+  if (!path) {
+    return normalizedAuthBaseUrl;
+  }
+  return `${normalizedAuthBaseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
+export const getConfiguredApiBaseUrl = () => normalizedBaseUrl;
+export const getConfiguredAuthBaseUrl = () => normalizedAuthBaseUrl;
 
 export default api;
