@@ -15,7 +15,7 @@ import {
   RefreshCcw,
   Plus,
 } from 'lucide-react';
-import api from '../lib/api';
+import api, { getApiUrl } from '../lib/api';
 import { getValidLightroomAccessToken } from '../lib/lightroomAuth';
 import MentorEditSliders from './MentorEditSliders';
 import LightroomAlbumSelector from './LightroomAlbumSelector';
@@ -373,7 +373,7 @@ function MentorEditManager() {
   }, [image, edits]);
 
   const handleDownloadPreset = useCallback(() => {
-    window.location.href = '/api/mentor/preset';
+    window.location.href = getApiUrl('/api/mentor/preset');
   }, []);
 
   const currentShareUrl = session?.isPublic && session?.shareId ? `${window.location.origin}/mentor/share/${session.shareId}` : '';
