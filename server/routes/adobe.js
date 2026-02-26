@@ -29,6 +29,15 @@ const getRedirectUri = (requestedRedirectUri) => {
   return `${fallbackClientUrl}/test/lightroom`.replace('http:', 'https:');
 };
 
+// Public Adobe OAuth config (safe fields only)
+router.get('/config', (req, res) => {
+  const clientId = process.env.ADOBE_CLIENT_ID || process.env.VITE_ADOBE_CLIENT_ID || '';
+  res.json({
+    clientId,
+    configured: Boolean(clientId && process.env.ADOBE_CLIENT_SECRET),
+  });
+});
+
 // Exchange authorization code for access token
 router.post('/token', async (req, res) => {
   const { code, redirectUri: requestedRedirectUri } = req.body;
@@ -70,10 +79,12 @@ router.post('/token', async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error('Adobe token exchange error:', error.response?.data || error.message);
-    res.status(500).json({ 
-      error: 'Failed to exchange code for token',
-      details: error.response?.data 
+    const providerError = error.response?.data;
+    const providerMessage = providerError?.error_description || providerError?.error;
+    console.error('Adobe token exchange error:', providerError || error.message);
+    res.status(error.response?.status || 500).json({ 
+      error: providerMessage || 'Failed to exchange code for token',
+      details: providerError,
     });
   }
 });

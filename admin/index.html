@@ -627,8 +627,24 @@ function saveLrClientId(){
   const id=document.getElementById("lrClientId")?.value?.trim();
   if(!id)return;STATE.lr.clientId=id;saveAll();toast("Client ID saved");showLightroomPanel();
 }
-function lrAuthorize(){
-  const clientId=STATE.lr.clientId;
+async function lrAuthorize(){
+  let clientId=STATE.lr.clientId;
+
+  try{
+    const configRes=await fetch(`${getApiBase()}/adobe/config`,{credentials:"include"});
+    if(configRes.ok){
+      const config=await configRes.json();
+      if(config?.clientId){
+        clientId=config.clientId;
+        STATE.lr.clientId=clientId;
+        saveAll();
+      }
+      if(config && config.configured===false){
+        return toast("Backend Adobe credentials are not configured",true);
+      }
+    }
+  }catch{}
+
   if(!clientId)return toast("Save Client ID first",true);
   const redirectUri=location.origin+"/admin/";
   const redirect=encodeURIComponent(redirectUri);
@@ -654,7 +670,8 @@ async function handleOAuthReturn(){
 
       if(!tokenResponse.ok){
         const payload=await tokenResponse.json().catch(()=>({}));
-        throw new Error(payload?.error||"Adobe token exchange failed");
+        const providerMsg=payload?.details?.error_description||payload?.details?.error;
+        throw new Error(providerMsg||payload?.error||"Adobe token exchange failed");
       }
 
       const tokenData=await tokenResponse.json();
