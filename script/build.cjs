@@ -25,6 +25,12 @@ staticDirs.forEach(function(dir) {
   }
 });
 
+const legacyAdminSrc = path.join(rootDir, "admin");
+const legacyAdminDest = path.join(publicDir, "legacy-admin");
+if (existsSync(legacyAdminSrc)) {
+  cpSync(legacyAdminSrc, legacyAdminDest, { recursive: true });
+}
+
 const serverCode = `
 const express = require("express");
 const path = require("path");
