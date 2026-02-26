@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v5
+// TIA-DATA.JS  v6
 //
-// Photo sources: Cloudinary (primary) + Adobe Lightroom (optional)
+// Photo sources: Cloudflare Images (primary) + Cloudinary (legacy) + Lightroom (optional)
 // Config store: Cloudinary raw JSON (tia-config.json)
 //
 // Config JSON at:
@@ -13,6 +13,7 @@
 //   photos:    { s1: [ id, id, ... ] }
 //   home:      { hero: id, carousel1: id, ... }
 //   portfolio: { 'pf-s1': id, ... }
+//   cf:        { hash: 'deliveryHash', assetMeta: { cfImageId: { id, filename } } }
 //   cl:        { assetMeta: { publicId: { publicId, filename } } }
 //   lr:        { assetMeta: { assetId: { url2048, urlThumb, filename } } }
 // }
@@ -25,8 +26,18 @@ const TIA = {
   STORE_KEY:  'tia_admin',
   CONFIG_PID: 'tia/tia-config',
   CONFIG_URL: 'https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json',
+  CF_HASH:    null,
 
-  // ── Cloudinary image URL builder ──────────────────────────
+  // ── Cloudflare Images URL builder ──────────────────────────
+  cfUrl(imageId, variant) {
+    const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
+    if (!hash) return '';
+    const meta = TIA.getState().cf?.assetMeta?.[imageId];
+    if (!meta) return '';
+    return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
+  },
+
+  // ── Legacy Cloudinary URL builder ──────────────────────────
   clUrl(photoId, size) {
     const meta = TIA.getState().cl?.assetMeta?.[photoId];
     if (!meta) return '';
@@ -48,14 +59,15 @@ const TIA = {
     return meta.url2048 || meta.urlThumb || '';
   },
 
-  // ── Resolve URL — checks Cloudinary first, then Lightroom ─
+  // ── Resolve URL — checks CF Images first, then Cloudinary, then Lightroom ─
   photoUrl(id, size) {
-    return TIA.clUrl(id, size) || TIA.lrUrl(id, size);
+    const variant = size === 'thumb' ? 'thumb' : size === 'cover' ? 'cover' : size === 'hero' ? 'hero' : 'full';
+    return TIA.cfUrl(id, variant) || TIA.clUrl(id, size) || TIA.lrUrl(id, size);
   },
 
   thumb(assetId)  { return TIA.photoUrl(assetId, 'thumb');  },
   cover(assetId)  { return TIA.photoUrl(assetId, 'cover'); },
-  hero(assetId)   { return TIA.photoUrl(assetId, 'full'); },
+  hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
   // ── Series definitions ─────────────────────────────────────

@@ -245,9 +245,9 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v5
+// TIA-DATA.JS  v6
 //
-// Photo sources: Cloudinary (primary) + Adobe Lightroom (optional)
+// Photo sources: Cloudflare Images (primary) + Adobe Lightroom (optional)
 // Config store: Cloudinary raw JSON (tia-config.json)
 //
 // Config JSON at:
@@ -259,7 +259,8 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 //   photos:    { s1: [ id, id, ... ] }
 //   home:      { hero: id, carousel1: id, ... }
 //   portfolio: { 'pf-s1': id, ... }
-//   cl:        { assetMeta: { publicId: { publicId, filename } } }
+//   cf:        { hash: 'deliveryHash', assetMeta: { cfImageId: { id, filename } } }
+//   cl:        { assetMeta: { publicId: { publicId, filename } } }  // legacy Cloudinary
 //   lr:        { assetMeta: { assetId: { url2048, urlThumb, filename } } }
 // }
 // ═══════════════════════════════════════════════════════════════
@@ -271,8 +272,18 @@ const TIA = {
   STORE_KEY:  'tia_admin',
   CONFIG_PID: 'tia/tia-config',
   CONFIG_URL: 'https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json',
+  CF_HASH:    null,
 
-  // ── Cloudinary image URL builder ──────────────────────────
+  // ── Cloudflare Images URL builder ──────────────────────────
+  cfUrl(imageId, variant) {
+    const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
+    if (!hash) return '';
+    const meta = TIA.getState().cf?.assetMeta?.[imageId];
+    if (!meta) return '';
+    return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
+  },
+
+  // ── Legacy Cloudinary URL builder ──────────────────────────
   clUrl(photoId, size) {
     const meta = TIA.getState().cl?.assetMeta?.[photoId];
     if (!meta) return '';
@@ -294,14 +305,15 @@ const TIA = {
     return meta.url2048 || meta.urlThumb || '';
   },
 
-  // ── Resolve URL — checks Cloudinary first, then Lightroom ─
+  // ── Resolve URL — checks CF Images first, then Cloudinary, then Lightroom ─
   photoUrl(id, size) {
-    return TIA.clUrl(id, size) || TIA.lrUrl(id, size);
+    const variant = size === 'thumb' ? 'thumb' : size === 'cover' ? 'cover' : size === 'hero' ? 'hero' : 'full';
+    return TIA.cfUrl(id, variant) || TIA.clUrl(id, size) || TIA.lrUrl(id, size);
   },
 
   thumb(assetId)  { return TIA.photoUrl(assetId, 'thumb');  },
   cover(assetId)  { return TIA.photoUrl(assetId, 'cover'); },
-  hero(assetId)   { return TIA.photoUrl(assetId, 'full'); },
+  hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
   // ── Series definitions ─────────────────────────────────────
@@ -459,10 +471,13 @@ let STATE={};
 let activeView=null,activeTab="upload";
 let LR_PHOTOS={};
 let CL_PHOTOS={};
+let CF_PHOTOS={};
 let lrAlbums=[],lrAlbumPhotos=[],lrSelected=new Set(),lrCurrentAlbum=null;
 
 function getSeries(){return TIA.getSeries();}
 function getPhotoMeta(aid){
+  const cf=CF_PHOTOS[aid]||STATE.cf?.assetMeta?.[aid];
+  if(cf) return{filename:cf.filename||aid,thumbUrl:TIA.cfUrl(aid,'thumb'),fullUrl:TIA.cfUrl(aid,'full')};
   const cl=CL_PHOTOS[aid]||STATE.cl?.assetMeta?.[aid];
   if(cl) return{filename:cl.filename||aid,thumbUrl:TIA.clUrl(aid,'thumb'),fullUrl:TIA.clUrl(aid,'full')};
   const lr=LR_PHOTOS[aid]||STATE.lr?.assetMeta?.[aid]||{};
@@ -491,9 +506,12 @@ async function init(){
   STATE.home=STATE.home||{};STATE.portfolio=STATE.portfolio||{};
   STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
   STATE.cl=STATE.cl||{};STATE.cl.assetMeta=STATE.cl.assetMeta||{};
+  STATE.cf=STATE.cf||{};STATE.cf.assetMeta=STATE.cf.assetMeta||{};
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
   Object.assign(CL_PHOTOS,STATE.cl.assetMeta);
+  Object.assign(CF_PHOTOS,STATE.cf.assetMeta);
+  try{const cfgRes=await fetch("/api/images/config");const cfg=await cfgRes.json();if(cfg.hash){TIA.CF_HASH=cfg.hash;STATE.cf.hash=cfg.hash;}}catch{}
   setSyncStatus("ok","Synced");
   renderSidebar();handleOAuthReturn();switchTab("upload");
 }
@@ -504,6 +522,8 @@ async function saveAll(){
   try{
     STATE.lr.assetMeta={...STATE.lr.assetMeta,...LR_PHOTOS};
     STATE.cl.assetMeta={...STATE.cl.assetMeta,...CL_PHOTOS};
+    STATE.cf.assetMeta={...STATE.cf.assetMeta,...CF_PHOTOS};
+    if(TIA.CF_HASH)STATE.cf.hash=TIA.CF_HASH;
     await TIA.save(STATE);
     setSyncStatus("ok","Published");toast("Saved & published");
   }catch(err){setSyncStatus("err","Failed");toast("Save failed: "+err.message,true);}
@@ -630,16 +650,16 @@ async function handleUploadFiles(files){
     try{
       const fd=new FormData();
       fd.append("file",file);
-      fd.append("upload_preset",TIA.PRESET);
-      fd.append("folder",TIA.FOLDER);
-      const res=await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/image/upload`,{method:"POST",body:fd});
-      if(!res.ok){const errText=await res.text();throw new Error("Upload failed: "+errText);}
+      const res=await fetch("/api/images/upload",{method:"POST",body:fd});
+      if(!res.ok){const errData=await res.json().catch(()=>({}));throw new Error(errData.error||"Upload failed: "+res.status);}
       const data=await res.json();
-      const pid=data.public_id;
-      const meta={publicId:pid,filename:file.name};
-      STATE.cl.assetMeta[pid]=meta;
-      CL_PHOTOS[pid]=meta;
-      if(!STATE.photos[sid].includes(pid))STATE.photos[sid].push(pid);
+      const cfId=data.id;
+      const meta={id:cfId,filename:data.filename||file.name};
+      if(!STATE.cf)STATE.cf={assetMeta:{}};
+      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+      STATE.cf.assetMeta[cfId]=meta;
+      CF_PHOTOS[cfId]=meta;
+      if(!STATE.photos[sid].includes(cfId))STATE.photos[sid].push(cfId);
       uploaded++;
       const bar=document.getElementById("uploadBarFill");
       if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";

@@ -47,3 +47,4 @@ integrations = ["github:1.0.0"]
 
 [userenv.shared]
 CF_ACCOUNT_ID = "778675cc50c655951ecb0f473db94337"
+CF_IMAGES_HASH = "W2O7t84FW9eAHociDpBWSg"
