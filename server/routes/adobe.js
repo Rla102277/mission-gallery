@@ -17,7 +17,11 @@ const getRedirectUri = (requestedRedirectUri) => {
     try {
       const parsed = new URL(requestedRedirectUri.trim());
       const isAllowedOrigin = allowedRedirectOrigins.includes(parsed.origin);
-      const isAllowedPath = parsed.pathname === '/test/lightroom' || parsed.pathname === '/admin' || parsed.pathname === '/admin/';
+      const isAllowedPath = parsed.pathname === '/test/lightroom' || 
+                           parsed.pathname === '/admin' || 
+                           parsed.pathname === '/admin/' ||
+                           parsed.pathname === '/legacy-admin' ||
+                           parsed.pathname === '/legacy-admin/';
       if (isAllowedOrigin && isAllowedPath) {
         return parsed.toString();
       }

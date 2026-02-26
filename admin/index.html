@@ -657,7 +657,7 @@ async function lrAuthorize(){
   }catch{}
 
   if(!clientId)return toast("Save Client ID first",true);
-  const redirectUri=location.origin+"/admin/";
+  const redirectUri=location.origin+"/legacy-admin/";
   const redirect=encodeURIComponent(redirectUri);
   const scope=encodeURIComponent("openid AdobeID lr_partner_apis lr_partner_rendition_apis");
   sessionStorage.setItem("lr_oauth","1");
@@ -675,7 +675,7 @@ async function handleOAuthReturn(){
         credentials:"include",
         body:JSON.stringify({
           code:authCode,
-          redirectUri:location.origin+"/admin/",
+          redirectUri:location.origin+"/legacy-admin/",
         }),
       });
 
