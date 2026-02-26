@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Infinite Arch — Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --ink:#0d0d0d; --cream:#f5f0e8; --sage-light:#e8e6e0; --sage-bg:#3d4039;
+      --gold:#c9a227; --max:1400px; --ease:cubic-bezier(0.25,0.1,0.25,1);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--sage-light); color:var(--ink); font-family:'Cormorant Garamond',Georgia,serif; font-weight:400; line-height:1.75; overflow-x:hidden; }
+    a { color:inherit; text-decoration:none; }
+
+    /* ── NAV ── */
+    nav { position:fixed; top:0; left:0; right:0; z-index:500; display:flex; align-items:center; justify-content:space-between; padding:20px 48px; background:rgba(232,230,224,0.93); backdrop-filter:blur(12px); border-bottom:1px solid rgba(0,0,0,0.06); }
+    .nav-mark { display:flex; flex-direction:column; align-items:flex-start; }
+    .nm-hr { display:block; width:60px; height:2px; background:var(--ink); margin-bottom:1px; }
+    .nm-thin { display:block; width:60px; height:1px; background:var(--ink); opacity:0.2; margin-bottom:2px; }
+    .nm-the { font-style:italic; font-size:6px; letter-spacing:6px; opacity:0.35; display:block; }
+    .nm-inf { font-family:'Playfair Display',serif; font-style:italic; font-size:10px; letter-spacing:2px; opacity:0.55; display:block; line-height:1.1; }
+    .nm-arch { font-family:'Playfair Display',serif; font-weight:900; font-size:18px; letter-spacing:-1px; line-height:0.88; display:block; }
+    .nm-tag { font-style:italic; font-size:6px; letter-spacing:3px; opacity:0.3; display:block; margin-top:1px; }
+    .nm-bot { display:block; width:60px; height:1px; background:var(--ink); opacity:0.2; margin-top:1px; }
+    .nav-links { display:flex; align-items:center; gap:36px; font-size:9px; letter-spacing:5px; text-transform:uppercase; }
+    .nav-links a { opacity:0.45; transition:opacity 0.3s; }
+    .nav-links a:hover,.nav-links a.active { opacity:1; }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; }
+    .hamburger span { display:block; width:22px; height:1px; background:var(--ink); opacity:0.6; }
+    .mob-menu { display:none; position:fixed; inset:0; z-index:999; background:rgba(232,230,224,0.98); flex-direction:column; align-items:center; justify-content:center; gap:36px; }
+    .mob-menu.open { display:flex; }
+    .mob-menu a { font-size:11px; letter-spacing:6px; text-transform:uppercase; opacity:0.45; transition:opacity 0.3s; }
+    .mob-menu a:hover { opacity:1; }
+    .mob-close { position:absolute; top:28px; right:28px; opacity:0.3; cursor:pointer; font-size:22px; }
+
+    /* ── PAGE HEADER ── */
+    .page-header { padding:140px 80px 60px; background:var(--sage-light); }
+    .ph-eyebrow { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:rgba(0,0,0,0.3); margin-bottom:14px; display:block; }
+    .ph-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(36px,5vw,72px); line-height:1.0; color:var(--ink); margin-bottom:20px; }
+    .ph-desc { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(16px,1.8vw,21px); color:rgba(0,0,0,0.45); max-width:560px; line-height:1.6; }
+    .ph-rule { width:64px; height:1.5px; background:rgba(0,0,0,0.15); margin:32px 0; }
+    .ph-meta { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:rgba(0,0,0,0.25); }
+
+    /* ── COLLECTIONS GRID ── */
+    .collections-section { padding:0 80px 120px; }
+    .collections-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:3px; max-width:var(--max); margin:0 auto; }
+
+    /* collection card */
+    .coll-card {
+      position:relative; overflow:hidden; cursor:pointer;
+      aspect-ratio:16/10;
+      background:#2a2e28;
+    }
+    .coll-card.featured { grid-column:span 2; aspect-ratio:21/9; }
+    .coll-photo {
+      position:absolute; inset:0;
+      background-size:cover; background-position:center;
+      transition:transform 0.8s var(--ease), filter 0.6s;
+      filter:brightness(0.75) saturate(0.9);
+    }
+    .coll-card:hover .coll-photo { transform:scale(1.04); filter:brightness(0.65) saturate(0.85); }
+    .coll-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.1) 55%, transparent 75%); }
+    .coll-content { position:absolute; bottom:0; left:0; right:0; padding:40px 44px; }
+    .coll-series-num { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,0.35); display:block; margin-bottom:8px; }
+    .coll-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(20px,2.5vw,34px); color:#fff; line-height:1.15; margin-bottom:6px; }
+    .coll-subtitle { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(13px,1.4vw,17px); color:rgba(255,255,255,0.5); margin-bottom:18px; }
+    .coll-meta { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+    .coll-count { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.3); }
+    .coll-type-badge { font-size:8px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.15); padding:3px 10px; }
+    .coll-arrow { position:absolute; right:44px; bottom:44px; font-size:20px; color:rgba(255,255,255,0.3); transition:transform 0.3s, color 0.3s; }
+    .coll-card:hover .coll-arrow { transform:translateX(6px); color:rgba(255,255,255,0.7); }
+
+    /* placeholder gradients per collection */
+    .c-s1 { background:linear-gradient(145deg,#1a2535 0%,#0a1520 100%); }
+    .c-s2 { background:linear-gradient(145deg,#0d1828 0%,#162240 100%); }
+    .c-s3 { background:linear-gradient(145deg,#0a1520 0%,#08101e 100%); }
+    .c-s4 { background:linear-gradient(145deg,#1e1e1e 0%,#2a2a2a 100%); }
+    .c-s5 { background:linear-gradient(145deg,#1a2520 0%,#0e1a14 100%); }
+    .c-s6 { background:linear-gradient(145deg,#281a08 0%,#1e1208 100%); }
+    .c-s7 { background:linear-gradient(145deg,#1e1510 0%,#141008 100%); }
+    .c-s8 { background:linear-gradient(145deg,#201818 0%,#180e0e 100%); }
+
+    /* ── SERIES PANEL (slides in from right) ── */
+    .series-panel {
+      position:fixed; inset:0; z-index:600;
+      background:var(--ink);
+      transform:translateX(100%);
+      transition:transform 0.55s var(--ease);
+      overflow-y:auto; overflow-x:hidden;
+    }
+    .series-panel.open { transform:translateX(0); }
+
+    .sp-nav {
+      position:sticky; top:0; z-index:10;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:20px 48px;
+      background:rgba(13,13,13,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .sp-back { display:flex; align-items:center; gap:10px; font-size:9px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,0.4); cursor:pointer; transition:color 0.3s; }
+    .sp-back:hover { color:#fff; }
+    .sp-title-area { text-align:center; }
+    .sp-eyebrow { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,0.25); display:block; margin-bottom:2px; }
+    .sp-name { font-family:'Playfair Display',serif; font-weight:700; font-size:16px; color:rgba(255,255,255,0.8); }
+    .sp-count-label { font-size:8px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.25); }
+
+    /* series hero */
+    .sp-hero { position:relative; height:380px; overflow:hidden; }
+    .sp-hero-img {
+      position:absolute; inset:0; background-size:cover; background-position:center;
+      filter:brightness(0.6);
+    }
+    .sp-hero-overlay { position:absolute; inset:0; background:linear-gradient(to top,var(--ink) 0%,transparent 55%); }
+    .sp-hero-content { position:absolute; bottom:0; left:0; right:0; padding:48px 80px; }
+    .sp-hero-series { font-size:8px; letter-spacing:6px; text-transform:uppercase; color:rgba(255,255,255,0.3); display:block; margin-bottom:10px; }
+    .sp-hero-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(28px,4vw,52px); color:var(--cream); line-height:1.1; margin-bottom:10px; }
+    .sp-hero-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(15px,1.6vw,20px); color:rgba(255,255,255,0.45); margin-bottom:24px; }
+    .sp-hero-desc { font-size:15px; color:rgba(255,255,255,0.4); max-width:640px; line-height:1.85; }
+    .sp-hero-type { display:inline-block; margin-top:20px; font-size:8px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.12); padding:5px 14px; }
+
+    /* photo grid inside series panel */
+    .sp-grid {
+      display:grid; gap:3px; padding:3px;
+    }
+    .sp-grid[data-cols="1"] { grid-template-columns:1fr; }
+    .sp-grid[data-cols="2"] { grid-template-columns:1fr 1fr; }
+    .sp-grid[data-cols="3"] { grid-template-columns:1fr 1fr 1fr; }
+
+    .sp-photo-cell {
+      position:relative; overflow:hidden; cursor:pointer;
+      aspect-ratio:3/2; background:#1a1a1a;
+    }
+    .sp-photo-cell.portrait { aspect-ratio:2/3; }
+    .sp-photo-cell.square { aspect-ratio:1; }
+    .sp-photo-cell.panorama { aspect-ratio:21/9; grid-column:span 2; }
+    .sp-photo-img {
+      position:absolute; inset:0; width:100%; height:100%;
+      object-fit:cover; display:block;
+      transition:transform 0.7s var(--ease), filter 0.5s;
+    }
+    .sp-photo-cell:hover .sp-photo-img { transform:scale(1.04); filter:brightness(0.8); }
+    .sp-photo-meta {
+      position:absolute; bottom:0; left:0; right:0;
+      padding:20px 22px 16px;
+      background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%);
+      opacity:0; transition:opacity 0.4s; pointer-events:none;
+    }
+    .sp-photo-cell:hover .sp-photo-meta { opacity:1; }
+    .sp-photo-title { font-family:'Playfair Display',serif; font-style:italic; font-size:15px; color:#fff; display:block; margin-bottom:3px; }
+    .sp-photo-detail { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.4); }
+    .sp-photo-expand { position:absolute; top:14px; right:14px; width:30px; height:30px; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.5); font-size:12px; opacity:0; transition:opacity 0.3s; }
+    .sp-photo-cell:hover .sp-photo-expand { opacity:1; }
+    /* placeholder cells */
+    .sp-photo-cell .ph-grad { position:absolute; inset:0; }
+    .ph-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.15); text-align:center; padding:16px; }
+
+    /* series info bar */
+    .sp-info-bar { padding:60px 80px; border-top:1px solid rgba(255,255,255,0.06); display:grid; grid-template-columns:1fr 1fr 1fr; gap:48px; }
+    .sib-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,0.2); margin-bottom:8px; display:block; }
+    .sib-val { font-family:'Playfair Display',serif; font-style:italic; font-size:16px; color:rgba(255,255,255,0.55); }
+    .sib-val small { font-family:'Cormorant Garamond',serif; font-size:12px; font-style:normal; letter-spacing:2px; color:rgba(255,255,255,0.25); display:block; margin-top:4px; }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      position:fixed; inset:0; z-index:900;
+      background:rgba(0,0,0,0.96);
+      display:none; align-items:center; justify-content:center;
+    }
+    .lightbox.open { display:flex; }
+    .lb-img-wrap { position:relative; max-width:90vw; max-height:88vh; display:flex; align-items:center; justify-content:center; }
+    .lb-img { max-width:90vw; max-height:85vh; object-fit:contain; display:block; }
+    .lb-close { position:fixed; top:24px; right:32px; font-size:28px; color:rgba(255,255,255,0.35); cursor:pointer; transition:color 0.3s; z-index:10; }
+    .lb-close:hover { color:#fff; }
+    .lb-prev,.lb-next { position:fixed; top:50%; transform:translateY(-50%); font-size:28px; color:rgba(255,255,255,0.25); cursor:pointer; transition:color 0.3s; z-index:10; padding:20px; }
+    .lb-prev { left:16px; }
+    .lb-next { right:16px; }
+    .lb-prev:hover,.lb-next:hover { color:#fff; }
+    .lb-meta { position:fixed; bottom:0; left:0; right:0; padding:24px 48px; background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%); text-align:center; }
+    .lb-title { font-family:'Playfair Display',serif; font-style:italic; font-size:20px; color:rgba(255,255,255,0.8); margin-bottom:6px; }
+    .lb-details { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.3); }
+    .lb-counter { position:fixed; top:28px; left:50%; transform:translateX(-50%); font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.25); }
+    /* placeholder in lightbox */
+    .lb-placeholder { width:min(80vw,900px); height:min(70vh,600px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:#1a1a1a; }
+    .lb-placeholder span { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.2); text-align:center; }
+
+    /* ── FOOTER ── */
+    footer { background:var(--sage-light); padding:36px 80px; border-top:1px solid rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+    .footer-copy { font-size:9.5px; letter-spacing:3px; text-transform:uppercase; color:rgba(0,0,0,0.25); }
+    .footer-links { display:flex; gap:28px; }
+    .footer-links a { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(0,0,0,0.25); transition:color 0.3s; }
+    .footer-links a:hover { color:var(--ink); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px) {
+      nav,.sp-nav { padding:16px 24px; }
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+      .page-header { padding:100px 24px 40px; }
+      .collections-section { padding:0 0 80px; }
+      .collections-grid { grid-template-columns:1fr; gap:2px; }
+      .coll-card.featured { grid-column:span 1; aspect-ratio:16/10; }
+      .sp-hero-content,.sp-info-bar { padding:32px 24px; }
+      .sp-info-bar { grid-template-columns:1fr; gap:24px; }
+      .sp-grid[data-cols="3"] { grid-template-columns:1fr 1fr; }
+      .sp-grid[data-cols="2"] { grid-template-columns:1fr; }
+      .lb-prev { left:4px; } .lb-next { right:4px; }
+      .lb-meta { padding:16px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="../index.html" class="nav-mark">
+    <span class="nm-hr"></span><span class="nm-thin"></span>
+    <span class="nm-the">the</span><span class="nm-inf">Infinite</span>
+    <span class="nm-arch">ARCH</span><span class="nm-tag">Beyond the Daydream</span><span class="nm-bot"></span>
+  </a>
+  <div class="nav-links">
+    <a href="../index.html#featured">Featured</a>
+    <a href="./about.html">About</a>
+    <a href="./gallery.html" class="active">Gallery</a>
+    <a href="../index.html#contact">Contact</a>
+    <a href="./portfolio.html">Portfolio</a>
+  </div>
+  <div class="hamburger" id="ham" onclick="document.getElementById('mob').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mob-menu" id="mob">
+  <span class="mob-close" onclick="document.getElementById('mob').classList.remove('open')">&#x2715;</span>
+  <a href="../index.html#featured">Featured</a>
+  <a href="./about.html">About</a>
+  <a href="./gallery.html">Gallery</a>
+  <a href="../index.html#contact">Contact</a>
+  <a href="./portfolio.html">Portfolio</a>
+</div>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <span class="ph-eyebrow">Collections</span>
+  <h1 class="ph-title">Beyond the<br>Daydream: Iceland</h1>
+  <p class="ph-desc">January 2026 &mdash; Seven days, 429 frames, eight thematic series. Medium format at the edge of the world.</p>
+  <div class="ph-rule"></div>
+  <span class="ph-meta">Fujifilm GFX 100S II &nbsp;&middot;&nbsp; X-E5 &nbsp;&middot;&nbsp; Instax Mini Evo &nbsp;&middot;&nbsp; January 2026</span>
+</header>
+
+<!-- COLLECTIONS GRID -->
+<section class="collections-section">
+  <div class="collections-grid" id="collectionsGrid">
+    <!-- Cards are rendered by JS from COLLECTIONS data below -->
+  </div>
+</section>
+
+<!-- SERIES PANEL -->
+<div class="series-panel" id="seriesPanel">
+  <div class="sp-nav">
+    <div class="sp-back" onclick="closePanel()">&#8592; <span>All Collections</span></div>
+    <div class="sp-title-area">
+      <span class="sp-eyebrow" id="spEyebrow"></span>
+      <div class="sp-name" id="spName"></div>
+    </div>
+    <span class="sp-count-label" id="spCountLabel"></span>
+  </div>
+  <div class="sp-hero" id="spHero">
+    <div class="sp-hero-img" id="spHeroImg"></div>
+    <div class="sp-hero-overlay"></div>
+    <div class="sp-hero-content">
+      <span class="sp-hero-series" id="spHeroSeries"></span>
+      <h2 class="sp-hero-title" id="spHeroTitle"></h2>
+      <p class="sp-hero-sub" id="spHeroSub"></p>
+      <p class="sp-hero-desc" id="spHeroDesc"></p>
+      <span class="sp-hero-type" id="spHeroType"></span>
+    </div>
+  </div>
+  <div class="sp-grid" id="spGrid"></div>
+  <div class="sp-info-bar" id="spInfoBar"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <span class="lb-close" onclick="closeLightbox()">&#x2715;</span>
+  <span class="lb-counter" id="lbCounter"></span>
+  <div class="lb-img-wrap" id="lbImgWrap"></div>
+  <div class="lb-meta">
+    <div class="lb-title" id="lbTitle"></div>
+    <div class="lb-details" id="lbDetails"></div>
+  </div>
+  <span class="lb-prev" onclick="lbNav(-1)">&#8592;</span>
+  <span class="lb-next" onclick="lbNav(1)">&#8594;</span>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">&copy; 2026 The Infinite Arch</span>
+  <div class="footer-links">
+    <a href="../index.html">Home</a>
+    <a href="./portfolio.html">Portfolio</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+</footer>
+
+<script src="../assets/js/tia-data.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+// GALLERY — reads from localStorage via TIA data layer
+// Admin uploads photos → stored in tia_admin localStorage
+// Gallery reads that → no Cloudinary API listing needed
+// ══════════════════════════════════════════════════════════════
+
+let COLLECTIONS = [];
+let activeSeries = null;
+let lbIndex = 0;
+
+function buildCollections() {
+  COLLECTIONS = TIA.getSeries().map((s, i) => ({
+    id:          s.id,
+    folder:      s.folder,
+    series:      `Series ${s.num}`,
+    title:       s.title,
+    subtitle:    s.subtitle,
+    type:        s.type || 'Series',
+    featured:    i === 0,
+    coverBg:     `c-${s.id}`,
+    description: s.description || '',
+    printSpec:   s.printSpec   || '',
+    camera:      s.camera      || '',
+    location:    s.location    || '',
+  }));
+}
+
+function getCollPhotos(seriesId) {
+  return TIA.getPhotos(seriesId).map((p, i) => ({
+    id:          `${seriesId}-${String(i+1).padStart(2,'0')}`,
+    title:       p.filename.replace(/[-_]/g,' ').replace(/\.[^.]+$/, ''),
+    detail:      '',
+    url:         p.thumb,
+    fullUrl:     p.full,
+    bg:          'linear-gradient(145deg,#1a1a1a,#0a0a0a)',
+  }));
+}
+
+// ── Render gallery grid ────────────────────────────────────
+function renderCards() {
+  buildCollections();
+  const grid = document.getElementById('collectionsGrid');
+  if (!grid) return;
+  grid.innerHTML = COLLECTIONS.map(c => {
+    const photos   = getCollPhotos(c.id);
+    const coverUrl = TIA.getCoverUrl(c.id, 'cover');
+    return `
+    <div class="coll-card${c.featured ? ' featured' : ''}" onclick="openPanel('${c.id}')">
+      <div class="coll-photo ${c.coverBg}"
+           ${coverUrl ? `style="background-image:url('${coverUrl}')"` : ''}>
+      </div>
+      <div class="coll-overlay"></div>
+      <div class="coll-content">
+        <span class="coll-series-num">${c.series}</span>
+        <h2 class="coll-title">${c.title}</h2>
+        <p class="coll-subtitle">${c.subtitle}</p>
+        <div class="coll-meta">
+          <span class="coll-count">${photos.length ? photos.length + ' frame' + (photos.length !== 1 ? 's' : '') : 'Coming soon'}</span>
+          <span class="coll-type-badge">${c.type}</span>
+        </div>
+      </div>
+      <span class="coll-arrow">&#8594;</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Open series panel ──────────────────────────────────────
+function openPanel(id) {
+  const c = COLLECTIONS.find(x => x.id === id);
+  if (!c) return;
+  const photos   = getCollPhotos(id);
+  const coverUrl = TIA.getCoverUrl(id, 'cover');
+  activeSeries = { ...c, photos };
+
+  document.getElementById('spEyebrow').textContent    = c.series;
+  document.getElementById('spName').textContent       = c.title;
+  document.getElementById('spCountLabel').textContent = `${photos.length} frame${photos.length !== 1 ? 's' : ''}`;
+  document.getElementById('spHeroSeries').textContent = `${c.series} · ${c.type}`;
+  document.getElementById('spHeroTitle').textContent  = c.title;
+  document.getElementById('spHeroSub').textContent    = c.subtitle;
+  document.getElementById('spHeroDesc').textContent   = c.description;
+  document.getElementById('spHeroType').textContent   = c.type;
+
+  const hi = document.getElementById('spHeroImg');
+  hi.className = 'sp-hero-img ' + c.coverBg;
+  hi.style.backgroundImage = coverUrl ? `url('${coverUrl}')` : '';
+
+  const grid = document.getElementById('spGrid');
+  if (photos.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:60px;text-align:center;opacity:0.25;font-size:9px;letter-spacing:4px;text-transform:uppercase;">No photos uploaded yet<br><small style="margin-top:8px;display:block;font-size:8px;letter-spacing:2px">Upload in Admin → Upload tab</small></div>`;
+  } else {
+    grid.innerHTML = photos.map((p, i) => `
+      <div class="sp-photo-cell" onclick="openLightbox(${i})">
+        <img class="sp-photo-img" src="${p.url}" alt="${p.title}" loading="lazy">
+        <div class="sp-photo-meta">
+          <span class="sp-photo-title">${p.title}</span>
+        </div>
+        <span class="sp-photo-expand">&#x26F6;</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('spInfoBar').innerHTML = `
+    <div><span class="sib-label">Camera</span><div class="sib-val">${c.camera||'—'}</div></div>
+    <div><span class="sib-label">Location</span><div class="sib-val">${c.location||'—'}</div></div>
+    <div><span class="sib-label">Print Format</span><div class="sib-val">${c.printSpec||'Inquire'}<small>Inquire for availability</small></div></div>`;
+
+  document.getElementById('seriesPanel').classList.add('open');
+  document.getElementById('seriesPanel').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+}
+
+function closePanel() {
+  document.getElementById('seriesPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  activeSeries = null;
+}
+
+// ── Lightbox ───────────────────────────────────────────────
+function openLightbox(i) {
+  if (!activeSeries) return;
+  lbIndex = i;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function renderLightbox() {
+  if (!activeSeries?.photos?.length) return;
+  const p = activeSeries.photos[lbIndex];
+  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${activeSeries.photos.length}`;
+  document.getElementById('lbTitle').textContent   = p.title;
+  document.getElementById('lbDetails').textContent = activeSeries.series;
+  document.getElementById('lbImgWrap').innerHTML   =
+    `<img class="lb-img" src="${p.fullUrl || p.url}" alt="${p.title}">`;
+}
+
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+function lbNav(dir) {
+  if (!activeSeries) return;
+  lbIndex = (lbIndex + dir + activeSeries.photos.length) % activeSeries.photos.length;
+  renderLightbox();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('lightbox').classList.contains('open')) closeLightbox();
+    else closePanel();
+  }
+  if (document.getElementById('lightbox').classList.contains('open')) {
+    if (e.key === 'ArrowLeft')  lbNav(-1);
+    if (e.key === 'ArrowRight') lbNav(1);
+  }
+});
+
+// ── Boot ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await TIA.load();   // fetch config from Cloudinary
+  renderCards();
+});
+</script>
+</body>
+</html>

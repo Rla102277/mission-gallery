@@ -310,8 +310,8 @@
 
   <!-- OPENING — large italic pull -->
   <div class="opening">
-    <p class="opener-line-1">Most of us spend our lives just outside the frame.</p>
-    <p class="opener-line-2">We scroll past the image, save it for later, and move on. The daydream is the beautiful moment we never quite inhabit.</p>
+    <p class="opener-line-1" id="aboutOpener1">Most of us spend our lives just outside the frame.</p>
+    <p class="opener-line-2" id="aboutOpener2">We scroll past the image, save it for later, and move on. The daydream is the beautiful moment we never quite inhabit.</p>
   </div>
 
   <!-- PIVOT LINE -->
@@ -323,7 +323,7 @@
 
   <!-- BODY -->
   <div class="body-block">
-    <div class="body-text">
+    <div class="body-text" id="aboutBodyText">
       <p>I started chasing the places that couldn't be scrolled past.</p>
 
       <p>The Infinite Arch is built on a belief that the most honest photographs aren't taken — they're <em>waited for</em>. They come to the photographer who arrives early, stays late, and returns when the light changes. Who understands that the arch in the rock and the arch of a life are describing the same passage: a threshold between what was and what's possible.</p>
@@ -349,6 +349,52 @@
 
   <script src="/assets/js/components.js"></script>
   <script src="/assets/js/tia.js"></script>
+  <script>
+    (async function hydrateAboutFromAdmin() {
+      const defaultHostedApiUrl = 'https://mission-gallery.onrender.com/api';
+      const host = window.location.hostname;
+      const sameOriginApiUrl = `${window.location.origin}/api`;
+      const apiBase = host === 'mission-gallery-app.web.app' || host === 'mission-gallery-app.firebaseapp.com'
+        ? defaultHostedApiUrl
+        : sameOriginApiUrl;
+
+      try {
+        const response = await fetch(`${apiBase}/about/public`, { credentials: 'include' });
+        if (!response.ok) return;
+
+        const about = await response.json();
+        const content = (about?.refinedText || about?.rawText || '').trim();
+        if (!content) return;
+
+        const paragraphs = content
+          .split(/\n{2,}/)
+          .map((segment) => segment.replace(/\n+/g, ' ').trim())
+          .filter(Boolean);
+
+        if (paragraphs.length === 0) return;
+
+        const opener1 = document.getElementById('aboutOpener1');
+        const opener2 = document.getElementById('aboutOpener2');
+        const bodyText = document.getElementById('aboutBodyText');
+
+        if (opener1) {
+          opener1.textContent = paragraphs[0] || opener1.textContent;
+        }
+        if (opener2) {
+          opener2.textContent = paragraphs[1] || opener2.textContent;
+        }
+
+        if (bodyText) {
+          const bodyParagraphs = paragraphs.slice(2);
+          if (bodyParagraphs.length > 0) {
+            bodyText.innerHTML = bodyParagraphs.map((text) => `<p>${text}</p>`).join('');
+          }
+        }
+      } catch {
+        // Keep baked-in static about content if API is unavailable.
+      }
+    })();
+  </script>
 </div><!-- end page-content -->
 </body>
 </html>

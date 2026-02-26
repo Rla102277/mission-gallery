@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/index.js",
     "client": "vite --port 5173 --strictPort",
-    "build": "vite build",
+    "build": "node script/build.cjs",
     "preview": "vite preview",
     "start": "node server/index.js"
   },

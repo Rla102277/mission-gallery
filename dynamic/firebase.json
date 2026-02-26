@@ -1,29 +1,23 @@
 {
   "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "dynamic/**"
-    ],
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
+      { "source": "/", "destination": "/pages/gallery.html" },
       { "source": "/about", "destination": "/pages/about.html" },
       { "source": "/portfolio", "destination": "/pages/portfolio.html" },
       { "source": "/gallery", "destination": "/pages/gallery.html" },
       { "source": "/prints", "destination": "/pages/prints.html" },
       { "source": "/hope-hike", "destination": "/pages/hope-hike.html" },
       { "source": "/contact", "destination": "/pages/contact.html" },
-      { "source": "/admin", "destination": "/admin/index.html" },
-      { "source": "/legacy-admin", "destination": "/admin/index.html" },
-      { "source": "/legacy-admin/**", "destination": "/admin/index.html" }
+      { "source": "/legacy-admin", "destination": "/legacy-admin/index.html" },
+      { "source": "/legacy-admin/**", "destination": "/legacy-admin/index.html" },
+      { "source": "**", "destination": "/index.html" }
     ],
     "headers": [
       {
         "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
-        "headers": [
-          { "key": "Cache-Control", "value": "max-age=31536000" }
-        ]
+        "headers": [{ "key": "Cache-Control", "value": "max-age=31536000" }]
       }
     ]
   }

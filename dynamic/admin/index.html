@@ -23,6 +23,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .auth-field label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
 .auth-field input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
 .auth-btn{width:100%;margin-top:20px;padding:12px;background:var(--sage);border:none;color:var(--cream);font-size:9px;letter-spacing:5px;text-transform:uppercase;cursor:pointer}
+.auth-note{font-size:10px;line-height:1.6;color:var(--muted);margin-top:10px}
 .auth-err{color:var(--red);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:10px;display:none}
 .auth-err.show{display:block}
 /* SHELL */
@@ -143,10 +144,14 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 <div id="authScreen">
   <div class="auth-box">
     <span class="auth-logo">The Infinite Arch &middot; Admin</span>
-    <h1 class="auth-h">Photo Manager</h1>
-    <div class="auth-field"><label>Access Code</label><input type="password" id="authPass" autocomplete="off" autofocus onkeydown="if(event.key==='Enter')doLogin()" placeholder="Enter access code"></div>
-    <button class="auth-btn" onclick="doLogin()">Enter</button>
-    <div class="auth-err" id="authErr">Incorrect code</div>
+    <h1 class="auth-h">Admin Sign In</h1>
+    <div class="auth-field">
+      <label>Backend API URL</label>
+      <input type="text" id="backendUrl" autocomplete="off" placeholder="https://your-backend-url.com/api">
+    </div>
+    <button class="auth-btn" onclick="startGoogleLogin()">Continue with Google</button>
+    <p class="auth-note">Set your backend API URL once, then authenticate with Google.</p>
+    <div class="auth-err" id="authErr">Authentication failed</div>
   </div>
 </div>
 
@@ -366,31 +371,114 @@ const TIA = {
 
 
 // AUTH
-// AUTH
-let authed = sessionStorage.getItem("tia_auth") === "1";
+const AUTH_TOKEN_KEY = "tia_auth_token";
+const API_BASE_KEY = "tia_api_base";
+const LR_CLIENT_ID_KEY = "tia_lr_client_id";
 
-function doLogin() {
-  const p = document.getElementById("authPass").value;
-  // PIN: tia2026
-  if (p === "tia2026") {
-    sessionStorage.setItem("tia_auth","1");
-    authed = true;
-    document.getElementById("authScreen").style.display = "none";
-    document.getElementById("app").classList.add("show");
-    init();
-  } else {
-    document.getElementById("authErr").classList.add("show");
-    document.getElementById("authPass").value = "";
-    document.getElementById("authPass").focus();
+const normalizeApiBase = (url) => {
+  const trimmed = (url || "").trim();
+  if (!trimmed) return "";
+  const noSlash = trimmed.replace(/\/$/, "");
+  return noSlash.endsWith("/api") ? noSlash : `${noSlash}/api`;
+};
+
+const getApiBase = () => {
+  const saved = localStorage.getItem(API_BASE_KEY) || "";
+  const normalizedSaved = normalizeApiBase(saved);
+  if (normalizedSaved) return normalizedSaved;
+  return normalizeApiBase(`${window.location.origin}/api`);
+};
+
+const getAuthBase = () => {
+  const apiBase = getApiBase();
+  return apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
+};
+
+const setAuthError = (message = "") => {
+  const el = document.getElementById("authErr");
+  if (!el) return;
+  if (!message) {
+    el.textContent = "";
+    el.classList.remove("show");
+    return;
+  }
+  el.textContent = message;
+  el.classList.add("show");
+};
+
+const showAdminApp = () => {
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("app").classList.add("show");
+};
+
+async function verifyTokenAndEnter() {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (!token) return false;
+
+  try {
+    const response = await fetch(`${getAuthBase()}/auth/user`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error("Invalid token");
+
+    showAdminApp();
+    return true;
+  } catch (error) {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    setAuthError("Session expired. Please sign in again.");
+    return false;
   }
 }
 
-function doLogout() { sessionStorage.removeItem("tia_auth"); location.reload(); }
+async function startGoogleLogin() {
+  const input = document.getElementById("backendUrl");
+  const enteredApiBase = normalizeApiBase(input?.value || "");
 
-if (authed) {
-  document.getElementById("authScreen").style.display = "none";
-  document.getElementById("app").classList.add("show");
+  if (!enteredApiBase) {
+    setAuthError("Enter your backend API URL first.");
+    return;
+  }
+
+  localStorage.setItem(API_BASE_KEY, enteredApiBase);
+  setAuthError("");
+
+  try {
+    const health = await fetch(`${enteredApiBase}/health`, { credentials: "include" });
+    if (!health.ok) throw new Error("Backend health check failed");
+  } catch (error) {
+    setAuthError("Cannot reach backend. Verify URL and CORS settings.");
+    return;
+  }
+
+  const authUrl = `${getAuthBase()}/auth/google?returnTo=/admin/`;
+  window.location.href = authUrl;
 }
+
+function doLogout() {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  sessionStorage.removeItem("lr_oauth");
+  window.location.reload();
+}
+
+const tokenFromUrl = new URLSearchParams(window.location.search).get("token");
+if (tokenFromUrl) {
+  localStorage.setItem(AUTH_TOKEN_KEY, tokenFromUrl);
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+const backendInput = document.getElementById("backendUrl");
+if (backendInput) {
+  backendInput.value = getApiBase();
+}
+
+(async function bootstrapAuth() {
+  const isAuthed = await verifyTokenAndEnter();
+  if (isAuthed) {
+    init();
+  }
+})();
 
 // STATE
 let STATE={};
@@ -421,11 +509,15 @@ async function init(){
   STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
   STATE.home=STATE.home||{};STATE.portfolio=STATE.portfolio||{};
   STATE.lr=STATE.lr||{};STATE.lr.assetMeta=STATE.lr.assetMeta||{};
+  if(!STATE.lr.clientId){
+    const localClientId=localStorage.getItem(LR_CLIENT_ID_KEY)||"";
+    if(localClientId)STATE.lr.clientId=localClientId;
+  }
   // Pre-baked Adobe Client ID
   if(!STATE.lr.clientId) STATE.lr.clientId="afd0ee2721d04f0c8fd9ac505713e014";
   Object.assign(LR_PHOTOS,STATE.lr.assetMeta);
   setSyncStatus("ok","Synced");
-  renderSidebar();handleOAuthReturn();switchTab("lightroom");
+  renderSidebar();await handleOAuthReturn();switchTab("lightroom");
 }
 
 // SAVE
@@ -538,17 +630,91 @@ function showLightroomPanel(){
 // ADOBE OAUTH - implicit flow (no server needed)
 function saveLrClientId(){
   const id=document.getElementById("lrClientId")?.value?.trim();
-  if(!id)return;STATE.lr.clientId=id;saveAll();toast("Client ID saved");showLightroomPanel();
+  if(!id)return;
+  STATE.lr.clientId=id;
+  localStorage.setItem(LR_CLIENT_ID_KEY,id);
+  toast("Client ID saved");
+  showLightroomPanel();
 }
-function lrAuthorize(){
-  const clientId=STATE.lr.clientId;
+async function lrAuthorize(){
+  let clientId=STATE.lr.clientId;
+
+  try{
+    const configRes=await fetch(`${getApiBase()}/adobe/config`,{credentials:"include"});
+    if(configRes.ok){
+      const configText=await configRes.text();
+      let config={};
+      try{config=configText?JSON.parse(configText):{};}catch{}
+      if(config?.clientId){
+        clientId=config.clientId;
+        STATE.lr.clientId=clientId;
+        localStorage.setItem(LR_CLIENT_ID_KEY,clientId);
+      }
+      if(config && config.configured===false){
+        return toast("Backend Adobe credentials are not configured",true);
+      }
+    }
+  }catch{}
+
   if(!clientId)return toast("Save Client ID first",true);
-  const redirect=encodeURIComponent(location.origin+"/admin/");
-  const scope=encodeURIComponent("lr_partner_apis openid");
+  const redirectUri=location.origin+"/legacy-admin/";
+  const redirect=encodeURIComponent(redirectUri);
+  const scope=encodeURIComponent("openid AdobeID lr_partner_apis lr_partner_rendition_apis");
   sessionStorage.setItem("lr_oauth","1");
-  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=token`;
+  window.location.href=`https://ims-na1.adobelogin.com/ims/authorize/v2?client_id=${clientId}&redirect_uri=${redirect}&scope=${scope}&response_type=code`;
 }
-function handleOAuthReturn(){
+async function handleOAuthReturn(){
+  const queryParams=new URLSearchParams(window.location.search);
+  const authCode=queryParams.get("code");
+
+  if(authCode){
+    try{
+      const tokenResponse=await fetch(`${getApiBase()}/adobe/token`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        credentials:"include",
+        body:JSON.stringify({
+          code:authCode,
+          redirectUri:location.origin+"/legacy-admin/",
+        }),
+      });
+
+      const payloadText=await tokenResponse.text();
+      let payload={};
+      try{payload=payloadText?JSON.parse(payloadText):{};}catch{}
+
+      if(!tokenResponse.ok){
+        const providerMsg=payload?.details?.error_description||payload?.details?.error;
+        const rawMsg=(payloadText||"").trim();
+        const fallbackMsg=rawMsg.startsWith("{")||rawMsg.startsWith("[")
+          ? `Adobe token exchange failed (${tokenResponse.status})`
+          : rawMsg;
+        throw new Error(providerMsg||payload?.error||fallbackMsg||`Adobe token exchange failed (${tokenResponse.status})`);
+      }
+
+      const tokenData=payload;
+      if(!tokenData?.access_token){
+        const rawMsg=(payloadText||"").trim();
+        throw new Error(rawMsg||"Adobe token response missing access_token");
+      }
+      STATE.lr.accessToken=tokenData.access_token;
+      STATE.lr.refreshToken=tokenData.refresh_token;
+      STATE.lr.tokenExpiry=Date.now()+(Number(tokenData.expires_in||3600)*1000);
+      history.replaceState({},"",location.pathname);
+      saveAll();
+      toast("Connected to Lightroom");
+      showLightroomPanel();
+      return;
+    }catch(err){
+      history.replaceState({},"",location.pathname);
+      const msg=((err&&err.message)||"Adobe login failed").replace(/\s+/g," ").trim();
+      const shortMsg=msg.length>220?`${msg.slice(0,220)}...`:msg;
+      toast(shortMsg,true);
+      showLightroomPanel();
+      return;
+    }
+  }
+
   const params=new URLSearchParams(window.location.hash.replace("#",""));
   const token=params.get("access_token");
   if(!token)return;
@@ -601,17 +767,37 @@ async function lrSelectAlbum(albumId){
 
 function getLrThumbUrl(asset){
   const clientId=STATE.lr.clientId;
+  if(!clientId)return '';
   const links=asset.links||{};
-  const href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
-  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
-  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+clientId;
+  let href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
+  
+  // If href is relative, make it absolute
+  if(href && !href.startsWith('http')){
+    href='https://lr.adobe.io'+href;
+  }
+  
+  if(href){
+    const separator=href.includes("?")?"&":"?";
+    return href+separator+"client_id="+encodeURIComponent(clientId);
+  }
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+encodeURIComponent(clientId);
 }
 function getLrFullUrl(asset){
   const clientId=STATE.lr.clientId;
+  if(!clientId)return '';
   const links=asset.links||{};
-  const href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
-  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
-  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+clientId;
+  let href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
+  
+  // If href is relative, make it absolute
+  if(href && !href.startsWith('http')){
+    href='https://lr.adobe.io'+href;
+  }
+  
+  if(href){
+    const separator=href.includes("?")?"&":"?";
+    return href+separator+"client_id="+encodeURIComponent(clientId);
+  }
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+encodeURIComponent(clientId);
 }
 
 function renderLrPhotoGrid(){
@@ -664,7 +850,7 @@ function showSeriesView(sid){
   const s=getSeries().find(x=>x.id===sid);
   const photos=getSeriesPhotos(sid);
   const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick="switchTab('lightroom')">+ Import from Lightroom</button>");
+  setPanel("Series "+s?.num,s?.title||sid,"<button class='btn' onclick=\"switchTab('lightroom')\">+ Import from Lightroom</button>");
   let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
     <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
     <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
