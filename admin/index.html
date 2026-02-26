@@ -767,17 +767,37 @@ async function lrSelectAlbum(albumId){
 
 function getLrThumbUrl(asset){
   const clientId=STATE.lr.clientId;
+  if(!clientId)return '';
   const links=asset.links||{};
-  const href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
-  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
-  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+clientId;
+  let href=links["/rels/rendition_type/thumbnail2x"]?.href||links["/rels/rendition_type/2048"]?.href;
+  
+  // If href is relative, make it absolute
+  if(href && !href.startsWith('http')){
+    href='https://lr.adobe.io'+href;
+  }
+  
+  if(href){
+    const separator=href.includes("?")?"&":"?";
+    return href+separator+"client_id="+encodeURIComponent(clientId);
+  }
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/thumbnail2x?client_id="+encodeURIComponent(clientId);
 }
 function getLrFullUrl(asset){
   const clientId=STATE.lr.clientId;
+  if(!clientId)return '';
   const links=asset.links||{};
-  const href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
-  if(href)return href+(href.includes("?")?"&":"?")+"client_id="+clientId;
-  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+clientId;
+  let href=links["/rels/rendition_type/2048"]?.href||links["/rels/rendition_type/fullsize"]?.href;
+  
+  // If href is relative, make it absolute
+  if(href && !href.startsWith('http')){
+    href='https://lr.adobe.io'+href;
+  }
+  
+  if(href){
+    const separator=href.includes("?")?"&":"?";
+    return href+separator+"client_id="+encodeURIComponent(clientId);
+  }
+  return "https://lr.adobe.io/v2/assets/"+asset.id+"/renditions/2048?client_id="+encodeURIComponent(clientId);
 }
 
 function renderLrPhotoGrid(){
