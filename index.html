@@ -556,5 +556,63 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 </script>
+<script>
+(function renderLoginRoute() {
+  const path = window.location.pathname;
+  const isLoginRoute = path === '/login' || path === '/login/';
+  if (!isLoginRoute) return;
+
+  const authBase = 'https://mission-gallery.onrender.com';
+  const apiBase = `${authBase}/api`;
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const error = params.get('error');
+
+  if (token) {
+    localStorage.setItem('tia_auth_token', token);
+    window.location.replace('/admin/');
+    return;
+  }
+
+  document.title = 'Admin Login - The Infinite Arch';
+  document.body.innerHTML = `
+    <div style="min-height:100vh;background:#0f1110;color:#f5f0e8;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Georgia,serif;">
+      <div style="width:420px;max-width:100%;border:1px solid rgba(245,240,232,0.14);background:rgba(255,255,255,0.02);padding:28px;border-radius:10px;">
+        <p style="margin:0 0 8px;font-size:10px;letter-spacing:4px;text-transform:uppercase;opacity:0.5;">The Infinite Arch</p>
+        <h1 style="margin:0 0 18px;font-size:30px;font-family:'Playfair Display',serif;">Admin Sign In</h1>
+        <p style="margin:0 0 14px;font-size:12px;opacity:0.75;line-height:1.55;">Sign in with Google to access the admin dashboard.</p>
+        <div style="border:1px solid rgba(245,240,232,0.2);padding:10px 12px;border-radius:8px;margin-bottom:12px;background:rgba(255,255,255,0.03);">
+          <p style="margin:0 0 4px;font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:0.65;">Backend Status</p>
+          <p id="loginHealth" style="margin:0;font-size:13px;color:#e4c16a;">Checking backend...</p>
+        </div>
+        <p id="loginError" style="margin:0 0 12px;font-size:12px;color:#df8383;display:${error ? 'block' : 'none'};">${error === 'oauth_failed' ? 'Google login failed. Confirm backend env and OAuth redirect URI.' : ''}</p>
+        <button id="loginBtn" style="width:100%;padding:13px 16px;border:none;border-radius:8px;background:#4a4d43;color:#f5f0e8;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;">Continue with Google</button>
+        <p style="margin:14px 0 0;font-size:10px;opacity:0.45;word-break:break-all;">Auth endpoint: ${authBase}/auth/google</p>
+      </div>
+    </div>
+  `;
+
+  const healthEl = document.getElementById('loginHealth');
+  const errorEl = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginBtn');
+
+  fetch(`${apiBase}/health`, { credentials: 'include' })
+    .then((response) => {
+      if (!response.ok) throw new Error('Health check failed');
+      healthEl.textContent = 'Backend connected';
+      healthEl.style.color = '#78bf81';
+    })
+    .catch(() => {
+      healthEl.textContent = 'Backend unreachable';
+      healthEl.style.color = '#df8383';
+      errorEl.style.display = 'block';
+      errorEl.textContent = 'Cannot reach Render backend. Check service status and URL.';
+    });
+
+  loginBtn.addEventListener('click', () => {
+    window.location.href = `${authBase}/auth/google?returnTo=/admin/`;
+  });
+})();
+</script>
 </body>
 </html>
