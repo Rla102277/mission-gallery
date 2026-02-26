@@ -96,6 +96,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/missions', missionRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/galleries', galleryRoutes);
