@@ -10,6 +10,12 @@ mkdirSync(publicDir, { recursive: true });
 const staticDirs = ["assets", "pages", "admin"];
 const staticFiles = ["index.html"];
 
+const dataDir = path.join(rootDir, "data");
+const distDataDir = path.join(distDir, "data");
+if (existsSync(dataDir)) {
+  cpSync(dataDir, distDataDir, { recursive: true });
+}
+
 staticFiles.forEach(function(file) {
   const src = path.join(rootDir, file);
   if (existsSync(src)) {
@@ -27,17 +33,20 @@ staticDirs.forEach(function(dir) {
 const serverCode = `
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const multer = require("multer");
 const exifReader = require("exif-reader");
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+app.use(express.json({ limit: "10mb" }));
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_IMAGES_TOKEN = process.env.CF_IMAGES_TOKEN;
 const CF_IMAGES_HASH = process.env.CF_IMAGES_HASH;
 var CF_HASH = CF_IMAGES_HASH;
+var CONFIG_PATH = path.join(__dirname, "data", "tia-config.json");
 
 function extractExif(buffer) {
   try {
@@ -147,6 +156,30 @@ app.delete("/api/images/:id", async function(req, res) {
       return res.status(400).json({ error: (data.errors && data.errors[0] && data.errors[0].message) || "Delete failed" });
     }
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/config", function(req, res) {
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      var data = fs.readFileSync(CONFIG_PATH, "utf-8");
+      res.type("application/json").send(data);
+    } else {
+      res.json({});
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/config", function(req, res) {
+  try {
+    var dir = path.dirname(CONFIG_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(req.body, null, 2));
+    res.json({ success: true, timestamp: new Date().toISOString() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
