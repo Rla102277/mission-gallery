@@ -309,9 +309,9 @@
 <script src="../assets/js/tia-data.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
-// GALLERY — reads from localStorage via TIA data layer
-// Admin uploads photos → stored in tia_admin localStorage
-// Gallery reads that → no Cloudinary API listing needed
+// GALLERY — reads from TIA data layer (server-side config)
+// Admin uploads photos → stored via /api/config
+// Gallery reads that → CF Images URLs built from delivery hash
 // ══════════════════════════════════════════════════════════════
 
 let COLLECTIONS = [];
@@ -463,7 +463,11 @@ document.addEventListener('keydown', e => {
 
 // ── Boot ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  await TIA.load();   // fetch config from Cloudinary
+  try {
+    var cfgRes = await fetch('/api/images/config');
+    if (cfgRes.ok) { var cfg = await cfgRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
+  } catch(e) {}
+  await TIA.load();
   renderCards();
 });
 </script>
