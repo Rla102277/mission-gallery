@@ -21,9 +21,7 @@ const TIA = {
 
   cfUrl(imageId, variant) {
     const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
-    if (!hash) return '';
-    const meta = TIA.getState().cf?.assetMeta?.[imageId];
-    if (!meta) return '';
+    if (!hash || !imageId) return '';
     return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
   },
 

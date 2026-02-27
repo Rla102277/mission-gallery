@@ -9,7 +9,6 @@
 <style>
   .page-content { padding-top: 0; }
 
-  /* ── HERO ── */
   .hero {
     height: 100vh;
     display: flex;
@@ -18,9 +17,7 @@
     justify-content: center;
     text-align: center;
     position: relative;
-    background:
-      radial-gradient(ellipse at 50% 30%, rgba(30,25,15,0.0) 0%, rgba(13,13,13,0.6) 70%),
-      linear-gradient(160deg, #0d0d0d 0%, #151210 40%, #0d0d0d 100%);
+    background: var(--cream);
     padding: 0 40px;
   }
 
@@ -29,7 +26,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 60%;
-    background: radial-gradient(ellipse at 50% -10%, rgba(201,162,39,0.06) 0%, transparent 65%);
+    background: radial-gradient(ellipse at 50% -10%, rgba(181,146,42,0.06) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -83,7 +80,7 @@
   .scroll-line {
     width: 1px;
     height: 40px;
-    background: var(--cream);
+    background: var(--ink);
     animation: scrollPulse 2s ease-in-out infinite;
   }
 
@@ -92,7 +89,6 @@
     50% { opacity: 0.7; transform: scaleY(1.1); }
   }
 
-  /* ── SECTION INTRO ── */
   .section-intro {
     padding: 100px 60px 60px;
     display: flex;
@@ -133,7 +129,6 @@
     letter-spacing: 0.2px;
   }
 
-  /* ── PORTFOLIO GRID ── */
   .portfolio-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -147,12 +142,11 @@
   .tile:nth-child(3) { --tile-h: 480px; }
   .tile:nth-child(4) { --tile-h: 480px; }
 
-  /* ── TILE ── */
   .tile {
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    background: #111;
+    background: #2a2e28;
     height: var(--tile-h, 520px);
   }
 
@@ -162,7 +156,6 @@
       radial-gradient(ellipse at 70% 20%, rgba(15,25,45,0.9) 0%, transparent 50%),
       linear-gradient(160deg, #0a1020 0%, #050810 50%, #080c18 100%);
   }
-
   .tile-1 .tile-bg::after {
     content: '';
     position: absolute;
@@ -178,7 +171,6 @@
       radial-gradient(ellipse at 20% 30%, rgba(50,35,10,0.6) 0%, transparent 50%),
       linear-gradient(150deg, #120e06 0%, #1a1208 50%, #0e0a04 100%);
   }
-
   .tile-2 .tile-bg::after {
     content: '';
     position: absolute;
@@ -191,7 +183,6 @@
       radial-gradient(ellipse at 40% 50%, rgba(60,40,30,0.6) 0%, transparent 55%),
       linear-gradient(140deg, #100c0a 0%, #18120e 60%, #0c0908 100%);
   }
-
   .tile-3 .tile-bg::after {
     content: '';
     position: absolute;
@@ -204,7 +195,6 @@
       radial-gradient(ellipse at 50% 40%, rgba(50,50,55,0.7) 0%, transparent 60%),
       linear-gradient(155deg, #0e0e10 0%, #141418 50%, #0a0a0c 100%);
   }
-
   .tile-4 .tile-bg::after {
     content: '';
     position: absolute;
@@ -220,22 +210,14 @@
     transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
-  .tile:hover .tile-bg {
-    transform: scale(1.04);
-  }
+  .tile:hover .tile-bg { transform: scale(1.04); }
 
   .tile-vignette {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(0,0,0,0.85) 0%,
-      rgba(0,0,0,0.2) 50%,
-      rgba(0,0,0,0.1) 100%
-    );
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
     transition: opacity 0.5s ease;
   }
-
   .tile:hover .tile-vignette { opacity: 0.7; }
 
   .tile-hover-overlay {
@@ -245,10 +227,8 @@
     opacity: 0;
     transition: opacity 0.5s ease;
   }
-
   .tile:hover .tile-hover-overlay { opacity: 1; }
 
-  /* ── TILE CONTENT ── */
   .tile-content {
     position: absolute;
     inset: 0;
@@ -256,6 +236,7 @@
     flex-direction: column;
     justify-content: flex-end;
     padding: 44px 48px;
+    color: var(--cream);
   }
 
   .tile-number {
@@ -268,7 +249,6 @@
     opacity: 0.2;
     transition: opacity 0.4s ease;
   }
-
   .tile:hover .tile-number { opacity: 0.5; }
 
   .tile-tag {
@@ -279,7 +259,6 @@
     margin-bottom: 10px;
     transition: opacity 0.4s ease;
   }
-
   .tile:hover .tile-tag { opacity: 0.7; }
 
   .tile-rule {
@@ -290,11 +269,7 @@
     margin-bottom: 14px;
     transition: width 0.5s ease, opacity 0.4s ease;
   }
-
-  .tile:hover .tile-rule {
-    width: 64px;
-    opacity: 0.6;
-  }
+  .tile:hover .tile-rule { width: 64px; opacity: 0.6; }
 
   .tile-title {
     font-family: 'Playfair Display', serif;
@@ -305,7 +280,6 @@
     margin-bottom: 8px;
     transition: transform 0.5s ease;
   }
-
   .tile:hover .tile-title { transform: translateY(-4px); }
 
   .tile-subtitle {
@@ -318,11 +292,7 @@
     margin-bottom: 18px;
     transition: transform 0.5s ease, opacity 0.4s ease;
   }
-
-  .tile:hover .tile-subtitle {
-    transform: translateY(-4px);
-    opacity: 0.75;
-  }
+  .tile:hover .tile-subtitle { transform: translateY(-4px); opacity: 0.75; }
 
   .tile-description {
     font-size: 14px;
@@ -334,11 +304,7 @@
     transition: opacity 0.4s 0.1s ease, transform 0.4s 0.1s ease;
     color: rgba(245,240,232,0.7);
   }
-
-  .tile:hover .tile-description {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .tile:hover .tile-description { opacity: 1; transform: translateY(0); }
 
   .tile-cta {
     display: inline-flex;
@@ -354,11 +320,7 @@
     text-decoration: none;
     color: var(--cream);
   }
-
-  .tile:hover .tile-cta {
-    opacity: 0.6;
-    transform: translateY(0);
-  }
+  .tile:hover .tile-cta { opacity: 0.6; transform: translateY(0); }
 
   .tile-cta-line {
     width: 28px;
@@ -366,25 +328,23 @@
     background: var(--cream);
     transition: width 0.3s ease;
   }
-
   .tile-cta:hover .tile-cta-line { width: 48px; }
 
   .tile-1 .tile-rule { background: var(--gold); opacity: 0.5; }
   .tile-1:hover .tile-rule { opacity: 0.8; }
   .tile-1 .tile-tag { color: var(--gold); }
 
-  /* ── QUOTE STRIP ── */
   .quote-strip {
     padding: 80px 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 40px;
-    border-top: 1px solid rgba(245,240,232,0.06);
+    border-top: 1px solid var(--rule);
     margin-top: 2px;
   }
 
-  .quote-rule { flex: 1; max-width: 80px; height: 1px; background: rgba(245,240,232,0.12); }
+  .quote-rule { flex: 1; max-width: 80px; height: 1px; background: var(--rule); }
 
   .quote-text {
     font-family: 'Cormorant Garamond', serif;
@@ -408,21 +368,14 @@
     margin-top: 12px;
   }
 
-  /* ── ANIMATIONS ── */
-  .tile {
-    animation: fadeUp 0.8s ease both;
-  }
+  .tile { animation: fadeUp 0.8s ease both; }
   .tile:nth-child(1) { animation-delay: 0.1s; }
   .tile:nth-child(2) { animation-delay: 0.2s; }
   .tile:nth-child(3) { animation-delay: 0.3s; }
   .tile:nth-child(4) { animation-delay: 0.4s; }
 
-  /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
-    .portfolio-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
-    }
+    .portfolio-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
     .tile { height: 420px !important; }
     .section-intro { padding: 60px 30px 40px; flex-direction: column; gap: 20px; }
     .section-label-vert { writing-mode: horizontal-tb; transform: none; }
@@ -434,7 +387,6 @@
 <body>
 <div class="page-content">
 
-<!-- HERO -->
 <section class="hero" data-testid="section-hero">
   <p class="hero-eyebrow" data-testid="text-hero-eyebrow">Fine Art Landscape Photography</p>
   <h1 class="hero-title" data-testid="text-hero-title">Portfolio</h1>
@@ -445,7 +397,6 @@
   </div>
 </section>
 
-<!-- SECTION INTRO -->
 <div class="section-intro" data-reveal="0" data-testid="section-intro">
   <span class="section-label-vert">Collections</span>
   <div class="section-text">
@@ -454,10 +405,8 @@
   </div>
 </div>
 
-<!-- PORTFOLIO GRID -->
 <div class="portfolio-grid" id="portfolioGrid" data-testid="portfolio-grid">
 
-  <!-- TILE 1: Beyond the Daydream — Expeditions -->
   <div class="tile tile-1" data-testid="tile-portfolio-0">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
@@ -476,7 +425,6 @@
     </div>
   </div>
 
-  <!-- TILE 2: Beyond the Frame — Home Terrain -->
   <div class="tile tile-2" data-testid="tile-portfolio-1">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
@@ -495,7 +443,6 @@
     </div>
   </div>
 
-  <!-- TILE 3: Beyond the Moment — People -->
   <div class="tile tile-3" data-testid="tile-portfolio-2">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
@@ -514,7 +461,6 @@
     </div>
   </div>
 
-  <!-- TILE 4: Beyond the Shutter — Film -->
   <div class="tile tile-4" data-testid="tile-portfolio-3">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
@@ -535,7 +481,6 @@
 
 </div>
 
-<!-- QUOTE STRIP -->
 <div class="quote-strip" data-testid="section-quote-strip">
   <div class="quote-rule"></div>
   <div>

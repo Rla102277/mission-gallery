@@ -13,20 +13,17 @@
       height: 100vh; display: flex; flex-direction: column;
       align-items: center; justify-content: center; text-align: center;
       position: relative; padding: 0 40px; overflow: hidden;
-      background:
-        radial-gradient(ellipse at 30% 25%, rgba(201,162,39,0.045) 0%, transparent 55%),
-        radial-gradient(ellipse at 70% 80%, rgba(30,50,90,0.2) 0%, transparent 50%),
-        linear-gradient(160deg, #080c12 0%, #0d0d0d 40%, #0a0c09 100%);
+      background: var(--cream);
     }
     .cs-hero::after {
       content:''; position:absolute; left:0; right:0; top:50%; height:1px;
-      background:linear-gradient(to right,transparent,rgba(201,162,39,0.06),rgba(245,240,232,0.04),rgba(201,162,39,0.06),transparent);
+      background:linear-gradient(to right,transparent,rgba(181,146,42,0.15),rgba(13,13,13,0.04),rgba(181,146,42,0.15),transparent);
       pointer-events:none;
     }
 
     .cs-eyebrow {
       font-size: 9px; letter-spacing: 7px; text-transform: uppercase;
-      opacity: 0.22; margin-bottom: 32px;
+      opacity: 0.25; margin-bottom: 32px;
     }
     .cs-title {
       font-family: var(--font-display); font-weight: 900;
@@ -44,7 +41,7 @@
       letter-spacing: 3px; margin-bottom: 16px;
     }
     .cs-body {
-      font-size: 15px; line-height: 1.9; opacity: 0.35;
+      font-size: 15px; line-height: 1.9; opacity: 0.4;
       max-width: 480px; margin: 0 auto 40px;
     }
 
@@ -54,26 +51,26 @@
     }
     .cs-detail {
       font-size: 10px; letter-spacing: 5px; text-transform: uppercase;
-      opacity: 0.2;
+      opacity: 0.25;
     }
-    .cs-detail-rule { width: 20px; height: 1px; background: var(--rule-dark); }
+    .cs-detail-rule { width: 20px; height: 1px; background: var(--rule); }
 
     .cs-notify {
       display: inline-flex; align-items: center; gap: 16px;
       font-family: var(--font-body); font-size: 11px;
       letter-spacing: 4px; text-transform: uppercase; opacity: 0.5;
-      border: 1px solid var(--rule-dark); padding: 14px 32px;
+      border: 1px solid var(--rule); padding: 14px 32px;
       transition: all 0.4s; cursor: default;
     }
 
     .cs-back {
       position: absolute; bottom: 48px;
       font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
-      opacity: 0.2; display: flex; align-items: center; gap: 12px;
+      opacity: 0.25; display: flex; align-items: center; gap: 12px;
       transition: opacity 0.3s;
     }
     .cs-back:hover { opacity: 0.6; }
-    .cs-back-line { width: 28px; height: 1px; background: var(--cream); transition: width 0.4s; }
+    .cs-back-line { width: 28px; height: 1px; background: var(--ink); transition: width 0.4s; }
     .cs-back:hover .cs-back-line { width: 48px; }
   </style>
 </head>

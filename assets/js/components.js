@@ -52,13 +52,13 @@
   </div>
   <div class="footer-center">
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:16px;">
-      <div style="width:80px;height:2px;background:rgba(245,240,232,0.15);"></div>
-      <div style="width:80px;height:1px;background:rgba(245,240,232,0.08);margin-bottom:10px;"></div>
+      <div style="width:80px;height:2px;background:rgba(13,13,13,0.15);"></div>
+      <div style="width:80px;height:1px;background:rgba(13,13,13,0.08);margin-bottom:10px;"></div>
       <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:9px;letter-spacing:7px;opacity:0.22;">the</span>
       <span style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;letter-spacing:3px;opacity:0.32;">Infinite</span>
       <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:36px;letter-spacing:-1px;opacity:0.22;line-height:1;">ARCH</span>
-      <div style="width:80px;height:1px;background:rgba(245,240,232,0.08);margin-top:10px;"></div>
-      <div style="width:80px;height:2px;background:rgba(245,240,232,0.15);"></div>
+      <div style="width:80px;height:1px;background:rgba(13,13,13,0.08);margin-top:10px;"></div>
+      <div style="width:80px;height:2px;background:rgba(13,13,13,0.15);"></div>
     </div>
     <p class="footer-quote">
       &ldquo;Beautiful things don&rsquo;t ask for attention.&rdquo;

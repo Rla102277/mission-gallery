@@ -12,11 +12,11 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
 
 ## Design System
-- **Color Palette**: Dark ink (#0d0d0d) background, cream (#f5f0e8) text, gold (#c9a227) accents
+- **Color Palette**: Cream (#f5f0e8) background, dark ink (#0d0d0d) text, gold (#b5922a) accents — light editorial theme matching the about page
 - **Typography**: Playfair Display (headings), Cormorant Garamond (body)
 - **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
 - **CSS Loading Order**: tia.css FIRST, then page-specific inline `<style>` blocks (so page-specific rules override base)
-- **CSS Variables**: `--rule-dark: rgba(245,240,232,0.12)` for borders on dark pages
+- **CSS Variables**: `--rule: rgba(13,13,13,0.12)` for borders on light pages, `--gold: #b5922a`
 
 ## Key Files
 - `index.html` — Homepage: full-bleed hero with animated wordmark, philosophy, 2×2 collections grid, featured projects, process cards, Hope Hike callout, services, newsletter, quote strip. Dynamic content from portfolioWorks.
