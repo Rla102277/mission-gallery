@@ -521,7 +521,9 @@ async function init(){
   delete STATE.cl;
   delete STATE.lr;
   Object.assign(CF_PHOTOS,STATE.cf.assetMeta);
+  const hadHash=!!STATE.cf.hash;
   try{const cfgRes=await fetch("/api/images/config");const cfg=await cfgRes.json();if(cfg.hash){TIA.CF_HASH=cfg.hash;STATE.cf.hash=cfg.hash;}}catch{}
+  if(TIA.CF_HASH&&!hadHash){await TIA.save(STATE);console.log("[Admin] Auto-saved CF hash to config");}
   setSyncStatus("ok","Synced");
   renderSidebar();switchTab("galleries");
 }

@@ -66,6 +66,7 @@ function extractExif(buffer: Buffer): Record<string, any> {
 
 app.post("/api/images/upload", upload.single("file"), async (req, res) => {
   if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
+    console.log("[CF] Upload blocked — CF not configured");
     return res.status(500).json({ error: "Cloudflare Images not configured" });
   }
   if (!req.file) {
@@ -73,6 +74,7 @@ app.post("/api/images/upload", upload.single("file"), async (req, res) => {
   }
 
   try {
+    console.log(`[CF] Uploading: ${req.file.originalname} (${(req.file.size / 1024).toFixed(0)}KB)`);
     const exif = extractExif(req.file.buffer);
 
     const formData = new FormData();
@@ -89,9 +91,11 @@ app.post("/api/images/upload", upload.single("file"), async (req, res) => {
 
     const data = await cfRes.json() as any;
     if (!data.success) {
+      console.log(`[CF] Upload failed: ${data.errors?.[0]?.message || "Unknown error"}`);
       return res.status(400).json({ error: data.errors?.[0]?.message || "Upload failed" });
     }
 
+    console.log(`[CF] Upload OK: ${data.result.id} (${req.file.originalname})`);
     res.json({
       id: data.result.id,
       filename: data.result.filename,
@@ -99,16 +103,19 @@ app.post("/api/images/upload", upload.single("file"), async (req, res) => {
       exif,
     });
   } catch (err: any) {
+    console.log(`[CF] Upload error: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.delete("/api/images/:id", async (req, res) => {
   if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
+    console.log("[CF] Delete blocked — CF not configured");
     return res.status(500).json({ error: "Cloudflare Images not configured" });
   }
 
   try {
+    console.log(`[CF] Deleting: ${req.params.id}`);
     const cfRes = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1/${req.params.id}`,
       {
@@ -119,20 +126,25 @@ app.delete("/api/images/:id", async (req, res) => {
 
     const data = await cfRes.json() as any;
     if (!data.success) {
+      console.log(`[CF] Delete failed: ${data.errors?.[0]?.message || "Unknown error"}`);
       return res.status(400).json({ error: data.errors?.[0]?.message || "Delete failed" });
     }
 
+    console.log(`[CF] Delete OK: ${req.params.id}`);
     res.json({ success: true });
   } catch (err: any) {
+    console.log(`[CF] Delete error: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.get("/api/images/list", async (req, res) => {
   if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
+    console.log("[CF] List blocked — CF not configured");
     return res.status(500).json({ error: "Cloudflare Images not configured" });
   }
   try {
+    console.log("[CF] Fetching image list...");
     const allImages: any[] = [];
     let page = 1;
     let hasMore = true;
@@ -143,6 +155,7 @@ app.get("/api/images/list", async (req, res) => {
       );
       const data = await cfRes.json() as any;
       if (!data.success) {
+        console.log(`[CF] List failed: ${data.errors?.[0]?.message || "Unknown error"}`);
         return res.status(400).json({ error: data.errors?.[0]?.message || "List failed" });
       }
       const images = data.result.images || [];
@@ -150,13 +163,16 @@ app.get("/api/images/list", async (req, res) => {
       hasMore = images.length === 100;
       page++;
     }
+    console.log(`[CF] List OK: ${allImages.length} images found`);
     res.json({ images: allImages, hash: CF_IMAGES_HASH || "" });
   } catch (err: any) {
+    console.log(`[CF] List error: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.get("/api/images/config", (_req, res) => {
+  console.log(`[CF] Config requested — hash: ${CF_IMAGES_HASH ? "present" : "missing"}`);
   res.json({ hash: CF_IMAGES_HASH || "" });
 });
 
@@ -180,8 +196,14 @@ app.post("/api/config", (req, res) => {
     const dir = path.dirname(CONFIG_PATH);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(req.body, null, 2));
+    const seriesCount = Object.keys(req.body.series || {}).length;
+    const worksCount = (req.body.portfolioWorks || []).length;
+    let photoCount = 0;
+    if (req.body.photos) Object.values(req.body.photos).forEach((arr: any) => { if (Array.isArray(arr)) photoCount += arr.length; });
+    console.log(`[Config] Saved — ${seriesCount} series, ${worksCount} works, ${photoCount} photos`);
     res.json({ success: true, timestamp: new Date().toISOString() });
   } catch (err: any) {
+    console.log(`[Config] Save error: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
@@ -190,4 +212,7 @@ app.use(express.static(path.join(__dirname, "..")));
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Static file server listening on port ${port}`);
+  console.log(`[CF] Account: ${CF_ACCOUNT_ID ? "configured" : "MISSING"}`);
+  console.log(`[CF] Token: ${CF_IMAGES_TOKEN ? "configured" : "MISSING"}`);
+  console.log(`[CF] Hash: ${CF_IMAGES_HASH || "MISSING"}`);
 });

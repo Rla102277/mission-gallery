@@ -32,7 +32,7 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - `assets/js/components.js` — Injects shared nav and footer across all pages (except gallery which has its own)
 - `assets/css/tia.css` — Global styles: dark theme tokens, nav, footer, page-content wrapper, grain overlay
 - `assets/svg/` — SVG brand assets (wordmarks, medallions)
-- `server/index.ts` — Express server with Cloudflare Images API proxy + config endpoints + static files
+- `server/index.ts` — Express server with Cloudflare Images API proxy + config endpoints + static files + [CF] server-side logging for all CF API calls and config saves
 - `script/build.cjs` — Production build script (includes CF API endpoints)
 - `script/push-to-github.ts` — GitHub push script
 
