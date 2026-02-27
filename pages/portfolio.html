@@ -8,15 +8,6 @@
 <link rel="stylesheet" href="/assets/css/tia.css">
 <style>
   .page-content { padding-top: 0; }
-  body { background: var(--ink); color: var(--cream); }
-  body::before { opacity: 0.35; }
-  .tia-nav { background: linear-gradient(to bottom, rgba(13,13,13,0.95) 0%, transparent 100%); }
-  .tia-nav.scrolled { background: rgba(13,13,13,0.95); border-bottom-color: rgba(245,240,232,0.08); }
-  .nav-logo .r-heavy, .nav-logo .r-bot { background: var(--cream); }
-  .nav-logo .r-thin { background: var(--cream); }
-  .nav-hamburger span { background: var(--cream); }
-  .nav-links a.active { border-bottom-color: rgba(245,240,232,0.4); }
-  .nav-mobile { background: rgba(13,13,13,0.98); }
 
   .hero {
     height: 100vh;
@@ -26,6 +17,7 @@
     justify-content: center;
     text-align: center;
     position: relative;
+    color: var(--cream);
     background:
       radial-gradient(ellipse at 50% 30%, rgba(30,25,15,0.0) 0%, rgba(13,13,13,0.6) 70%),
       linear-gradient(160deg, #0d0d0d 0%, #151210 40%, #0d0d0d 100%);
@@ -51,7 +43,7 @@
   }
 
   .hero-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(72px, 10vw, 130px);
     letter-spacing: -4px;
@@ -61,7 +53,7 @@
   }
 
   .hero-subtitle {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-body);
     font-style: italic;
     font-weight: 300;
     font-size: clamp(18px, 2.5vw, 26px);
@@ -123,7 +115,7 @@
   .section-text { flex: 1; }
 
   .section-headline {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-style: italic;
     font-weight: 400;
     font-size: clamp(28px, 3.5vw, 44px);
@@ -168,6 +160,7 @@
       radial-gradient(ellipse at 70% 20%, rgba(15,25,45,0.9) 0%, transparent 50%),
       linear-gradient(160deg, #0a1020 0%, #050810 50%, #080c18 100%);
   }
+
   .tile-1 .tile-bg::after {
     content: '';
     position: absolute;
@@ -183,6 +176,7 @@
       radial-gradient(ellipse at 20% 30%, rgba(50,35,10,0.6) 0%, transparent 50%),
       linear-gradient(150deg, #120e06 0%, #1a1208 50%, #0e0a04 100%);
   }
+
   .tile-2 .tile-bg::after {
     content: '';
     position: absolute;
@@ -195,6 +189,7 @@
       radial-gradient(ellipse at 40% 50%, rgba(60,40,30,0.6) 0%, transparent 55%),
       linear-gradient(140deg, #100c0a 0%, #18120e 60%, #0c0908 100%);
   }
+
   .tile-3 .tile-bg::after {
     content: '';
     position: absolute;
@@ -207,6 +202,7 @@
       radial-gradient(ellipse at 50% 40%, rgba(50,50,55,0.7) 0%, transparent 60%),
       linear-gradient(155deg, #0e0e10 0%, #141418 50%, #0a0a0c 100%);
   }
+
   .tile-4 .tile-bg::after {
     content: '';
     position: absolute;
@@ -217,8 +213,6 @@
   .tile-bg {
     position: absolute;
     inset: 0;
-    background-size: cover;
-    background-position: center;
     transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
@@ -230,6 +224,7 @@
     background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
     transition: opacity 0.5s ease;
   }
+
   .tile:hover .tile-vignette { opacity: 0.7; }
 
   .tile-hover-overlay {
@@ -239,6 +234,7 @@
     opacity: 0;
     transition: opacity 0.5s ease;
   }
+
   .tile:hover .tile-hover-overlay { opacity: 1; }
 
   .tile-content {
@@ -254,12 +250,13 @@
     position: absolute;
     top: 36px;
     right: 44px;
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-body);
     font-size: 11px;
     letter-spacing: 4px;
     opacity: 0.2;
     transition: opacity 0.4s ease;
   }
+
   .tile:hover .tile-number { opacity: 0.5; }
 
   .tile-tag {
@@ -270,6 +267,7 @@
     margin-bottom: 10px;
     transition: opacity 0.4s ease;
   }
+
   .tile:hover .tile-tag { opacity: 0.7; }
 
   .tile-rule {
@@ -280,10 +278,11 @@
     margin-bottom: 14px;
     transition: width 0.5s ease, opacity 0.4s ease;
   }
+
   .tile:hover .tile-rule { width: 64px; opacity: 0.6; }
 
   .tile-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(32px, 3.5vw, 52px);
     letter-spacing: -1px;
@@ -291,10 +290,11 @@
     margin-bottom: 8px;
     transition: transform 0.5s ease;
   }
+
   .tile:hover .tile-title { transform: translateY(-4px); }
 
   .tile-subtitle {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-style: italic;
     font-weight: 400;
     font-size: clamp(16px, 1.8vw, 22px);
@@ -303,6 +303,7 @@
     margin-bottom: 18px;
     transition: transform 0.5s ease, opacity 0.4s ease;
   }
+
   .tile:hover .tile-subtitle { transform: translateY(-4px); opacity: 0.75; }
 
   .tile-description {
@@ -315,6 +316,7 @@
     transition: opacity 0.4s 0.1s ease, transform 0.4s 0.1s ease;
     color: rgba(245,240,232,0.7);
   }
+
   .tile:hover .tile-description { opacity: 1; transform: translateY(0); }
 
   .tile-cta {
@@ -331,6 +333,7 @@
     text-decoration: none;
     color: var(--cream);
   }
+
   .tile:hover .tile-cta { opacity: 0.6; transform: translateY(0); }
 
   .tile-cta-line {
@@ -339,6 +342,7 @@
     background: var(--cream);
     transition: width 0.3s ease;
   }
+
   .tile-cta:hover .tile-cta-line { width: 48px; }
 
   .tile-1 .tile-rule { background: var(--gold); opacity: 0.5; }
@@ -351,14 +355,14 @@
     align-items: center;
     justify-content: center;
     gap: 40px;
-    border-top: 1px solid rgba(245,240,232,0.06);
+    border-top: 1px solid var(--rule-dark);
     margin-top: 2px;
   }
 
-  .quote-rule { flex: 1; max-width: 80px; height: 1px; background: rgba(245,240,232,0.12); }
+  .quote-rule { flex: 1; max-width: 80px; height: 1px; background: var(--rule-dark); }
 
   .quote-text {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-body);
     font-style: italic;
     font-weight: 300;
     font-size: 17px;
@@ -401,13 +405,13 @@
 </style>
 </head>
 <body>
-<div class="page-content">
+<div class="page-content" data-testid="page-content-portfolio">
 
 <section class="hero" data-testid="section-hero">
   <p class="hero-eyebrow" data-testid="text-hero-eyebrow">Fine Art Landscape Photography</p>
   <h1 class="hero-title" data-testid="text-hero-title">Portfolio</h1>
   <p class="hero-subtitle" data-testid="text-hero-subtitle">Beyond the Daydream</p>
-  <div class="hero-scroll" data-testid="scroll-indicator">
+  <div class="hero-scroll" data-testid="hero-scroll">
     <div class="scroll-line"></div>
     <span>Explore</span>
   </div>
@@ -423,7 +427,7 @@
 
 <div class="portfolio-grid" id="portfolioGrid" data-testid="portfolio-grid">
 
-  <div class="tile tile-1" data-testid="tile-portfolio-0">
+  <div class="tile tile-1" data-testid="portfolio-tile-1">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
     <div class="tile-hover-overlay"></div>
@@ -434,14 +438,14 @@
       <h2 class="tile-title">Beyond the<br>Daydream</h2>
       <p class="tile-subtitle">The places that couldn&rsquo;t be scrolled past</p>
       <p class="tile-description">Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act &mdash; arriving somewhere to wait for the light, the weather, the moment that justifies the journey.</p>
-      <a href="#" class="tile-cta" data-testid="link-tile-cta-0">
+      <a href="#" class="tile-cta" data-testid="link-tile-cta-1">
         <div class="tile-cta-line"></div>
         Enter
       </a>
     </div>
   </div>
 
-  <div class="tile tile-2" data-testid="tile-portfolio-1">
+  <div class="tile tile-2" data-testid="portfolio-tile-2">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
     <div class="tile-hover-overlay"></div>
@@ -452,14 +456,14 @@
       <h2 class="tile-title">Beyond the<br>Frame</h2>
       <p class="tile-subtitle">The near distance</p>
       <p class="tile-description">North Texas landscape &mdash; the land you drive past every day and never stop for. Palo Duro. The Trinity bottomlands. The Llano Estacado at golden hour. What&rsquo;s here when you look.</p>
-      <a href="#" class="tile-cta" data-testid="link-tile-cta-1">
+      <a href="#" class="tile-cta" data-testid="link-tile-cta-2">
         <div class="tile-cta-line"></div>
         Enter
       </a>
     </div>
   </div>
 
-  <div class="tile tile-3" data-testid="tile-portfolio-2">
+  <div class="tile tile-3" data-testid="portfolio-tile-3">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
     <div class="tile-hover-overlay"></div>
@@ -470,14 +474,14 @@
       <h2 class="tile-title">Beyond the<br>Moment</h2>
       <p class="tile-subtitle">The ones who also chose to be out there</p>
       <p class="tile-description">People in landscape. Climbers. Hikers. The WE CLIMB community. Figures who remind us that the wilderness is not empty &mdash; it is where we go to remember who we are.</p>
-      <a href="#" class="tile-cta" data-testid="link-tile-cta-2">
+      <a href="#" class="tile-cta" data-testid="link-tile-cta-3">
         <div class="tile-cta-line"></div>
         Enter
       </a>
     </div>
   </div>
 
-  <div class="tile tile-4" data-testid="tile-portfolio-3">
+  <div class="tile tile-4" data-testid="portfolio-tile-4">
     <div class="tile-bg"></div>
     <div class="tile-vignette"></div>
     <div class="tile-hover-overlay"></div>
@@ -488,7 +492,7 @@
       <h2 class="tile-title">Beyond the<br>Shutter</h2>
       <p class="tile-subtitle">The slower eye</p>
       <p class="tile-description">The Konica Hexar sees differently. Grain, patience, the commitment of analog &mdash; no spray and pray, no instant review. One frame at a time. One chance to mean it.</p>
-      <a href="#" class="tile-cta" data-testid="link-tile-cta-3">
+      <a href="#" class="tile-cta" data-testid="link-tile-cta-4">
         <div class="tile-cta-line"></div>
         Enter
       </a>
@@ -497,7 +501,7 @@
 
 </div>
 
-<div class="quote-strip" data-testid="section-quote-strip">
+<div class="quote-strip" data-reveal="0" data-testid="section-closing-quote">
   <div class="quote-rule"></div>
   <div>
     <p class="quote-text">
@@ -512,44 +516,35 @@
 <script>
 (async function() {
   try {
-    const cfRes = await fetch('/api/images/config');
-    if (cfRes.ok) {
-      const cfData = await cfRes.json();
-      if (cfData.hash) TIA.CF_HASH = cfData.hash;
-    }
+    var cfRes = await fetch('/api/images/config');
+    if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
   } catch(e) {}
 
   await TIA.load();
-  const state = TIA.getState();
-  const works = state.portfolioWorks || [];
+  var state = TIA.getState();
+  var works = state.portfolioWorks || [];
 
   if (works.length) {
-    const grid = document.getElementById('portfolioGrid');
-    const tileClasses = ['tile-1','tile-2','tile-3','tile-4'];
-    grid.innerHTML = works.map((w, i) => {
-      const cls = tileClasses[i % tileClasses.length];
-      const num = String(i + 1).padStart(2, '0');
-      const title = w.title || 'Untitled';
-      const coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
-      const bgStyle = coverUrl ? `background-image:url('${coverUrl}');background-size:cover;background-position:center;` : '';
-      return `
-      <div class="tile ${cls}" data-testid="tile-portfolio-${i}">
-        <div class="tile-bg" style="${bgStyle}"></div>
-        <div class="tile-vignette"></div>
-        <div class="tile-hover-overlay"></div>
-        <div class="tile-content">
-          <span class="tile-number">${num}</span>
-          <span class="tile-tag">${w.type || 'Series'}</span>
-          <div class="tile-rule"></div>
-          <h2 class="tile-title">${title}</h2>
-          ${w.subtitle ? `<p class="tile-subtitle">${w.subtitle}</p>` : ''}
-          ${w.description ? `<p class="tile-description">${w.description}</p>` : ''}
-          <a href="#" class="tile-cta" data-testid="link-tile-cta-${i}">
-            <div class="tile-cta-line"></div>
-            Enter
-          </a>
-        </div>
-      </div>`;
+    var grid = document.getElementById('portfolioGrid');
+    var tileClasses = ['tile-1','tile-2','tile-3','tile-4'];
+    grid.innerHTML = works.map(function(w, i) {
+      var cls = tileClasses[i % tileClasses.length];
+      var num = String(i + 1).padStart(2, '0');
+      var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
+      var bgStyle = coverUrl ? "background-image:url('" + coverUrl + "');background-size:cover;background-position:center;" : '';
+      return '<div class="tile ' + cls + '" data-testid="portfolio-tile-' + (i+1) + '">' +
+        '<div class="tile-bg" style="' + bgStyle + '"></div>' +
+        '<div class="tile-vignette"></div>' +
+        '<div class="tile-hover-overlay"></div>' +
+        '<div class="tile-content">' +
+          '<span class="tile-number">' + num + '</span>' +
+          '<span class="tile-tag">' + (w.type || 'Series') + '</span>' +
+          '<div class="tile-rule"></div>' +
+          '<h2 class="tile-title">' + (w.title || 'Untitled') + '</h2>' +
+          (w.subtitle ? '<p class="tile-subtitle">' + w.subtitle + '</p>' : '') +
+          (w.description ? '<p class="tile-description">' + w.description + '</p>' : '') +
+          '<a href="#" class="tile-cta" data-testid="link-tile-cta-' + (i+1) + '"><div class="tile-cta-line"></div>Enter</a>' +
+        '</div></div>';
     }).join('');
   }
 })();

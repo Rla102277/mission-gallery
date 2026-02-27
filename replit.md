@@ -12,7 +12,7 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
 
 ## Design System
-- **Color Palette**: Dark ink (#0d0d0d) background with cream (#f5f0e8) text on homepage/portfolio; light cream bg with ink text on about/contact/prints/hope-hike; gold (#b5922a) accents everywhere
+- **Color Palette**: Light cream (#f5f0e8) background with dark ink (#0d0d0d) text EVERYWHERE. Hero sections and collection tiles stay dark (have own dark gradient backgrounds) with cream text. Gold (#b5922a) accents everywhere. NEVER set body to dark/ink background.
 - **Typography**: Playfair Display (headings), Cormorant Garamond (body)
 - **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
 - **CSS Loading Order**: tia.css FIRST, then page-specific inline `<style>` blocks (so page-specific rules override base)
