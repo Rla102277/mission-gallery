@@ -43,19 +43,19 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .tb-save:disabled{opacity:.4;cursor:not-allowed}
 .tb-signout{font-size:8px;letter-spacing:4px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--muted);padding:5px 14px;cursor:pointer}
 /* LAYOUT */
-.body{display:grid;grid-template-columns:220px 1fr;overflow:hidden;height:100%}
-/* SIDEBAR */
-.sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface)}
+.body{display:flex;flex-direction:column;overflow:hidden;height:100%}
+/* SIDEBAR — hidden, using inline gallery selector instead */
+.sidebar{display:none}
 .sb-group{padding:14px 0 4px}
 .sb-lbl{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);padding:0 14px 8px;display:block}
-.sb-item{display:flex;align-items:center;gap:8px;padding:8px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;width:100%;text-align:left;font-size:12px;border-left:2px solid transparent}
-.sb-item:hover{color:var(--cream);background:rgba(255,255,255,.03)}
-.sb-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-left-color:var(--gold)}
-.sb-num{font-size:8px;letter-spacing:2px;color:var(--dim);width:18px;flex-shrink:0}
-.sb-name{flex:1;line-height:1.3}.sb-cnt{font-size:9px;color:var(--dim)}.sb-cnt.has{color:var(--green)}
-.sb-div{height:1px;background:var(--border);margin:4px 14px 10px}
+.sb-item{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;margin:2px}
+.sb-item:hover{color:var(--cream);background:rgba(255,255,255,.03);border-color:var(--border2)}
+.sb-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-color:var(--gold)}
+.sb-num{font-size:8px;letter-spacing:2px;color:var(--dim);flex-shrink:0}
+.sb-name{line-height:1.3}.sb-cnt{font-size:9px;color:var(--dim)}.sb-cnt.has{color:var(--green)}
+.sb-div{display:none}
 /* MAIN */
-.main{display:flex;flex-direction:column;overflow:hidden}
+.main{display:flex;flex-direction:column;overflow:hidden;flex:1}
 .ph{padding:16px 24px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface2)}
 .ph-eye{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
 .ph-title{font-size:19px;font-weight:300}.ph-acts{display:flex;gap:8px}
@@ -174,21 +174,21 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .gallery-upload-lbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.3;margin-bottom:3px}
 .gallery-upload-sub{font-size:10px;opacity:.18}
 /* IMAGES TAB */
-.img-layout{display:grid;grid-template-columns:200px 1fr;height:100%;overflow:hidden}
-.img-folders{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);padding:10px 0}
-.img-folder-item{display:flex;align-items:center;gap:8px;padding:7px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;width:100%;text-align:left;font-size:11px;border-left:2px solid transparent}
-.img-folder-item:hover{color:var(--cream);background:rgba(255,255,255,.03)}
-.img-folder-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-left-color:var(--gold)}
+.img-layout{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.img-folders{display:flex;flex-wrap:wrap;gap:4px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+.img-folder-item{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;white-space:nowrap}
+.img-folder-item:hover{color:var(--cream);background:rgba(255,255,255,.03);border-color:var(--border2)}
+.img-folder-item.active{color:var(--cream);background:rgba(255,255,255,.05);border-color:var(--gold)}
 .img-folder-ico{font-size:12px;opacity:.4;flex-shrink:0;width:16px;text-align:center}
-.img-folder-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.img-folder-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .img-folder-cnt{font-size:9px;color:var(--dim)}
 .img-folder-acts{display:flex;gap:2px;opacity:0;transition:opacity .15s}
 .img-folder-item:hover .img-folder-acts{opacity:1}
 .img-folder-del{border:none;background:none;color:var(--red);font-size:11px;cursor:pointer;padding:0 3px}
-.img-new-folder{display:flex;gap:6px;padding:6px 14px;margin-top:6px}
-.img-new-folder input{flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:11px;outline:none}
+.img-new-folder{display:inline-flex;gap:6px;align-items:center}
+.img-new-folder input{padding:4px 8px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:11px;outline:none;width:120px}
 .img-new-folder button{padding:4px 10px;font-size:8px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
-.img-main{display:flex;flex-direction:column;overflow:hidden}
+.img-main{display:flex;flex-direction:column;overflow:hidden;flex:1}
 .img-toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface2)}
 .img-toolbar-left{display:flex;align-items:center;gap:8px;flex:1}
 .img-toolbar-right{display:flex;align-items:center;gap:8px}
@@ -263,17 +263,6 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
     </div>
   </div>
   <div class="body">
-    <aside class="sidebar" id="sidebar">
-      <div class="sb-group">
-        <span class="sb-lbl">Collections</span>
-        <div id="seriesList"></div>
-      </div>
-      <div class="sb-div"></div>
-      <div class="sb-group">
-        <button class="sb-item" data-view="home-slots" onclick="setView('home-slots')"><span class="sb-num">H</span><span class="sb-name">Homepage Slots</span></button>
-        <button class="sb-item" data-view="portfolio-slots" onclick="setView('portfolio-slots')"><span class="sb-num">P</span><span class="sb-name">Portfolio Works</span></button>
-      </div>
-    </aside>
     <div class="main">
       <div class="ph">
         <div><div class="ph-eye" id="phEye"></div><div class="ph-title" id="phTitle">Photo Manager</div></div>
@@ -328,9 +317,7 @@ const TIA = {
 
   cfUrl(imageId, variant) {
     const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
-    if (!hash) return '';
-    const meta = TIA.getState().cf?.assetMeta?.[imageId];
-    if (!meta) return '';
+    if (!hash || !imageId) return '';
     return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
   },
 
@@ -525,7 +512,7 @@ async function init(){
   try{const cfgRes=await fetch("/api/images/config");const cfg=await cfgRes.json();if(cfg.hash){TIA.CF_HASH=cfg.hash;STATE.cf.hash=cfg.hash;}}catch{}
   if(TIA.CF_HASH&&!hadHash){await TIA.save(STATE);console.log("[Admin] Auto-saved CF hash to config");}
   setSyncStatus("ok","Synced");
-  renderSidebar();switchTab("galleries");
+  switchTab("galleries");
 }
 
 // SAVE
@@ -544,13 +531,7 @@ function setSyncStatus(s,l){const e=document.getElementById("syncStatus");if(e){
 
 // SIDEBAR
 function renderSidebar(){
-  const series=getSeries();
-  let html=series.map(s=>{
-    const cnt=(STATE.photos?.[s.id]||[]).length;
-    return`<button class="sb-item ${activeView===s.id?"active":""}" data-view="${s.id}" onclick="setView('${s.id}')"><span class="sb-num">${s.num||"—"}</span><span class="sb-name">${s.title}</span><span class="sb-cnt ${cnt>0?"has":""}">${cnt||""}</span></button>`;
-  }).join("");
-  html+=`<button class="sb-item" onclick="createNewGallery()" style="opacity:.4;border-top:1px solid var(--border);margin-top:6px;padding-top:10px"><span class="sb-num">+</span><span class="sb-name">New Gallery</span></button>`;
-  document.getElementById("seriesList").innerHTML=html;
+  if(activeTab==="galleries")showGalleriesPanel();
 }
 
 function createNewGallery(){
@@ -563,8 +544,8 @@ function createNewGallery(){
   STATE.series[id]={title:title.trim(),num,subtitle:"",description:"",type:"Series",camera:"",location:""};
   if(!STATE.photos)STATE.photos={};
   STATE.photos[id]=[];
-  renderSidebar();
-  setView(id);
+  activeView=id;
+  showGalleriesPanel();
   toast("Gallery '"+title.trim()+"' created — Save & Publish to go live");
 }
 
@@ -577,8 +558,7 @@ function deleteGallery(sid){
   delete STATE.series[sid];
   delete STATE.photos[sid];
   activeView=null;
-  renderSidebar();
-  switchTab("galleries");
+  showGalleriesPanel();
   toast("Gallery deleted — Save & Publish to apply");
 }
 
@@ -586,10 +566,8 @@ function deleteGallery(sid){
 function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
-  document.getElementById("sidebar").style.display=["galleries","settings"].includes(tab)?"":"none";
   if(tab==="galleries"){
-    if(activeView)showSeriesView(activeView);
-    else{const first=getSeries()[0];if(first){setView(first.id);}else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}}
+    showGalleriesPanel();
   }
   else if(tab==="images")showImagesPanel();
   else if(tab==="homepage")showHomeSlots();
@@ -597,12 +575,32 @@ function switchTab(tab){
   else if(tab==="settings")showSettingsPanel();
   else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}
 }
+function showGalleriesPanel(){
+  const series=getSeries();
+  setPanel("Galleries","Select a Collection","<button class='btn pri' onclick='createNewGallery()' data-testid='btn-new-gallery'>+ New Gallery</button>");
+  let html="<div style='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)'>";
+  series.forEach(s=>{
+    const cnt=(STATE.photos?.[s.id]||[]).length;
+    html+=`<button class="sb-item ${activeView===s.id?"active":""}" data-view="${s.id}" onclick="setView('${s.id}')" data-testid="btn-gallery-${s.id}"><span class="sb-num">${s.num||"—"}</span><span class="sb-name">${s.title}</span>${cnt?`<span class="sb-cnt has">${cnt}</span>`:""}</button>`;
+  });
+  html+="</div>";
+  if(activeView){
+    const sid=activeView;
+    const s=series.find(x=>x.id===sid);
+    const photos=getSeriesPhotos(sid);
+    const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
+    const isCustom=!TIA.DEFAULT_SERIES.find(d=>d.id===sid);
+    html+=renderSeriesContent(sid,s,photos,cover,isCustom);
+  } else {
+    html+="<div class='empty'><p>Select a gallery above</p></div>";
+  }
+  document.getElementById("panelBody").innerHTML=html;
+}
 function setView(id){
   activeView=id;
-  document.querySelectorAll(".sb-item").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
-  if(id==="home-slots")showHomeSlots();
-  else if(id==="portfolio-slots")showPortfolioSlots();
-  else showSeriesView(id);
+  if(id==="home-slots"){showHomeSlots();return;}
+  if(id==="portfolio-slots"){showPortfolioSlots();return;}
+  showGalleriesPanel();
 }
 function setPanel(eye,title,acts=""){
   document.querySelector(".ph").style.display="";
@@ -614,7 +612,7 @@ function setPanel(eye,title,acts=""){
 function removePhotoFromSeries(sid,pid){
   if(!STATE.photos[sid])return;
   STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==pid);
-  renderSidebar();showSeriesView(sid);
+  showGalleriesPanel();
   toast("Photo removed from series");
 }
 
@@ -654,8 +652,7 @@ async function handleUploadFiles(files,sid){
     }
   }
   if(uploaded>0){
-    renderSidebar();
-    setTimeout(()=>showSeriesView(sid),1500);
+    setTimeout(()=>showGalleriesPanel(),1500);
     toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded - Save & Publish to go live");
   }
 }
@@ -676,13 +673,10 @@ function exifTags(aid){
   if(e.dateTime){try{const d=new Date(e.dateTime);tags.push(d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}));}catch{}}
   return tags.map(t=>`<span>${esc(t)}</span>`).join("");
 }
-function showSeriesView(sid){
-  const s=getSeries().find(x=>x.id===sid);
-  const photos=getSeriesPhotos(sid);
-  const cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-  const isCustom=!TIA.DEFAULT_SERIES.find(d=>d.id===sid);
-  setPanel("Series "+(s?.num||"—"),s?.title||sid,isCustom?`<button class="btn red" onclick="deleteGallery('${sid}')" data-testid="btn-delete-gallery">Delete Gallery</button>`:"");
-  let html=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+function renderSeriesContent(sid,s,photos,cover,isCustom){
+  let html="";
+  if(isCustom)html+=`<div style="margin-bottom:12px;text-align:right"><button class="btn red" onclick="deleteGallery('${sid}')" data-testid="btn-delete-gallery">Delete Gallery</button></div>`;
+  html+=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
     <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
     <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
     <div><span class="field-lbl">Type</span><input class="input" value="${esc(s?.type||"")}" placeholder="e.g. Triptych, Diptych, Series" oninput="updateSeries('${sid}','type',this.value)"></div>
@@ -720,11 +714,15 @@ function showSeriesView(sid){
     });
     html+="</div>";
   }
-  document.getElementById("panelBody").innerHTML=html;
+  return html;
 }
-function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid][field]=val;renderSidebar();}
-function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showSeriesView(sid);toast("Cover set");}
-function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);renderSidebar();showSeriesView(sid);}
+function showSeriesView(sid){
+  activeView=sid;
+  showGalleriesPanel();
+}
+function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid][field]=val;}
+function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showGalleriesPanel();toast("Cover set");}
+function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);showGalleriesPanel();}
 
 // HOMEPAGE & PORTFOLIO SLOTS
 const HOME_SLOTS=[
@@ -967,8 +965,7 @@ function getImgSeriesForImage(cfId){
 }
 
 async function showImagesPanel(){
-  document.getElementById("sidebar").style.display="none";
-  document.querySelector(".ph").style.display="none";
+  setPanel("Images","All Cloudflare Images","<button class='btn pri' onclick='imgRefresh()' data-testid='btn-refresh-images'>Refresh</button>");
   imgSelected=new Set();
   document.getElementById("panelBody").innerHTML=`<div class="img-layout">
     <div class="img-folders" id="imgFolders"></div>
@@ -979,9 +976,6 @@ async function showImagesPanel(){
           <button class="btn" id="imgAssignBtn" onclick="openAssignModal()" disabled data-testid="btn-assign-selected">Assign to Series</button>
           <button class="btn" id="imgMoveBtn" onclick="openMoveToFolder()" disabled>Move to Folder</button>
           <button class="btn red" id="imgDelBtn" onclick="imgDeleteSelected()" disabled data-testid="btn-delete-selected">Delete</button>
-        </div>
-        <div class="img-toolbar-right">
-          <button class="btn pri" onclick="imgRefresh()" data-testid="btn-refresh-images">Refresh</button>
         </div>
       </div>
       <div class="img-content" id="imgContent">
@@ -1238,7 +1232,6 @@ function imgAssignToSeries(sid){
   });
   closeAssignModal();
   imgSelected=new Set();
-  renderSidebar();
   renderImgGrid();
   imgUpdateToolbar();
   toast(added+" image"+(added>1?"s":"")+" assigned to series — Save & Publish to go live");
@@ -1269,7 +1262,6 @@ async function imgDeleteSelected(){
     }catch{}
   }
   imgSelected=new Set();
-  renderSidebar();
   renderImgFolders();
   renderImgGrid();
   imgUpdateToolbar();
