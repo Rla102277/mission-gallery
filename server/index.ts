@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import multer from "multer";
 import exifReader from "exif-reader";
@@ -10,6 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = Number(process.env.PORT) || 5000;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+app.use(express.json({ limit: "10mb" }));
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_IMAGES_TOKEN = process.env.CF_IMAGES_TOKEN;
@@ -156,6 +158,32 @@ app.get("/api/images/list", async (req, res) => {
 
 app.get("/api/images/config", (_req, res) => {
   res.json({ hash: CF_IMAGES_HASH || "" });
+});
+
+const CONFIG_PATH = path.join(__dirname, "..", "data", "tia-config.json");
+
+app.get("/api/config", (_req, res) => {
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      const data = fs.readFileSync(CONFIG_PATH, "utf-8");
+      res.type("application/json").send(data);
+    } else {
+      res.json({});
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/config", (req, res) => {
+  try {
+    const dir = path.dirname(CONFIG_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(req.body, null, 2));
+    res.json({ success: true, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.use(express.static(path.join(__dirname, "..")));

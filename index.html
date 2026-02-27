@@ -303,7 +303,7 @@
           '<div>' +
             '<span class="featured-tag">' + (w.type || '') + '</span>' +
             '<h3 class="featured-title">' + (w.title || '') + '</h3>' +
-            '<p class="featured-desc">' + (w.subtitle || '') + '</p>' +
+            '<p class="featured-desc">' + (w.description || w.subtitle || '') + '</p>' +
           '</div></div>';
       }).join('');
       featuredList.innerHTML = featHTML;

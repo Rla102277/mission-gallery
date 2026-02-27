@@ -1,34 +1,24 @@
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v6
+// TIA-DATA.JS  v7
 //
-// Photo sources: Cloudflare Images (primary) + Cloudinary (legacy) + Lightroom (optional)
-// Config store: Cloudinary raw JSON (tia-config.json)
-//
-// Config JSON at:
-//   https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json
+// Photo source: Cloudflare Images
+// Config store: Server-side JSON (/api/config)
 //
 // Config schema:
 // {
-//   series:    { s1: { title, subtitle, description, coverAssetId } }
-//   photos:    { s1: [ id, id, ... ] }
-//   home:      { hero: id, carousel1: id, ... }
-//   portfolio: { 'pf-s1': id, ... }
-//   cf:        { hash: 'deliveryHash', assetMeta: { cfImageId: { id, filename } } }
-//   cl:        { assetMeta: { publicId: { publicId, filename } } }
-//   lr:        { assetMeta: { assetId: { url2048, urlThumb, filename } } }
+//   series:         { s1: { title, subtitle, description, coverAssetId } }
+//   photos:         { s1: [ id, id, ... ] }
+//   home:           { hero: id, ... }
+//   portfolioWorks: [ { id, title, subtitle, type, description, ... } ]
+//   cf:             { hash: 'deliveryHash', assetMeta: { cfImageId: { id, filename } } }
+//   imgFolders:     { fid: { name, images: [] } }
 // }
 // ═══════════════════════════════════════════════════════════════
 
 const TIA = {
-  CLOUD:      'duxiir9lv',
-  FOLDER:     'tia',
-  PRESET:     'tia_unsigned',
   STORE_KEY:  'tia_admin',
-  CONFIG_PID: 'tia/tia-config',
-  CONFIG_URL: 'https://res.cloudinary.com/duxiir9lv/raw/upload/tia/tia-config.json',
   CF_HASH:    null,
 
-  // ── Cloudflare Images URL builder ──────────────────────────
   cfUrl(imageId, variant) {
     const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
     if (!hash) return '';
@@ -37,32 +27,9 @@ const TIA = {
     return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
   },
 
-  // ── Legacy Cloudinary URL builder ──────────────────────────
-  clUrl(photoId, size) {
-    const meta = TIA.getState().cl?.assetMeta?.[photoId];
-    if (!meta) return '';
-    const pid = meta.publicId || photoId;
-    const base = `https://res.cloudinary.com/${TIA.CLOUD}/image/upload`;
-    if (size === 'thumb') return `${base}/c_fill,w_400,h_267/${pid}`;
-    if (size === 'cover') return `${base}/c_fill,w_1200,h_600/${pid}`;
-    if (size === 'hero')  return `${base}/c_fill,w_1920,h_1080/${pid}`;
-    if (size === 'full')  return `${base}/${pid}`;
-    return `${base}/${pid}`;
-  },
-
-  // ── Adobe CDN URL builders (optional) ───────────────────
-  lrUrl(assetId, size) {
-    const meta = TIA.getState().lr?.assetMeta?.[assetId];
-    if (!meta) return '';
-    if (size === 'thumb')  return meta.urlThumb  || meta.url2048 || '';
-    if (size === 'full')   return meta.urlFull   || meta.url2048 || '';
-    return meta.url2048 || meta.urlThumb || '';
-  },
-
-  // ── Resolve URL — checks CF Images first, then Cloudinary, then Lightroom ─
   photoUrl(id, size) {
     const variant = size === 'thumb' ? 'thumb' : size === 'cover' ? 'cover' : size === 'hero' ? 'hero' : 'full';
-    return TIA.cfUrl(id, variant) || TIA.clUrl(id, size) || TIA.lrUrl(id, size);
+    return TIA.cfUrl(id, variant);
   },
 
   thumb(assetId)  { return TIA.photoUrl(assetId, 'thumb');  },
@@ -70,7 +37,6 @@ const TIA = {
   hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
-  // ── Series definitions ─────────────────────────────────────
   DEFAULT_SERIES: [
     { id:'s1', num:'01', title:'Solitude & Scale',          subtitle:'The Secret Lagoon',                  type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Fjallsárlón Glacier Lagoon'          },
     { id:'s2', num:'02', title:'Glacial Contrasts',          subtitle:'Ice in Two Realms',                  type:'Diptych',  camera:'GFX 100S II + 100–200mm', location:'Jökulsárlón & Diamond Beach'         },
@@ -84,22 +50,18 @@ const TIA = {
 
   _state: null,
 
-  // ── Load config ──────────────────────────────────────────
   async load() {
-    const urls = [
-      localStorage.getItem('tia_config_url'),
-      TIA.CONFIG_URL
-    ].filter(Boolean);
-    for (const url of urls) {
-      try {
-        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-        if (res.ok) {
-          TIA._state = await res.json();
+    try {
+      const res = await fetch('/api/config?t=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Object.keys(data).length > 0) {
+          TIA._state = data;
           localStorage.setItem(TIA.STORE_KEY, JSON.stringify(TIA._state));
           return TIA._state;
         }
-      } catch {}
-    }
+      }
+    } catch {}
     try {
       const cached = localStorage.getItem(TIA.STORE_KEY);
       if (cached) { TIA._state = JSON.parse(cached); return TIA._state; }
@@ -114,32 +76,21 @@ const TIA = {
     catch { return {}; }
   },
 
-  // ── Save — localStorage + push JSON to Cloudinary ─────────
   async save(state) {
     TIA._state = state;
     localStorage.setItem(TIA.STORE_KEY, JSON.stringify(state));
-    await TIA._pushConfig(state);
-  },
-
-  async _pushConfig(state) {
-    const blob    = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const dataUri = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
-    const fd = new FormData();
-    fd.append('file',          dataUri);
-    fd.append('upload_preset', TIA.PRESET);
-    fd.append('folder',        TIA.FOLDER);
-    fd.append('public_id',     'tia-config-' + Date.now());
-    fd.append('resource_type', 'raw');
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${TIA.CLOUD}/raw/upload`, { method:'POST', body:fd });
-    if (!res.ok) throw new Error('Config push failed: ' + await res.text());
-    const data = await res.json();
-    if (data.secure_url) {
-      TIA._latestConfigUrl = data.secure_url;
-      localStorage.setItem('tia_config_url', data.secure_url);
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state),
+    });
+    if (!res.ok) throw new Error('Config save failed: ' + await res.text());
+    const result = await res.json();
+    if (result.timestamp) {
+      localStorage.setItem('tia_last_save', result.timestamp);
     }
   },
 
-  // ── Series helpers ─────────────────────────────────────────
   getSeries() {
     const state = TIA.getState();
     const defaults = TIA.DEFAULT_SERIES.map(s => ({ ...s, ...(state.series?.[s.id] || {}) }));
@@ -156,21 +107,21 @@ const TIA = {
       full:     TIA.full(aid),
       cover:    TIA.cover(aid),
       hero:     TIA.hero(aid),
-      filename: state.cl?.assetMeta?.[aid]?.filename || state.lr?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
+      filename: state.cf?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
     }));
   },
 
   getCoverUrl(seriesId, size = 'cover') {
     const state    = TIA.getState();
     const adminAid = state.series?.[seriesId]?.coverAssetId;
-    if (adminAid) return TIA[size]?.(adminAid) || TIA.lrUrl(adminAid, '');
+    if (adminAid) return TIA[size]?.(adminAid) || '';
     const photos   = TIA.getPhotos(seriesId);
     return photos[0]?.[size] || photos[0]?.cover || '';
   },
 
   getHomeUrl(slotId, size = 'hero') {
     const aid = TIA.getState().home?.[slotId];
-    return aid ? (TIA[size]?.(aid) || TIA.lrUrl(aid, '')) : '';
+    return aid ? (TIA[size]?.(aid) || '') : '';
   },
 
   applyAll() {
