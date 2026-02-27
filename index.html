@@ -3,446 +3,266 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The Infinite Arch — Fine Art Landscape Photography. Beyond the Daydream. Medium format expedition photography, fine art prints, and adventure wellness.">
+  <meta name="description" content="The Infinite Arch — Fine Art Landscape Photography. Beyond the Daydream.">
   <title>The Infinite Arch — Beyond the Daydream</title>
   <link rel="stylesheet" href="/assets/css/tia.css">
   <style>
     .page-content { padding-top: 0; }
+    body { background: var(--ink); color: var(--cream); }
+    body::before { opacity: 0.35; }
+    .tia-nav { background: linear-gradient(to bottom, rgba(13,13,13,0.95) 0%, transparent 100%); }
+    .tia-nav.scrolled { background: rgba(13,13,13,0.95); border-bottom-color: rgba(245,240,232,0.08); }
+    .nav-logo .r-heavy, .nav-logo .r-bot { background: var(--cream); }
+    .nav-logo .r-thin { background: var(--cream); }
+    .nav-hamburger span { background: var(--cream); }
+    .nav-links a.active { border-bottom-color: rgba(245,240,232,0.4); }
+    .nav-mobile { background: rgba(13,13,13,0.98); }
 
     .hero {
-      height:100vh; min-height:700px;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      text-align:center; position:relative; overflow:hidden; padding:0 40px;
-      background: var(--cream);
+      height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      position: relative; padding: 0 40px; overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(201,162,39,0.055) 0%, transparent 55%),
+        radial-gradient(ellipse at 15% 75%, rgba(30,50,90,0.3) 0%, transparent 50%),
+        linear-gradient(160deg, #080c12 0%, #0d0d0d 40%, #0a0c09 100%);
     }
     .hero::after {
-      content:''; position:absolute; left:0; right:0; top:40%; height:1px;
-      background:linear-gradient(to right, transparent, rgba(181,146,42,0.15), rgba(13,13,13,0.06), rgba(181,146,42,0.15), transparent);
+      content:''; position:absolute; left:0; right:0; top:38%; height:1px;
+      background:linear-gradient(to right,transparent,rgba(201,162,39,0.07),rgba(245,240,232,0.05),rgba(201,162,39,0.07),transparent);
+      pointer-events:none;
     }
+    .hero-wordmark { display:flex; flex-direction:column; align-items:center; margin-bottom:48px; }
+    .hw-rule-top  { width:300px; height:3px; background:var(--cream); margin-bottom:10px; }
+    .hw-rule-thin { width:300px; height:1px; background:var(--cream); opacity:0.22; margin-bottom:18px; }
+    .hw-the { font-family:var(--font-body); font-style:italic; font-weight:300; font-size:15px; letter-spacing:13px; opacity:0.38; margin-bottom:2px; }
+    .hw-infinite { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:38px; letter-spacing:8px; opacity:0.65; line-height:1; }
+    .hw-arch { font-family:var(--font-display); font-weight:900; font-size:clamp(90px,13vw,148px); letter-spacing:-6px; line-height:0.85; }
+    .hw-rule-thin-b { width:300px; height:1px; background:var(--cream); opacity:0.22; margin-top:6px; margin-bottom:13px; }
+    .hw-tagline { font-family:var(--font-body); font-style:italic; font-weight:300; font-size:19px; letter-spacing:9px; opacity:0.88; margin-bottom:13px; }
+    .hw-rule-bot { width:300px; height:3px; background:var(--cream); }
+    .hero-sub { font-size:10px; letter-spacing:6px; text-transform:uppercase; opacity:0.22; margin-top:36px; }
+    .hero-scroll { position:absolute; bottom:44px; display:flex; flex-direction:column; align-items:center; gap:10px; opacity:0.2; animation:scrollPulse 2.5s ease-in-out infinite; }
+    .hero-scroll span { font-size:8.5px; letter-spacing:5px; text-transform:uppercase; }
+    .scroll-line { width:1px; height:44px; background:var(--cream); }
+    @keyframes scrollPulse { 0%,100%{opacity:.2} 50%{opacity:.5} }
 
-    .hero-wm { display:flex; flex-direction:column; align-items:center; margin-bottom:44px; opacity:0; animation:fadeUp 1.2s var(--ease) 0.3s forwards; }
-    .wm-r1 { width:280px; height:3px; background:var(--ink); margin-bottom:9px; }
-    .wm-r2 { width:280px; height:1px; background:var(--ink); opacity:0.2; margin-bottom:16px; }
-    .wm-the { font-style:italic; font-weight:300; font-size:14px; letter-spacing:12px; opacity:0.35; margin-bottom:1px; }
-    .wm-inf { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(28px,4vw,42px); letter-spacing:7px; opacity:0.6; line-height:1; }
-    .wm-arch { font-family:var(--font-display); font-weight:900; font-size:clamp(80px,12vw,148px); letter-spacing:-6px; line-height:0.84; }
-    .wm-r3 { width:280px; height:1px; background:var(--ink); opacity:0.2; margin-top:5px; margin-bottom:11px; }
-    .wm-tag { font-style:italic; font-weight:300; font-size:clamp(14px,1.8vw,20px); letter-spacing:8px; opacity:0.85; margin-bottom:11px; }
-    .wm-r4 { width:280px; height:3px; background:var(--ink); }
-
-    .hero-sub { font-size:9px; letter-spacing:6px; text-transform:uppercase; opacity:0; animation:fadeUp 1s var(--ease) 1s forwards; }
-    .hero-cta-row { display:flex; gap:20px; margin-top:44px; opacity:0; animation:fadeUp 1s var(--ease) 1.3s forwards; flex-wrap:wrap; justify-content:center; }
-    .btn-primary { padding:13px 36px; border:1px solid rgba(13,13,13,0.25); font-size:9.5px; letter-spacing:5px; text-transform:uppercase; transition:all 0.3s; background:transparent; color:var(--ink); cursor:pointer; }
-    .btn-primary:hover { background:rgba(13,13,13,0.06); border-color:rgba(13,13,13,0.5); }
-    .btn-gold { padding:13px 36px; border:1px solid rgba(181,146,42,0.4); color:var(--gold); font-size:9.5px; letter-spacing:5px; text-transform:uppercase; transition:all 0.3s; background:transparent; cursor:pointer; }
-    .btn-gold:hover { background:rgba(181,146,42,0.07); border-color:var(--gold); }
-
-    .hero-scroll { position:absolute; bottom:40px; display:flex; flex-direction:column; align-items:center; gap:8px; opacity:0.18; animation:scrollPulse 2.8s ease-in-out infinite 2s; }
-    .hero-scroll span { font-size:8px; letter-spacing:5px; text-transform:uppercase; }
-    .scroll-line { width:1px; height:44px; background:var(--ink); }
-    @keyframes scrollPulse { 0%,100%{opacity:0.18} 50%{opacity:0.45} }
-
-    .section { padding:120px 60px; max-width:var(--page-max); margin:0 auto; }
-    .section-wide { padding:100px 0; }
-    .eyebrow { font-size:9px; letter-spacing:6px; text-transform:uppercase; opacity:0.25; display:block; margin-bottom:20px; }
-    .eyebrow-gold { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:var(--gold); opacity:0.7; display:block; margin-bottom:20px; }
-    .section-title { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(26px,3.5vw,46px); opacity:0.82; line-height:1.2; margin-bottom:16px; }
-    .rule-h { height:1px; background:var(--rule); margin:0 60px; }
-    .rule-divider { display:flex; align-items:center; gap:20px; padding:0 60px; max-width:var(--page-max); margin:0 auto; }
-    .rule-divider .line { flex:1; height:1px; background:var(--rule); }
-    .rule-divider .star { font-size:14px; opacity:0.12; letter-spacing:4px; }
-    .cta-link { display:inline-flex; align-items:center; gap:10px; font-size:9.5px; letter-spacing:5px; text-transform:uppercase; opacity:0.32; transition:opacity 0.3s; margin-top:32px; }
+    .philosophy { padding:120px 60px; max-width:860px; margin:0 auto; text-align:center; }
+    .eyebrow { font-size:9.5px; letter-spacing:6px; text-transform:uppercase; opacity:0.22; display:block; margin-bottom:28px; }
+    .philosophy .opener { font-family:var(--font-display); font-style:italic; font-size:clamp(22px,3vw,36px); line-height:1.35; opacity:0.88; margin-bottom:28px; }
+    .philosophy .body { font-size:17px; line-height:1.85; opacity:0.45; max-width:620px; margin:0 auto 16px; }
+    .cta-link { display:inline-flex; align-items:center; gap:12px; font-size:10px; letter-spacing:5px; text-transform:uppercase; opacity:0.35; margin-top:36px; transition:opacity 0.3s; }
     .cta-link:hover { opacity:0.85; }
-    .cta-line { width:28px; height:1px; background:var(--ink); transition:width 0.4s; }
-    .cta-link:hover .cta-line { width:52px; }
+    .cta-line { width:32px; height:1px; background:var(--cream); transition:width 0.4s; }
+    .cta-link:hover .cta-line { width:56px; }
 
-    [data-reveal] { opacity:0; transform:translateY(24px); transition:opacity 0.8s var(--ease), transform 0.8s var(--ease); }
-    [data-reveal].visible { opacity:1; transform:translateY(0); }
+    .divider { display:flex; align-items:center; gap:24px; padding:0 60px; max-width:var(--page-max); margin:0 auto; }
+    .divider-rule { flex:1; height:1px; background:rgba(245,240,232,0.08); }
+    .divider-mark { font-family:var(--font-body); font-size:16px; opacity:0.12; letter-spacing:8px; }
 
-    .vision { padding:120px 60px 100px; max-width:880px; margin:0 auto; text-align:center; }
-    .vision .opener { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(22px,3vw,38px); line-height:1.35; opacity:0.88; margin-bottom:32px; }
-    .vision .body { font-size:17px; line-height:1.9; opacity:0.45; max-width:640px; margin:0 auto 18px; }
-
-    .collections-header { padding:0 60px; margin-bottom:40px; display:flex; align-items:flex-end; justify-content:space-between; max-width:var(--page-max); margin-left:auto; margin-right:auto; }
-    .coll-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
-    .coll-tile { position:relative; height:480px; overflow:hidden; display:block; }
-    .coll-tile .tile-bg { position:absolute; inset:0; background-size:cover; background-position:center; transition:transform 1s var(--ease); }
-    .coll-tile:hover .tile-bg { transform:scale(1.05); }
-    .ct1 .tile-bg { background:radial-gradient(ellipse at 25% 65%,rgba(30,50,90,.85) 0%,transparent 60%),linear-gradient(165deg,#080f1e 0%,#040810 55%,#060b16 100%); }
-    .ct2 .tile-bg { background:radial-gradient(ellipse at 65% 70%,rgba(75,50,15,.8) 0%,transparent 55%),linear-gradient(150deg,#110d04 0%,#1a1207 55%,#0e0a03 100%); }
-    .ct3 .tile-bg { background:radial-gradient(ellipse at 45% 55%,rgba(55,35,25,.75) 0%,transparent 55%),linear-gradient(140deg,#0f0b09 0%,#170f0b 60%,#0b0807 100%); }
-    .ct4 .tile-bg { background:radial-gradient(ellipse at 50% 40%,rgba(45,45,55,.75) 0%,transparent 60%),linear-gradient(155deg,#0c0c0f 0%,#131316 55%,#08080a 100%); }
-    .tile-vig { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.06) 55%); }
-    .tile-content { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:40px 44px; color:var(--cream); }
-    .tile-tag { font-size:8.5px; letter-spacing:5px; text-transform:uppercase; opacity:0.3; margin-bottom:8px; transition:opacity .4s; }
+    .collections { padding:80px 0 0; }
+    .collections-header { padding:0 60px; margin-bottom:48px; display:flex; align-items:flex-end; justify-content:space-between; }
+    .collections-header h2 { font-family:var(--font-display); font-style:italic; font-size:clamp(26px,3vw,40px); opacity:0.8; font-weight:400; }
+    .collections-header a { font-size:10px; letter-spacing:4px; text-transform:uppercase; opacity:0.28; transition:opacity 0.3s; display:flex; align-items:center; gap:10px; }
+    .collections-header a:hover { opacity:0.8; }
+    .coll-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+    .coll-tile { position:relative; height:460px; overflow:hidden; cursor:pointer; display:block; }
+    .coll-tile .tile-bg { position:absolute; inset:0; transition:transform 0.9s var(--ease); }
+    .coll-tile:hover .tile-bg { transform:scale(1.04); }
+    .ct-1 .tile-bg { background:radial-gradient(ellipse at 30% 60%,rgba(40,55,80,.8) 0%,transparent 60%),linear-gradient(160deg,#0a1020 0%,#050810 50%,#080c18 100%); }
+    .ct-2 .tile-bg { background:radial-gradient(ellipse at 60% 70%,rgba(80,55,20,.7) 0%,transparent 55%),linear-gradient(150deg,#120e06 0%,#1a1208 50%,#0e0a04 100%); }
+    .ct-3 .tile-bg { background:radial-gradient(ellipse at 40% 50%,rgba(60,40,30,.6) 0%,transparent 55%),linear-gradient(140deg,#100c0a 0%,#18120e 60%,#0c0908 100%); }
+    .ct-4 .tile-bg { background:radial-gradient(ellipse at 50% 40%,rgba(50,50,55,.7) 0%,transparent 60%),linear-gradient(155deg,#0e0e10 0%,#141418 50%,#0a0a0c 100%); }
+    .coll-tile .tile-vignette { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.08) 55%); }
+    .coll-tile .tile-content { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:38px 42px; }
+    .tile-tag { font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.32; margin-bottom:8px; transition:opacity .4s; }
     .coll-tile:hover .tile-tag { opacity:0.65; }
-    .tile-bar { width:24px; height:1px; background:var(--cream); opacity:0.2; margin-bottom:10px; transition:width .5s, opacity .4s; }
-    .coll-tile:hover .tile-bar { width:50px; opacity:0.5; }
-    .ct1 .tile-bar { background:var(--gold); opacity:0.5; }
-    .tile-h { font-family:var(--font-display); font-weight:900; font-size:clamp(28px,3vw,46px); letter-spacing:-1px; line-height:0.9; margin-bottom:6px; transition:transform .5s; }
-    .coll-tile:hover .tile-h { transform:translateY(-4px); }
-    .tile-sub { font-family:var(--font-display); font-style:italic; font-size:clamp(13px,1.5vw,17px); opacity:0.38; transition:transform .5s, opacity .4s; }
-    .coll-tile:hover .tile-sub { transform:translateY(-4px); opacity:0.65; }
-    .tile-arrow { position:absolute; top:36px; right:40px; font-size:18px; opacity:0; transition:opacity .4s, transform .4s; transform:translate(-8px,-8px); color:var(--cream); }
-    .coll-tile:hover .tile-arrow { opacity:0.35; transform:translate(0,0); }
+    .tile-rule-s { width:26px; height:1px; background:var(--cream); opacity:0.22; margin-bottom:11px; transition:width .5s,opacity .4s; }
+    .coll-tile:hover .tile-rule-s { width:52px; opacity:0.5; }
+    .ct-1 .tile-rule-s { background:var(--gold); opacity:0.45; }
+    .tile-h { font-family:var(--font-display); font-weight:900; font-size:clamp(28px,3vw,44px); letter-spacing:-1px; line-height:0.9; margin-bottom:5px; transition:transform .5s; }
+    .coll-tile:hover .tile-h { transform:translateY(-3px); }
+    .tile-sub { font-family:var(--font-display); font-style:italic; font-size:clamp(13px,1.5vw,17px); opacity:0.42; transition:transform .5s,opacity .4s; }
+    .coll-tile:hover .tile-sub { transform:translateY(-3px); opacity:0.68; }
 
+    .featured { padding:120px 60px; max-width:var(--page-max); margin:0 auto; }
+    .featured-header { margin-bottom:72px; }
+    .featured-header h2 { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(28px,3.5vw,48px); opacity:0.8; }
     .featured-list { display:flex; flex-direction:column; }
-    .feat-item { display:grid; grid-template-columns:72px 1fr 180px; gap:0 48px; padding:52px 0; border-bottom:1px solid var(--rule); align-items:start; transition:background .3s; }
-    .feat-item:first-child { border-top:1px solid var(--rule); }
-    .feat-num { font-family:var(--font-display); font-weight:900; font-size:72px; letter-spacing:-4px; line-height:1; opacity:0.06; padding-top:2px; transition:opacity .4s; }
-    .feat-item:hover .feat-num { opacity:0.12; }
-    .feat-tag { font-size:8.5px; letter-spacing:5px; text-transform:uppercase; opacity:0.3; display:block; margin-bottom:12px; }
-    .feat-title { font-family:var(--font-display); font-weight:900; font-size:clamp(22px,2.5vw,34px); letter-spacing:-0.5px; line-height:1; margin-bottom:14px; transition:transform .4s; }
-    .feat-item:hover .feat-title { transform:translateX(5px); }
-    .feat-desc { font-size:15px; line-height:1.85; opacity:0.42; }
-    .feat-status { text-align:right; padding-top:6px; }
-    .feat-badge { display:inline-block; padding:6px 14px; border:1px solid rgba(13,13,13,0.14); font-size:8px; letter-spacing:4px; text-transform:uppercase; opacity:0.4; }
-    .feat-badge.gold { border-color:rgba(181,146,42,0.4); color:var(--gold); opacity:0.7; }
+    .featured-item { display:grid; grid-template-columns:80px 1fr; gap:0 48px; padding:52px 0; border-bottom:1px solid rgba(245,240,232,0.08); }
+    .featured-item:first-child { border-top:1px solid rgba(245,240,232,0.08); }
+    .featured-num { font-family:var(--font-display); font-weight:900; font-size:80px; line-height:1; letter-spacing:-4px; opacity:0.05; align-self:start; padding-top:4px; transition:opacity .4s; }
+    .featured-item:hover .featured-num { opacity:0.1; }
+    .featured-title { font-family:var(--font-display); font-weight:900; font-size:clamp(24px,2.5vw,36px); letter-spacing:-1px; margin-bottom:12px; line-height:1; transition:transform .4s; }
+    .featured-item:hover .featured-title { transform:translateX(6px); }
+    .featured-tag { font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.28; margin-bottom:16px; display:block; }
+    .featured-desc { font-size:15px; line-height:1.8; opacity:0.4; max-width:600px; }
 
-    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
-    .about-pull { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(20px,2.5vw,30px); line-height:1.45; opacity:0.8; margin-bottom:32px; }
-    .about-body { font-size:15px; line-height:1.9; opacity:0.42; }
-    .about-body p { margin-bottom:18px; }
-    .about-gear { padding:40px; border:1px solid var(--rule); margin-bottom:24px; }
-    .gear-title { font-size:9px; letter-spacing:6px; text-transform:uppercase; opacity:0.25; margin-bottom:20px; display:block; }
-    .gear-list { display:flex; flex-direction:column; gap:10px; }
-    .gear-item { display:flex; align-items:center; gap:14px; font-size:13px; opacity:0.5; }
-    .gear-dot { width:4px; height:4px; background:var(--gold); opacity:0.6; flex-shrink:0; }
-    .about-quote { padding:36px 40px; background:rgba(181,146,42,0.06); border-left:2px solid rgba(181,146,42,0.3); }
-    .aq-text { font-family:var(--font-display); font-style:italic; font-size:16px; line-height:1.6; opacity:0.65; margin-bottom:10px; }
-    .aq-attr { font-size:9px; letter-spacing:4px; text-transform:uppercase; opacity:0.25; }
+    .process { padding:0 60px 100px; max-width:var(--page-max); margin:0 auto; }
+    .process-header { margin-bottom:64px; }
+    .process-header h2 { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(26px,3vw,42px); opacity:0.8; }
+    .process-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; }
+    .process-card { padding:48px 40px; background:rgba(245,240,232,0.025); border:1px solid rgba(245,240,232,0.08); transition:background .4s; }
+    .process-card:hover { background:rgba(245,240,232,0.04); }
+    .pc-num { font-family:var(--font-display); font-weight:900; font-size:64px; letter-spacing:-3px; opacity:0.06; line-height:1; margin-bottom:24px; }
+    .pc-title { font-family:var(--font-display); font-weight:700; font-size:20px; margin-bottom:14px; opacity:0.8; }
+    .pc-body { font-size:14px; line-height:1.8; opacity:0.38; }
 
-    .process-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:3px; }
-    .proc-card { padding:52px 44px; border:1px solid var(--rule); background:rgba(13,13,13,0.02); transition:background .4s; }
-    .proc-card:hover { background:rgba(13,13,13,0.04); }
-    .proc-n { font-family:var(--font-display); font-weight:900; font-size:60px; letter-spacing:-3px; line-height:1; opacity:0.06; margin-bottom:28px; }
-    .proc-title { font-family:var(--font-display); font-weight:700; font-size:21px; margin-bottom:14px; opacity:0.78; }
-    .proc-body { font-size:14px; line-height:1.85; opacity:0.4; }
+    .hope-hike-callout { margin:0 60px 120px; padding:72px 80px; background:linear-gradient(135deg,rgba(201,162,39,0.06) 0%,rgba(13,13,13,0) 60%),rgba(245,240,232,0.025); border:1px solid rgba(201,162,39,0.18); display:grid; grid-template-columns:1fr auto; align-items:center; gap:60px; }
+    .hhc-eyebrow { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:var(--gold); opacity:0.7; margin-bottom:14px; display:block; }
+    .hhc-title { font-family:var(--font-display); font-weight:900; font-size:clamp(28px,3vw,44px); letter-spacing:-1px; line-height:0.95; margin-bottom:16px; }
+    .hhc-sub { font-family:var(--font-display); font-style:italic; font-size:18px; opacity:0.45; margin-bottom:20px; }
+    .hhc-body { font-size:14px; line-height:1.8; opacity:0.38; max-width:480px; }
+    .hhc-cta { display:inline-flex; align-items:center; gap:12px; font-size:10px; letter-spacing:5px; text-transform:uppercase; padding:16px 32px; border:1px solid rgba(201,162,39,0.4); color:var(--gold); white-space:nowrap; transition:background .3s,border-color .3s; }
+    .hhc-cta:hover { background:rgba(201,162,39,0.08); border-color:var(--gold); }
 
-    .gallery-teaser { padding:0; }
-    .gallery-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; height:320px; }
-    .gs-cell { background:rgba(13,13,13,0.03); border:1px solid var(--rule); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; transition:background .4s; }
-    .gs-cell:hover { background:rgba(13,13,13,0.06); }
-    .gs-label { font-size:9px; letter-spacing:4px; text-transform:uppercase; opacity:0.2; text-align:center; padding:20px; }
-    .gs-num { font-family:var(--font-display); font-weight:900; font-size:44px; letter-spacing:-2px; opacity:0.04; position:absolute; bottom:16px; right:20px; line-height:1; }
+    .services { padding:0 60px 120px; max-width:var(--page-max); margin:0 auto; }
+    .services-header { margin-bottom:64px; }
+    .services-header h2 { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(26px,3vw,42px); opacity:0.8; }
+    .services-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; }
+    .service-card { padding:52px 40px; border-top:2px solid rgba(245,240,232,.08); transition:border-color .4s; }
+    .service-card:first-child { border-top-color:var(--gold); }
+    .service-card:hover { border-top-color:rgba(245,240,232,.25); }
+    .sc-title { font-family:var(--font-display); font-weight:700; font-size:22px; margin-bottom:14px; opacity:0.8; }
+    .sc-body { font-size:14px; line-height:1.8; opacity:0.38; margin-bottom:24px; }
+    .sc-price { font-size:10px; letter-spacing:4px; text-transform:uppercase; opacity:0.25; }
 
-    .hope-hike {
-      margin:0 60px; padding:80px 88px;
-      background:linear-gradient(135deg, rgba(181,146,42,0.06) 0%, rgba(245,240,232,0) 55%), rgba(13,13,13,0.02);
-      border:1px solid rgba(181,146,42,0.2);
-      display:grid; grid-template-columns:1fr auto; align-items:center; gap:72px;
-    }
-    .hh-title { font-family:var(--font-display); font-weight:900; font-size:clamp(30px,3.5vw,52px); letter-spacing:-1.5px; line-height:0.92; margin-bottom:14px; }
-    .hh-sub { font-family:var(--font-display); font-style:italic; font-size:19px; opacity:0.45; margin-bottom:22px; }
-    .hh-body { font-size:15px; line-height:1.85; opacity:0.4; max-width:500px; }
-    .hh-details { display:flex; gap:32px; margin-top:28px; flex-wrap:wrap; }
-    .hh-detail-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; opacity:0.25; display:block; margin-bottom:4px; }
-    .hh-detail-val { font-size:14px; opacity:0.6; }
-    .hh-cta { display:inline-flex; align-items:center; gap:12px; padding:16px 36px; border:1px solid rgba(181,146,42,0.4); color:var(--gold); font-size:9.5px; letter-spacing:5px; text-transform:uppercase; white-space:nowrap; transition:all .3s; }
-    .hh-cta:hover { background:rgba(181,146,42,0.08); border-color:var(--gold); }
-    .hh-cta-line { width:24px; height:1px; background:var(--gold); transition:width .4s; }
-    .hh-cta:hover .hh-cta-line { width:44px; }
-
-    .services-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:3px; }
-    .svc-card { padding:56px 44px; border-top:2px solid rgba(13,13,13,0.08); transition:border-color .4s; }
-    .svc-card:first-child { border-top-color:var(--gold); }
-    .svc-card:hover { border-top-color:rgba(13,13,13,0.25); }
-    .svc-title { font-family:var(--font-display); font-weight:700; font-size:23px; margin-bottom:14px; opacity:0.8; }
-    .svc-body { font-size:14px; line-height:1.85; opacity:0.4; margin-bottom:24px; }
-    .svc-list { margin-bottom:24px; display:flex; flex-direction:column; gap:6px; }
-    .svc-list-item { font-size:12px; opacity:0.32; display:flex; align-items:center; gap:8px; }
-    .svc-list-item::before { content:'\2014'; opacity:0.5; }
-    .svc-price { font-size:9.5px; letter-spacing:4px; text-transform:uppercase; opacity:0.25; }
-
-    .newsletter { padding:100px 60px; text-align:center; border-top:1px solid var(--rule); }
-    .nl-title { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(24px,3vw,40px); opacity:0.8; margin-bottom:14px; }
-    .nl-body { font-size:15px; opacity:0.4; max-width:480px; margin:0 auto 40px; line-height:1.8; }
-    .nl-form { display:flex; max-width:460px; margin:0 auto; }
-    .nl-input { flex:1; padding:14px 22px; background:rgba(13,13,13,0.03); border:1px solid rgba(13,13,13,0.14); border-right:none; color:var(--ink); font-family:var(--font-body); font-size:14px; outline:none; transition:border-color .3s; }
+    .newsletter { padding:100px 60px; text-align:center; border-top:1px solid rgba(245,240,232,0.08); }
+    .newsletter h2 { font-family:var(--font-display); font-style:italic; font-weight:400; font-size:clamp(24px,3vw,38px); opacity:0.8; margin-bottom:16px; }
+    .newsletter p { font-size:15px; line-height:1.8; opacity:0.38; max-width:480px; margin:0 auto 40px; }
+    .nl-form { display:flex; max-width:440px; margin:0 auto; }
+    .nl-input { flex:1; padding:14px 20px; background:rgba(245,240,232,0.04); border:1px solid rgba(245,240,232,0.08); border-right:none; color:var(--cream); font-family:var(--font-body); font-size:14px; letter-spacing:1px; outline:none; transition:border-color .3s; }
     .nl-input::placeholder { opacity:0.3; }
-    .nl-input:focus { border-color:rgba(13,13,13,0.3); }
-    .nl-btn { padding:14px 30px; background:transparent; border:1px solid rgba(13,13,13,0.14); color:var(--ink); font-family:var(--font-body); font-size:9.5px; letter-spacing:4px; text-transform:uppercase; cursor:pointer; transition:all .3s; white-space:nowrap; }
-    .nl-btn:hover { background:rgba(13,13,13,0.05); border-color:rgba(13,13,13,0.3); }
+    .nl-input:focus { border-color:rgba(245,240,232,0.3); }
+    .nl-btn { padding:14px 28px; background:transparent; border:1px solid rgba(245,240,232,0.08); color:var(--cream); font-family:var(--font-body); font-size:10px; letter-spacing:4px; text-transform:uppercase; cursor:pointer; transition:background .3s; }
+    .nl-btn:hover { background:rgba(245,240,232,0.06); }
 
-    .closing-quote { padding:80px 60px; display:flex; align-items:center; gap:48px; }
-    .cq-rule { flex:1; max-width:80px; height:1px; background:var(--rule); }
-    .cq-text { font-family:var(--font-display); font-style:italic; font-size:18px; letter-spacing:1px; opacity:0.35; max-width:480px; text-align:center; line-height:1.65; }
-    .cq-attr { display:block; font-size:8.5px; letter-spacing:5px; text-transform:uppercase; opacity:0.2; margin-top:12px; }
+    .quote-strip { padding:80px 60px; display:flex; align-items:center; justify-content:center; gap:48px; }
+    .qs-rule { flex:1; max-width:100px; height:1px; background:rgba(245,240,232,0.08); }
+    .qs-text { font-family:var(--font-body); font-style:italic; font-size:17px; letter-spacing:2px; opacity:0.35; line-height:1.6; max-width:440px; text-align:center; }
+    .qs-attr { display:block; font-size:9px; letter-spacing:5px; text-transform:uppercase; opacity:0.18; margin-top:12px; text-align:center; }
 
-    @media(max-width:1100px) {
-      .services-grid,.process-grid { grid-template-columns:1fr 1fr; }
-      .about-grid { grid-template-columns:1fr; gap:48px; }
-      .feat-item { grid-template-columns:60px 1fr; }
-      .feat-status { display:none; }
-      .gallery-strip { grid-template-columns:1fr 1fr; height:auto; }
-      .gs-cell { height:160px; }
-    }
-    @media(max-width:900px) {
-      .wm-r1,.wm-r2,.wm-r3,.wm-r4 { width:210px; }
-      .vision { padding:80px 28px 60px; }
-      .section { padding:80px 28px; }
-      .collections-header { padding:0 28px; flex-direction:column; align-items:flex-start; gap:16px; }
-      .coll-grid { grid-template-columns:1fr; }
-      .coll-tile { height:380px; }
-      .rule-h { margin:0 28px; }
-      .rule-divider { padding:0 28px; }
-      .hope-hike { margin:0 28px; padding:48px 36px; grid-template-columns:1fr; gap:36px; }
-      .services-grid,.process-grid { grid-template-columns:1fr; }
-      .gallery-strip { grid-template-columns:1fr 1fr; }
-      .newsletter { padding:60px 28px; }
-      .closing-quote { padding:60px 28px; flex-direction:column; }
-      .cq-rule { display:none; }
-      .feat-item { grid-template-columns:1fr; gap:0; }
-      .feat-num { font-size:48px; margin-bottom:-6px; }
+    @media(max-width:900px){
+      .hw-rule-top,.hw-rule-thin,.hw-rule-thin-b,.hw-rule-bot{width:220px}
+      .philosophy,.featured,.process,.services{padding-left:28px;padding-right:28px}
+      .divider{padding:0 28px}
+      .collections-header{padding:0 28px;flex-direction:column;align-items:flex-start;gap:16px}
+      .coll-grid{grid-template-columns:1fr}
+      .coll-tile{height:360px}
+      .process-grid,.services-grid{grid-template-columns:1fr}
+      .hope-hike-callout{margin:0 28px 80px;padding:48px 36px;grid-template-columns:1fr;gap:32px}
+      .newsletter{padding:60px 28px}
+      .quote-strip{padding:60px 28px;flex-direction:column}
+      .qs-rule{display:none}
+      .featured-item{grid-template-columns:1fr;gap:0}
+      .featured-num{font-size:48px;margin-bottom:-8px}
     }
   </style>
 </head>
 <body>
 <div class="page-content" data-testid="page-content-home">
 
-<section class="hero" data-testid="section-hero">
-  <div class="hero-wm" data-testid="hero-wordmark">
-    <div class="wm-r1"></div>
-    <div class="wm-r2"></div>
-    <span class="wm-the">the</span>
-    <span class="wm-inf">Infinite</span>
-    <span class="wm-arch">ARCH</span>
-    <div class="wm-r3"></div>
-    <span class="wm-tag">Beyond the Daydream</span>
-    <div class="wm-r4"></div>
-  </div>
-  <p class="hero-sub">Fine Art Landscape Photography &nbsp;&middot;&nbsp; Medium Format &nbsp;&middot;&nbsp; Expedition</p>
-  <div class="hero-cta-row" data-testid="hero-cta-row">
-    <a href="/pages/portfolio.html" class="btn-primary" data-testid="btn-view-portfolio">View Portfolio</a>
-    <a href="/pages/hope-hike.html" class="btn-gold" data-testid="btn-hope-hike">The Hope Hike</a>
-  </div>
-  <div class="hero-scroll" data-testid="hero-scroll">
-    <div class="scroll-line"></div>
-    <span>Enter</span>
-  </div>
-</section>
+  <section class="hero" data-testid="section-hero">
+    <div class="hero-wordmark fade-up" data-testid="hero-wordmark">
+      <div class="hw-rule-top"></div>
+      <div class="hw-rule-thin"></div>
+      <span class="hw-the">the</span>
+      <span class="hw-infinite">Infinite</span>
+      <span class="hw-arch">ARCH</span>
+      <div class="hw-rule-thin-b"></div>
+      <span class="hw-tagline">Beyond the Daydream</span>
+      <div class="hw-rule-bot"></div>
+    </div>
+    <p class="hero-sub fade-up delay-3" data-testid="text-hero-sub">Fine Art Landscape Photography</p>
+    <div class="hero-scroll" data-testid="hero-scroll"><div class="scroll-line"></div><span>Enter</span></div>
+  </section>
 
-<div class="vision" data-reveal data-testid="section-vision">
-  <span class="eyebrow">The Vision</span>
-  <p class="opener">The arch frames what lies beyond.<br>Every image is a gateway.</p>
-  <p class="body">Most of us spend our lives just outside the frame &mdash; scrolling past the image, saving it for later, never quite arriving. The Infinite Arch is built on the belief that the most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re <em style="font-style:italic;opacity:0.7">waited for</em>.</p>
-  <p class="body">Photography is where light becomes language and landscape becomes mirror. Where the arch in the rock and the arch of a life describe the same passage: a threshold between what was and what&rsquo;s possible.</p>
-  <a href="/pages/about.html" class="cta-link" data-testid="link-about"><div class="cta-line"></div>Read the Artist Statement</a>
-</div>
+  <div class="philosophy" data-reveal="0" data-testid="section-philosophy">
+    <span class="eyebrow">The Vision</span>
+    <p class="opener">The arch frames what lies beyond.<br>Every image is a gateway.</p>
+    <p class="body">Most of us spend our lives just outside the frame &mdash; scrolling past the image, saving it for later, never quite arriving. I started chasing the places that couldn&rsquo;t be scrolled past.</p>
+    <p class="body">Photography is where light becomes language and landscape becomes mirror. The most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re waited for. Cold mornings, uncertain skies, the moment you raise the camera toward impossible light and believe something is there before you can see it.</p>
+    <a href="/pages/about.html" class="cta-link" data-testid="link-about"><div class="cta-line"></div>Read the Full Statement</a>
+  </div>
 
-<div class="rule-divider" data-reveal><div class="line"></div><span class="star">&#x2736;</span><div class="line"></div></div>
+  <div class="divider" data-reveal="0"><div class="divider-rule"></div><span class="divider-mark">&#x2736;</span><div class="divider-rule"></div></div>
 
-<section class="section-wide" data-reveal data-testid="section-collections">
-  <div class="collections-header" style="margin-bottom:40px;">
+  <section class="collections" data-reveal="0" data-testid="section-collections">
+    <div class="collections-header">
+      <h2>Four bodies of work.<br>One way of seeing.</h2>
+      <a href="/pages/portfolio.html" data-testid="link-portfolio-viewall"><div class="cta-line"></div>View All</a>
+    </div>
+    <div class="coll-grid" id="collGrid" data-testid="collections-grid">
+      <a href="/pages/portfolio.html" class="coll-tile ct-1" data-testid="coll-tile-1"><div class="tile-bg"></div><div class="tile-vignette"></div><div class="tile-content"><span class="tile-tag">Expeditions</span><div class="tile-rule-s"></div><h3 class="tile-h">Beyond the<br>Daydream</h3><p class="tile-sub">Iceland &middot; Guadalupe Peak &middot; and beyond</p></div></a>
+      <a href="/pages/portfolio.html" class="coll-tile ct-2" data-testid="coll-tile-2"><div class="tile-bg"></div><div class="tile-vignette"></div><div class="tile-content"><span class="tile-tag">Home Terrain</span><div class="tile-rule-s"></div><h3 class="tile-h">Beyond the<br>Frame</h3><p class="tile-sub">The near distance</p></div></a>
+      <a href="/pages/portfolio.html" class="coll-tile ct-3" data-testid="coll-tile-3"><div class="tile-bg"></div><div class="tile-vignette"></div><div class="tile-content"><span class="tile-tag">Figures in the Threshold</span><div class="tile-rule-s"></div><h3 class="tile-h">Beyond the<br>Moment</h3><p class="tile-sub">The ones who also chose to be out there</p></div></a>
+      <a href="/pages/portfolio.html" class="coll-tile ct-4" data-testid="coll-tile-4"><div class="tile-bg"></div><div class="tile-vignette"></div><div class="tile-content"><span class="tile-tag">Film &middot; Konica Hexar</span><div class="tile-rule-s"></div><h3 class="tile-h">Beyond the<br>Shutter</h3><p class="tile-sub">The slower eye</p></div></a>
+    </div>
+  </section>
+
+  <section class="featured" data-reveal="0" data-testid="section-featured">
+    <div class="featured-header"><span class="eyebrow">Signature Projects</span><h2>Work that required commitment to earn.</h2></div>
+    <div class="featured-list" id="featuredList" data-testid="featured-list">
+      <div class="featured-item" data-testid="featured-item-1">
+        <div class="featured-num">01</div>
+        <div><span class="featured-tag">Expedition &middot; Iceland 2026</span><h3 class="featured-title">Beyond the Daydream: Iceland</h3><p class="featured-desc">429 photographs. 8 thematic series. January light in a country that barely sees the sun. From glacial silences at J&ouml;kuls&aacute;rl&oacute;n to aurora-lit skies above Sn&aelig;fellsnes &mdash; this is the project that defines what The Infinite Arch is built to do.</p></div>
+      </div>
+      <div class="featured-item" data-testid="featured-item-2">
+        <div class="featured-num">02</div>
+        <div><span class="featured-tag">Adventure Wellness &middot; May 2026</span><h3 class="featured-title">The Hope Hike &mdash; Guadalupe Peak</h3><p class="featured-desc">Ten people. One summit. Three days on the highest point in Texas with resilience speaker Tia Banks. This isn&rsquo;t adventure tourism &mdash; it&rsquo;s what happens when landscape becomes the therapist. Photography documents every step.</p></div>
+      </div>
+      <div class="featured-item" data-testid="featured-item-3">
+        <div class="featured-num">03</div>
+        <div><span class="featured-tag">Ongoing &middot; North Texas</span><h3 class="featured-title">The Near Distance</h3><p class="featured-desc">The land you drive past every day without stopping. Palo Duro Canyon at blue hour. The Llano Estacado in winter light. Texas landscape is undershot and overlooked &mdash; that&rsquo;s exactly why it belongs in the work.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider" data-reveal="0"><div class="divider-rule"></div><span class="divider-mark">&#x2736;</span><div class="divider-rule"></div></div>
+
+  <section class="process" data-reveal="0" style="padding-top:100px;" data-testid="section-process">
+    <div class="process-header"><span class="eyebrow">The Approach</span><h2>How the photographs get made.</h2></div>
+    <div class="process-grid">
+      <div class="process-card"><div class="pc-num">01</div><h3 class="pc-title">Research &amp; Arrival</h3><p class="pc-body">Locations are studied before they&rsquo;re visited. Weather patterns, golden hour windows, seasonal light &mdash; the expedition plan is built around the image, not the schedule. Arriving prepared means arriving open.</p></div>
+      <div class="process-card"><div class="pc-num">02</div><h3 class="pc-title">Medium Format Patience</h3><p class="pc-body">The GFX system doesn&rsquo;t reward spray-and-pray. 102 megapixels asks you to slow down, choose your moment, and mean it. Technical mastery is what frees you to respond to what you couldn&rsquo;t plan for.</p></div>
+      <div class="process-card"><div class="pc-num">03</div><h3 class="pc-title">The Wait</h3><p class="pc-body">The honest photograph isn&rsquo;t taken &mdash; it&rsquo;s waited for. Sometimes that means three hours in the cold. Sometimes it means coming back on the fifth day. The image that earns its place always knew you were willing to wait.</p></div>
+    </div>
+  </section>
+
+  <div class="hope-hike-callout" data-reveal="0" data-testid="section-hope-hike">
     <div>
-      <span class="eyebrow">Collections</span>
-      <h2 class="section-title" style="margin-bottom:0;">Four bodies of work.<br>One way of seeing.</h2>
+      <span class="hhc-eyebrow">May 29&ndash;31, 2026 &middot; Guadalupe Mountains, Texas</span>
+      <h2 class="hhc-title">The Hope Hike</h2>
+      <p class="hhc-sub">Adventure Wellness at the Top of Texas</p>
+      <p class="hhc-body">Ten participants. Three days. One summit. Guided by resilience speaker Tia Banks and documented through the lens of The Infinite Arch. Applications open through the WE CLIMB initiative.</p>
     </div>
-    <a href="/pages/portfolio.html" class="cta-link" style="margin-top:0;" data-testid="link-portfolio-viewall"><div class="cta-line"></div>View All Work</a>
+    <a href="/pages/hope-hike.html" class="hhc-cta" data-testid="link-hope-hike-cta"><div class="cta-line" style="background:var(--gold);"></div>Learn More</a>
   </div>
-  <div class="coll-grid" id="collGrid" data-testid="collections-grid">
-    <a href="/pages/portfolio.html" class="coll-tile ct1" data-testid="coll-tile-1">
-      <div class="tile-bg"></div><div class="tile-vig"></div>
-      <div class="tile-content"><span class="tile-tag">Expeditions &middot; Featured</span><div class="tile-bar"></div><h3 class="tile-h">Beyond the<br>Daydream</h3><p class="tile-sub">Iceland &middot; Guadalupe Peak &middot; and beyond</p></div>
-      <span class="tile-arrow">&nearr;</span>
-    </a>
-    <a href="/pages/portfolio.html" class="coll-tile ct2" data-testid="coll-tile-2">
-      <div class="tile-bg"></div><div class="tile-vig"></div>
-      <div class="tile-content"><span class="tile-tag">Home Terrain</span><div class="tile-bar"></div><h3 class="tile-h">Beyond the<br>Frame</h3><p class="tile-sub">The near distance &mdash; North Texas, Palo Duro</p></div>
-      <span class="tile-arrow">&nearr;</span>
-    </a>
-    <a href="/pages/portfolio.html" class="coll-tile ct3" data-testid="coll-tile-3">
-      <div class="tile-bg"></div><div class="tile-vig"></div>
-      <div class="tile-content"><span class="tile-tag">Figures in the Threshold</span><div class="tile-bar"></div><h3 class="tile-h">Beyond the<br>Moment</h3><p class="tile-sub">The ones who also chose to be out there</p></div>
-      <span class="tile-arrow">&nearr;</span>
-    </a>
-    <a href="/pages/portfolio.html" class="coll-tile ct4" data-testid="coll-tile-4">
-      <div class="tile-bg"></div><div class="tile-vig"></div>
-      <div class="tile-content"><span class="tile-tag">Film &middot; Konica Hexar</span><div class="tile-bar"></div><h3 class="tile-h">Beyond the<br>Shutter</h3><p class="tile-sub">The slower eye &mdash; analog grain, analog patience</p></div>
-      <span class="tile-arrow">&nearr;</span>
-    </a>
-  </div>
-</section>
 
-<section class="section" data-reveal data-testid="section-featured">
-  <div style="margin-bottom:64px;">
-    <span class="eyebrow">Signature Projects</span>
-    <h2 class="section-title">Work that required commitment to earn.</h2>
-  </div>
-  <div class="featured-list" id="featuredList" data-testid="featured-list">
-    <div class="feat-item" data-testid="featured-item-1">
-      <div class="feat-num">01</div>
-      <div>
-        <span class="feat-tag">Expedition &middot; January 2026</span>
-        <h3 class="feat-title">Beyond the Daydream: Iceland</h3>
-        <p class="feat-desc">429 photographs. 8 thematic series. January light in a country that barely sees the sun. From the glacial silences of J&ouml;kuls&aacute;rl&oacute;n to aurora-lit skies above the Sn&aelig;fellsnes Peninsula &mdash; shot on GFX 100RF and GFX 50R in temperatures that made everything slower and more deliberate. This is the project that defines what The Infinite Arch is built to do.</p>
-      </div>
-      <div class="feat-status"><span class="feat-badge gold">In Curation</span></div>
+  <section class="services" data-reveal="0" data-testid="section-services">
+    <div class="services-header"><span class="eyebrow">Services</span><h2>Ways to work together.</h2></div>
+    <div class="services-grid">
+      <div class="service-card"><h3 class="sc-title">Fine Art Prints</h3><p class="sc-body">Museum-quality archival prints from the expedition collections. Limited editions with certificates of authenticity. Sizes from 16&times;20 to 40&times;60 on premium papers.</p><span class="sc-price">From $450 &middot; Worldwide shipping</span></div>
+      <div class="service-card"><h3 class="sc-title">Commission Work</h3><p class="sc-body">Custom landscape and architectural photography for commercial clients, publications, and private collectors. Each project begins with a conversation about what you&rsquo;re actually trying to say.</p><span class="sc-price">From $2,500 &middot; Custom quotes</span></div>
+      <div class="service-card"><h3 class="sc-title">Adventure Workshops</h3><p class="sc-body">Small-group expeditions combining landscape photography instruction with wilderness immersion. Not a photo tour &mdash; a genuine creative expedition into terrain that asks something of you.</p><span class="sc-price">From $850 &middot; Limited availability</span></div>
     </div>
-    <div class="feat-item" data-testid="featured-item-2">
-      <div class="feat-num">02</div>
-      <div>
-        <span class="feat-tag">Adventure Wellness &middot; May 29&ndash;31, 2026</span>
-        <h3 class="feat-title">The Hope Hike &mdash; Guadalupe Peak</h3>
-        <p class="feat-desc">Ten participants. One summit. Three days on the highest point in Texas alongside resilience speaker Tia Banks through the WE CLIMB initiative. This isn&rsquo;t adventure tourism &mdash; it&rsquo;s what happens when landscape becomes the therapist and the mountain does the healing.</p>
-      </div>
-      <div class="feat-status"><span class="feat-badge gold">Applications Open</span></div>
-    </div>
-    <div class="feat-item" data-testid="featured-item-3">
-      <div class="feat-num">03</div>
-      <div>
-        <span class="feat-tag">Ongoing &middot; North Texas</span>
-        <h3 class="feat-title">The Near Distance</h3>
-        <p class="feat-desc">The land you drive past every day without stopping. Palo Duro Canyon at blue hour. The Llano Estacado in winter light. The Trinity River bottomlands at flood stage. Texas landscape is undershot and overlooked &mdash; that&rsquo;s exactly why it belongs in the work.</p>
-      </div>
-      <div class="feat-status"><span class="feat-badge">Ongoing</span></div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<div class="rule-divider" data-reveal><div class="line"></div><span class="star">&#x2736;</span><div class="line"></div></div>
+  <div class="newsletter" data-reveal="0" data-testid="section-newsletter">
+    <span class="eyebrow">Stay Connected</span>
+    <h2>New work. Expedition updates.<br>Nothing you didn&rsquo;t ask for.</h2>
+    <p>Monthly dispatches from the field &mdash; new collections, Hope Hike news, and early access to limited edition print releases.</p>
+    <div class="nl-form" data-testid="form-newsletter">
+      <input class="nl-input" type="email" placeholder="your@email.com" data-testid="input-newsletter-email" />
+      <button class="nl-btn" data-testid="btn-newsletter-submit">Subscribe</button>
+    </div>
+  </div>
 
-<section class="section" data-reveal data-testid="section-about">
-  <div class="about-grid">
-    <div>
-      <span class="eyebrow">Behind the Lens</span>
-      <p class="about-pull">Photography is where artistry converges with storytelling, where technical mastery serves emotional truth.</p>
-      <div class="about-body">
-        <p>I started chasing the places that couldn&rsquo;t be scrolled past. The Infinite Arch is built on the belief that the most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re <em>waited for</em>. They come to the photographer who arrives early, stays late, and returns when the light changes.</p>
-        <p>Who understands that the arch in the rock and the arch of a life are describing the same passage: a threshold between what was and what&rsquo;s possible.</p>
-        <p>This is photography as contemplation. Landscape as mirror. Light as metaphor. The goal isn&rsquo;t the image that impresses, but the one that&rsquo;s irreplaceable &mdash; the one I had to be cold for, had to wait for, had to raise the camera toward the impossible light and believe something was there before I could see it.</p>
-        <p>Beyond the camera: I&rsquo;m a marathon runner who lost 100 pounds and found a second life in the outdoors. I bring that same transformation philosophy into the WE CLIMB initiative and the Hope Hike program &mdash; because the summit and the shutter share the same lesson.</p>
-      </div>
-    </div>
-    <div>
-      <div class="about-gear">
-        <span class="gear-title">Primary Gear</span>
-        <div class="gear-list">
-          <div class="gear-item"><div class="gear-dot"></div>Fujifilm GFX 100S II</div>
-          <div class="gear-item"><div class="gear-dot"></div>Fujifilm GFX 100RF</div>
-          <div class="gear-item"><div class="gear-dot"></div>Fujifilm GFX 50R</div>
-          <div class="gear-item"><div class="gear-dot"></div>GF 32&ndash;64mm f/4 R LM WR</div>
-          <div class="gear-item"><div class="gear-dot"></div>GF 100&ndash;200mm f/5.6 R LM OIS WR</div>
-          <div class="gear-item"><div class="gear-dot"></div>Konica Hexar AF (35mm film)</div>
-        </div>
-      </div>
-      <div class="about-quote">
-        <p class="aq-text">&ldquo;The camera is an instrument that teaches people how to see without a camera.&rdquo;</p>
-        <span class="aq-attr">&mdash; Dorothea Lange</span>
-      </div>
-    </div>
+  <div class="quote-strip" data-reveal="0" data-testid="section-closing-quote">
+    <div class="qs-rule"></div>
+    <div><p class="qs-text">&ldquo;Beautiful things don&rsquo;t ask for attention.&rdquo;</p><span class="qs-attr">&mdash; Sean O&rsquo;Connell</span></div>
+    <div class="qs-rule"></div>
   </div>
-</section>
-
-<section class="section-wide gallery-teaser" data-reveal data-testid="section-gallery-teaser">
-  <div class="gallery-strip">
-    <div class="gs-cell"><div class="gs-label">Eight curated series</div><div class="gs-num">08</div></div>
-    <div class="gs-cell"><div class="gs-label">429 expedition photographs</div><div class="gs-num">429</div></div>
-    <div class="gs-cell"><div class="gs-label">Medium format &middot; Film</div><div class="gs-num">GFX</div></div>
-    <a href="/pages/gallery.html" class="gs-cell" data-testid="link-gallery-teaser"><div class="gs-label">Enter the gallery &rarr;</div></a>
-  </div>
-</section>
-
-<section class="section" data-reveal data-testid="section-process">
-  <div style="margin-bottom:56px;">
-    <span class="eyebrow">The Process</span>
-    <h2 class="section-title">How the work gets made.</h2>
-  </div>
-  <div class="process-grid">
-    <div class="proc-card">
-      <div class="proc-n">01</div>
-      <h3 class="proc-title">Scout & Research</h3>
-      <p class="proc-body">Weeks of topo maps, tide charts, and sunrise angles before I ever leave the house. The best light isn&rsquo;t found &mdash; it&rsquo;s predicted.</p>
-    </div>
-    <div class="proc-card">
-      <div class="proc-n">02</div>
-      <h3 class="proc-title">Arrive & Wait</h3>
-      <p class="proc-body">Hours before dawn, hours after sunset. The tripod stays planted while the conditions evolve. Patience is the first creative decision.</p>
-    </div>
-    <div class="proc-card">
-      <div class="proc-n">03</div>
-      <h3 class="proc-title">Edit & Sequence</h3>
-      <p class="proc-body">From 429 frames to 8 series. The edit is where the narrative emerges &mdash; where individual images become a body of work.</p>
-    </div>
-  </div>
-</section>
-
-<section class="section-wide" data-reveal data-testid="section-hope-hike">
-  <div class="hope-hike">
-    <div>
-      <span class="eyebrow-gold">Adventure Wellness</span>
-      <h2 class="hh-title">The Hope Hike</h2>
-      <p class="hh-sub">Adventure Wellness at the Top of Texas</p>
-      <p class="hh-body">Guadalupe Peak. 8,751 feet. The highest point in Texas &mdash; and the setting for a three-day expedition that combines landscape photography with purpose through the WE CLIMB initiative alongside resilience speaker Tia Banks.</p>
-      <div class="hh-details">
-        <div><span class="hh-detail-label">Date</span><span class="hh-detail-val">May 29&ndash;31, 2026</span></div>
-        <div><span class="hh-detail-label">Elevation</span><span class="hh-detail-val">8,751 ft</span></div>
-        <div><span class="hh-detail-label">Participants</span><span class="hh-detail-val">10 maximum</span></div>
-      </div>
-    </div>
-    <a href="/pages/hope-hike.html" class="hh-cta" data-testid="link-hope-hike-cta"><div class="hh-cta-line"></div>Learn More</a>
-  </div>
-</section>
-
-<section class="section" data-reveal data-testid="section-services">
-  <div style="margin-bottom:56px;">
-    <span class="eyebrow">Services</span>
-    <h2 class="section-title">What I offer beyond the frame.</h2>
-  </div>
-  <div class="services-grid">
-    <div class="svc-card">
-      <h3 class="svc-title">Fine Art Prints</h3>
-      <p class="svc-body">Museum-quality archival prints on Hahnem&uuml;hle Photo Rag. Each print is hand-finished, signed, and shipped flat in custom packaging.</p>
-      <div class="svc-list">
-        <div class="svc-list-item">Archival pigment ink</div>
-        <div class="svc-list-item">Hahnem&uuml;hle Photo Rag 308gsm</div>
-        <div class="svc-list-item">Certificate of authenticity</div>
-        <div class="svc-list-item">Limited editions available</div>
-      </div>
-      <span class="svc-price">Starting at $350</span>
-    </div>
-    <div class="svc-card">
-      <h3 class="svc-title">Commercial Licensing</h3>
-      <p class="svc-body">Editorial, commercial, and brand licensing for landscape and expedition photography. Usage-based pricing with clear terms.</p>
-      <div class="svc-list">
-        <div class="svc-list-item">Editorial & publishing</div>
-        <div class="svc-list-item">Brand & commercial use</div>
-        <div class="svc-list-item">Web & social media</div>
-        <div class="svc-list-item">Custom commissions</div>
-      </div>
-      <span class="svc-price">Inquire for rates</span>
-    </div>
-    <div class="svc-card">
-      <h3 class="svc-title">Workshops & Expeditions</h3>
-      <p class="svc-body">Small-group landscape photography expeditions focused on patience, composition, and medium format technique. Not Instagram presets &mdash; real fieldwork.</p>
-      <div class="svc-list">
-        <div class="svc-list-item">Medium format technique</div>
-        <div class="svc-list-item">Field composition</div>
-        <div class="svc-list-item">Post-processing workflow</div>
-        <div class="svc-list-item">Expedition logistics</div>
-      </div>
-      <span class="svc-price">Limited availability</span>
-    </div>
-  </div>
-</section>
-
-<div class="newsletter" data-reveal data-testid="section-newsletter">
-  <h2 class="nl-title">Stay in the Frame</h2>
-  <p class="nl-body">New work, expedition dispatches, and behind-the-lens notes. No spam. Unsubscribe anytime.</p>
-  <form class="nl-form" data-testid="form-newsletter">
-    <input type="email" class="nl-input" placeholder="Your email" data-testid="input-newsletter-email">
-    <button type="submit" class="nl-btn" data-testid="btn-newsletter-submit">Subscribe</button>
-  </form>
-</div>
-
-<div class="closing-quote" data-reveal data-testid="section-closing-quote">
-  <div class="cq-rule"></div>
-  <div class="cq-text">
-    &ldquo;The earth has music for those who listen.&rdquo;
-    <span class="cq-attr">&mdash; William Shakespeare</span>
-  </div>
-  <div class="cq-rule"></div>
-</div>
 
 <script src="/assets/js/tia-data.js"></script>
 <script>
@@ -450,36 +270,47 @@
   try {
     var cfRes = await fetch('/api/images/config');
     if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
-  } catch(e) { console.log('[Home] CF config fetch failed:', e); }
+  } catch(e) {}
 
   await TIA.load();
   var state = TIA.getState();
-  var works = state.portfolioWorks || [];
 
+  var heroId = state.home && state.home.hero_bg;
+  if (heroId) {
+    var heroUrl = TIA.photoUrl(heroId, 'hero');
+    if (heroUrl) {
+      var heroEl = document.querySelector('.hero');
+      if (heroEl) {
+        heroEl.style.background = "linear-gradient(to bottom, rgba(13,13,13,0.6) 0%, rgba(13,13,13,0.35) 40%, rgba(13,13,13,0.7) 100%), url('" + heroUrl + "') center/cover no-repeat";
+      }
+    }
+  }
+
+  var works = state.portfolioWorks || [];
   if (works.length) {
     var grid = document.getElementById('collGrid');
-    var tileClasses = ['ct1','ct2','ct3','ct4'];
+    var tileClasses = ['ct-1','ct-2','ct-3','ct-4'];
     grid.innerHTML = works.map(function(w, i) {
       var cls = tileClasses[i % tileClasses.length];
       var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
       var bgStyle = coverUrl ? "background-image:url('" + coverUrl + "');background-size:cover;background-position:center;" : '';
       return '<a href="/pages/portfolio.html" class="coll-tile ' + cls + '" data-testid="coll-tile-' + (i+1) + '">' +
-        '<div class="tile-bg" style="' + bgStyle + '"></div><div class="tile-vig"></div>' +
-        '<div class="tile-content"><span class="tile-tag">' + (w.type || 'Series') + '</span><div class="tile-bar"></div>' +
+        '<div class="tile-bg" style="' + bgStyle + '"></div><div class="tile-vignette"></div>' +
+        '<div class="tile-content"><span class="tile-tag">' + (w.type || 'Series') + '</span><div class="tile-rule-s"></div>' +
         '<h3 class="tile-h">' + (w.title || 'Untitled') + '</h3>' +
         (w.subtitle ? '<p class="tile-sub">' + w.subtitle + '</p>' : '') +
-        '</div><span class="tile-arrow">&nearr;</span></a>';
+        '</div></a>';
     }).join('');
 
     var featList = document.getElementById('featuredList');
     featList.innerHTML = works.map(function(w, i) {
       var num = String(i + 1).padStart(2, '0');
-      return '<div class="feat-item" data-testid="featured-item-' + (i+1) + '">' +
-        '<div class="feat-num">' + num + '</div><div>' +
-        '<span class="feat-tag">' + (w.type || 'Series') + '</span>' +
-        '<h3 class="feat-title">' + (w.title || 'Untitled') + '</h3>' +
-        (w.description ? '<p class="feat-desc">' + w.description + '</p>' : '') +
-        '</div><div class="feat-status"><span class="feat-badge">' + (w.format || 'Series') + '</span></div></div>';
+      return '<div class="featured-item" data-testid="featured-item-' + (i+1) + '">' +
+        '<div class="featured-num">' + num + '</div><div>' +
+        '<span class="featured-tag">' + (w.type || 'Series') + (w.location ? ' &middot; ' + w.location : '') + '</span>' +
+        '<h3 class="featured-title">' + (w.title || 'Untitled') + '</h3>' +
+        (w.description ? '<p class="featured-desc">' + w.description + '</p>' : '') +
+        '</div></div>';
     }).join('');
   }
 })();

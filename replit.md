@@ -12,7 +12,7 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
 
 ## Design System
-- **Color Palette**: Cream (#f5f0e8) background, dark ink (#0d0d0d) text, gold (#b5922a) accents — light editorial theme matching the about page
+- **Color Palette**: Dark ink (#0d0d0d) background with cream (#f5f0e8) text on homepage/portfolio; light cream bg with ink text on about/contact/prints/hope-hike; gold (#b5922a) accents everywhere
 - **Typography**: Playfair Display (headings), Cormorant Garamond (body)
 - **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
 - **CSS Loading Order**: tia.css FIRST, then page-specific inline `<style>` blocks (so page-specific rules override base)
@@ -54,6 +54,8 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - **Portfolio tab**: Create/edit/remove/reorder featured work blocks — each with cover photo, title, subtitle, type, description, camera, location, format
   - `STATE.portfolioWorks` array stores work objects with {id, title, subtitle, type, description, camera, location, format, coverAssetId}
   - Both homepage and portfolio page dynamically render from this data
+- **Content tab**: Create/edit/remove/reorder content blocks with heading, eyebrow, body text, target page, position, and style
+  - `STATE.contentBlocks` array stores block objects with {id, heading, eyebrow, body, page, position, style}
 - **Settings tab**: Shows CF connectivity status (delivery hash, image count, test connection) and server-side config storage info (storage method, last save, counts)
 
 ## Data Model (STATE object)
@@ -61,6 +63,7 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - `photos` — Photo arrays keyed by series ID (Cloudflare Image IDs)
 - `home` — Homepage slot assignments (slot ID → CF image ID)
 - `portfolioWorks` — Array of featured work objects for portfolio page (title, subtitle, type, description, camera, location, format, coverAssetId)
+- `contentBlocks` — Array of content block objects with {id, heading, eyebrow, body, page, position, style}
 - `imgFolders` — Virtual folder organization for Images tab
 - `cf.assetMeta` — Cloudflare Images metadata (including EXIF data)
 - `cf.hash` — Cloudflare Images delivery hash

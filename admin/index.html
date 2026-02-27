@@ -96,17 +96,34 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .slot-act{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}.slot.filled .slot-act{color:var(--green)}
 /* PORTFOLIO WORKS */
 .pf-works{display:flex;flex-direction:column;gap:10px}
-.pf-work-card{display:flex;gap:14px;background:var(--surface2);border:1px solid var(--border);overflow:hidden}
+.pf-work-card{background:var(--surface2);border:1px solid var(--border);overflow:hidden}
 .pf-work-card:hover{border-color:var(--border2)}
-.pf-work-cover{width:180px;min-height:120px;flex-shrink:0;cursor:pointer;background:var(--bg);overflow:hidden}
+.pf-work-card.expanded{border-color:var(--gold)}
+.pf-work-header{display:flex;gap:14px;cursor:pointer;padding:0}
+.pf-work-cover{width:160px;min-height:100px;flex-shrink:0;background:var(--bg);overflow:hidden}
 .pf-work-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .pf-work-cover .slot-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px}
 .pf-work-body{flex:1;padding:12px 14px 12px 0;display:flex;flex-direction:column;justify-content:center;gap:4px}
-.pf-work-title{font-size:14px;font-weight:500;color:var(--text)}
+.pf-work-title{font-size:14px;font-weight:500;color:var(--cream)}
 .pf-work-sub{font-size:11px;color:var(--muted);font-style:italic}
 .pf-work-meta{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
 .pf-work-actions{display:flex;gap:4px;margin-top:6px}
+.pf-work-expand{padding:14px 18px;border-top:1px solid var(--border);display:none}
+.pf-work-card.expanded .pf-work-expand{display:block}
+.pf-work-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:5px;margin-top:10px}
+.pf-work-photo{position:relative;aspect-ratio:3/2;background:var(--surface);overflow:hidden;border:2px solid transparent;border-radius:1px}
+.pf-work-photo:hover{border-color:rgba(255,255,255,.2)}
+.pf-work-photo.cover{border-color:var(--green)}
+.pf-work-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.pf-work-photo-ov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;gap:4px;opacity:0;transition:opacity .2s}
+.pf-work-photo:hover .pf-work-photo-ov{opacity:1;background:rgba(0,0,0,.5)}
+.pf-work-photo-btn{padding:2px 8px;font-size:8px;letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
 .btn.sm{padding:3px 6px;font-size:10px;min-width:0}
+/* CONTENT BLOCKS */
+.cb-list{display:flex;flex-direction:column;gap:10px}
+.cb-card{background:var(--surface2);border:1px solid var(--border);padding:16px;position:relative}
+.cb-card:hover{border-color:var(--border2)}
+.cb-actions{position:absolute;top:10px;right:10px;display:flex;gap:4px}
 /* PICKER */
 #picker{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
 #picker.open{display:flex}
@@ -255,6 +272,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <button class="tb-tab" data-tab="images" onclick="switchTab('images')">Images</button>
       <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
       <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
+      <button class="tb-tab" data-tab="content" onclick="switchTab('content')">Content</button>
       <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
@@ -572,6 +590,7 @@ function switchTab(tab){
   else if(tab==="images")showImagesPanel();
   else if(tab==="homepage")showHomeSlots();
   else if(tab==="portfolio")showPortfolioSlots();
+  else if(tab==="content")showContentPanel();
   else if(tab==="settings")showSettingsPanel();
   else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}
 }
@@ -815,6 +834,80 @@ function removePortfolioWork(idx){
   works.splice(idx,1);
   showPortfolioSlots();
   toast("Work removed from portfolio");
+}
+
+// CONTENT BLOCKS
+function getContentBlocks(){
+  if(!STATE.contentBlocks)STATE.contentBlocks=[];
+  return STATE.contentBlocks;
+}
+function showContentPanel(){
+  setPanel("Content","Content Blocks","<button class='btn pri' onclick='addContentBlock()' data-testid='btn-add-content-block'>+ Add Block</button>");
+  const blocks=getContentBlocks();
+  let html;
+  if(!blocks.length){
+    html=`<div class="empty"><p>No content blocks yet. Content blocks let you add custom text sections to any page.</p></div>`;
+  } else {
+    html=`<div class="cb-list">${blocks.map((b,i)=>{
+      return`<div class="cb-card" data-testid="content-block-${i}">
+        <div class="cb-actions">
+          <button class="btn sm" onclick="editContentBlock(${i})" data-testid="btn-edit-cb-${i}">Edit</button>
+          ${i>0?`<button class="btn sm" onclick="moveContentBlock(${i},-1)" data-testid="btn-move-cb-up-${i}">&#8593;</button>`:""}
+          ${i<blocks.length-1?`<button class="btn sm" onclick="moveContentBlock(${i},1)" data-testid="btn-move-cb-down-${i}">&#8595;</button>`:""}
+          <button class="btn sm red" onclick="removeContentBlock(${i})" data-testid="btn-remove-cb-${i}">&#x2715;</button>
+        </div>
+        <div style="margin-bottom:6px">
+          <span style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)">${esc(b.page||"homepage")} · ${esc(b.position||"after-featured")}</span>
+        </div>
+        <div style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:4px">${esc(b.heading||"Untitled Block")}</div>
+        <div style="font-size:12px;color:var(--muted);opacity:.7;line-height:1.6;max-height:60px;overflow:hidden">${esc((b.body||"").substring(0,200))}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }
+  document.getElementById("panelBody").innerHTML=html;
+}
+function addContentBlock(){
+  const heading=prompt("Block heading:");
+  if(!heading||!heading.trim())return;
+  const blocks=getContentBlocks();
+  blocks.push({id:"cb-"+Date.now(),heading:heading.trim(),body:"",page:"homepage",position:"after-featured",eyebrow:"",style:"default"});
+  showContentPanel();
+  toast("Content block added — click Edit to add body text");
+}
+function editContentBlock(idx){
+  const blocks=getContentBlocks();
+  const b=blocks[idx];
+  if(!b)return;
+  const f=(label,val)=>{const r=prompt(label,val);return r===null?null:r;};
+  const heading=f("Heading:",b.heading);if(heading===null)return;
+  const eyebrow=f("Eyebrow label (small text above heading):",b.eyebrow);if(eyebrow===null)return;
+  const body=f("Body text:",b.body);if(body===null)return;
+  const page=f("Page (homepage, portfolio, about, prints, contact):",b.page);if(page===null)return;
+  const position=f("Position (after-hero, after-featured, after-services, before-footer):",b.position);if(position===null)return;
+  const style=f("Style (default, gold-border, centered):",b.style);if(style===null)return;
+  b.heading=heading.trim()||b.heading;
+  b.eyebrow=eyebrow.trim();
+  b.body=body.trim();
+  b.page=page.trim()||b.page;
+  b.position=position.trim()||b.position;
+  b.style=style.trim()||b.style;
+  showContentPanel();
+  toast("Content block updated");
+}
+function moveContentBlock(idx,dir){
+  const blocks=getContentBlocks();
+  const target=idx+dir;
+  if(target<0||target>=blocks.length)return;
+  [blocks[idx],blocks[target]]=[blocks[target],blocks[idx]];
+  showContentPanel();
+}
+function removeContentBlock(idx){
+  const blocks=getContentBlocks();
+  if(!blocks[idx])return;
+  if(!confirm("Remove content block '"+blocks[idx].heading+"'?"))return;
+  blocks.splice(idx,1);
+  showContentPanel();
+  toast("Content block removed");
 }
 
 // SETTINGS

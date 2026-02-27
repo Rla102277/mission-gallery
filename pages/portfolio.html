@@ -8,6 +8,15 @@
 <link rel="stylesheet" href="/assets/css/tia.css">
 <style>
   .page-content { padding-top: 0; }
+  body { background: var(--ink); color: var(--cream); }
+  body::before { opacity: 0.35; }
+  .tia-nav { background: linear-gradient(to bottom, rgba(13,13,13,0.95) 0%, transparent 100%); }
+  .tia-nav.scrolled { background: rgba(13,13,13,0.95); border-bottom-color: rgba(245,240,232,0.08); }
+  .nav-logo .r-heavy, .nav-logo .r-bot { background: var(--cream); }
+  .nav-logo .r-thin { background: var(--cream); }
+  .nav-hamburger span { background: var(--cream); }
+  .nav-links a.active { border-bottom-color: rgba(245,240,232,0.4); }
+  .nav-mobile { background: rgba(13,13,13,0.98); }
 
   .hero {
     height: 100vh;
@@ -17,7 +26,9 @@
     justify-content: center;
     text-align: center;
     position: relative;
-    background: var(--cream);
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(30,25,15,0.0) 0%, rgba(13,13,13,0.6) 70%),
+      linear-gradient(160deg, #0d0d0d 0%, #151210 40%, #0d0d0d 100%);
     padding: 0 40px;
   }
 
@@ -26,7 +37,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 60%;
-    background: radial-gradient(ellipse at 50% -10%, rgba(181,146,42,0.06) 0%, transparent 65%);
+    background: radial-gradient(ellipse at 50% -10%, rgba(201,162,39,0.06) 0%, transparent 65%);
     pointer-events: none;
   }
 
@@ -80,7 +91,7 @@
   .scroll-line {
     width: 1px;
     height: 40px;
-    background: var(--ink);
+    background: var(--cream);
     animation: scrollPulse 2s ease-in-out infinite;
   }
 
@@ -146,7 +157,7 @@
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    background: #2a2e28;
+    background: #111;
     height: var(--tile-h, 520px);
   }
 
@@ -340,11 +351,11 @@
     align-items: center;
     justify-content: center;
     gap: 40px;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid rgba(245,240,232,0.06);
     margin-top: 2px;
   }
 
-  .quote-rule { flex: 1; max-width: 80px; height: 1px; background: var(--rule); }
+  .quote-rule { flex: 1; max-width: 80px; height: 1px; background: rgba(245,240,232,0.12); }
 
   .quote-text {
     font-family: 'Cormorant Garamond', serif;
@@ -366,6 +377,11 @@
     text-transform: uppercase;
     opacity: 0.5;
     margin-top: 12px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .tile { animation: fadeUp 0.8s ease both; }
@@ -416,7 +432,7 @@
       <span class="tile-tag">Expeditions</span>
       <div class="tile-rule"></div>
       <h2 class="tile-title">Beyond the<br>Daydream</h2>
-      <p class="tile-subtitle">The places that couldn't be scrolled past</p>
+      <p class="tile-subtitle">The places that couldn&rsquo;t be scrolled past</p>
       <p class="tile-description">Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act &mdash; arriving somewhere to wait for the light, the weather, the moment that justifies the journey.</p>
       <a href="#" class="tile-cta" data-testid="link-tile-cta-0">
         <div class="tile-cta-line"></div>
@@ -435,7 +451,7 @@
       <div class="tile-rule"></div>
       <h2 class="tile-title">Beyond the<br>Frame</h2>
       <p class="tile-subtitle">The near distance</p>
-      <p class="tile-description">North Texas landscape &mdash; the land you drive past every day and never stop for. Palo Duro. The Trinity bottomlands. The Llano Estacado at golden hour. What's here when you look.</p>
+      <p class="tile-description">North Texas landscape &mdash; the land you drive past every day and never stop for. Palo Duro. The Trinity bottomlands. The Llano Estacado at golden hour. What&rsquo;s here when you look.</p>
       <a href="#" class="tile-cta" data-testid="link-tile-cta-1">
         <div class="tile-cta-line"></div>
         Enter
@@ -467,7 +483,7 @@
     <div class="tile-hover-overlay"></div>
     <div class="tile-content">
       <span class="tile-number">04</span>
-      <span class="tile-tag">Film · Konica Hexar</span>
+      <span class="tile-tag">Film &middot; Konica Hexar</span>
       <div class="tile-rule"></div>
       <h2 class="tile-title">Beyond the<br>Shutter</h2>
       <p class="tile-subtitle">The slower eye</p>
