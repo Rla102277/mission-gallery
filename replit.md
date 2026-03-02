@@ -20,7 +20,7 @@ Pages are thin HTML shells that:
 5. Call `BlockRenderer.initReveals()` for scroll animations
 6. Load `components.js` (nav/footer) and `tia.js` (page transitions)
 
-### Block Types (16 total)
+### Block Types (22 total)
 - `hero` — Full-screen hero (variants: wordmark, standard, centered, masthead)
 - `text` — Eyebrow + heading + body + CTA (variants: default, pull-quote, article)
 - `divider` — Decorative star divider
@@ -39,10 +39,15 @@ Pages are thin HTML shells that:
 - `email-link` — Styled mailto link
 - `purpose-quote` — Italic quote with border
 - `back-link` — Return home link
+- `portfolio-statement` — Two-column artist statement (eyebrow+title+rule+byline left, quote+body+signature right)
+- `gear-strip` — Dark strip showing camera gear items
+- `work-block` — Side-by-side image+text for portfolio works (auto-generates from portfolioWorks, alternating layout/dark variants)
+- `inquiry` — Dark section with eyebrow, title, subtitle, CTA button
 
 ### Default Block Seeds
 Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `home` — 11 blocks (hero wordmark, philosophy, dividers, collections, featured, process, callout, services, newsletter, quote)
+- `portfolio` — 4 blocks (portfolio-statement, gear-strip, work-block auto, inquiry)
 - `about` — 5 blocks (masthead, pull-quote, divider, article, quote)
 - `prints` — 4 blocks (centered hero, details, badge, back-link)
 - `hope-hike` — 4 blocks (centered hero, stats, purpose-quote, back-link)
@@ -52,37 +57,39 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - **Color Palette**: Light cream (#f5f0e8) background with dark ink (#0d0d0d) text EVERYWHERE. Hero sections and collection tiles stay dark (have own dark gradient backgrounds) with cream text. Gold (#b5922a) accents. NEVER set body to dark/ink background.
 - **Typography**: Playfair Display (headings), Cormorant Garamond (body)
 - **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
-- **CSS Files**: `tia.css` (base/nav/footer) + `blocks.css` (all block type styles)
+- **CSS Files**: `tia.css` (base/nav/footer) + `blocks.css` (all block type styles including portfolio statement, gear strip, work blocks, inquiry)
 - **CSS Variables**: `--rule-dark: rgba(13,13,13,0.12)` for borders, `--gold: #b5922a`
 
 ## Key Files
 - `index.html` — Homepage thin shell (block-driven)
+- `pages/portfolio.html` — Portfolio page thin shell (block-driven, artist statement + work blocks + inquiry)
+- `pages/galleries.html` — Galleries page (3-view hierarchy drill-down, special-purpose)
 - `pages/about.html` — Artist Statement thin shell (block-driven)
 - `pages/prints.html` — Prints thin shell (block-driven)
 - `pages/hope-hike.html` — Hope Hike thin shell (block-driven)
 - `pages/contact.html` — Contact thin shell (block-driven)
-- `pages/portfolio.html` — Portfolio page (3-view hierarchy drill-down, special-purpose)
 - `pages/gallery.html` — Interactive gallery viewer (special-purpose, not block-driven)
 - `admin/index.html` — Admin panel (PIN-protected, case-insensitive "tia2026")
-- `assets/js/block-renderer.js` — Block renderer engine with 16 block types + default seeds + initReveals()
+- `assets/js/block-renderer.js` — Block renderer engine with 22 block types + default seeds + initReveals()
 - `assets/js/tia-data.js` — TIA data layer v8 (helpers: getPageBlocks, getPageMeta, getAllGalleries, getWorkById, getGalleryPhotos)
-- `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions) — skips reveal setup if block renderer already handled it
+- `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions)
 - `assets/js/components.js` — Injects shared nav and footer across all pages (reads from config for dynamic nav/footer)
 - `assets/css/tia.css` — Global styles: tokens, nav, footer, page-content wrapper, grain overlay
-- `assets/css/blocks.css` — All block type CSS with responsive breakpoints + about page print/dark mode
+- `assets/css/blocks.css` — All block type CSS with responsive breakpoints
 - `server/index.ts` — Express server with CF API proxy + config endpoints + static files
 - `script/build.cjs` — Production build script
 
 ## Data Model (STATE / Config JSON)
 - `pages` — Object keyed by slug: `{ title, metaDescription, blocks: [{ id, type, data }] }`
-- `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, galleries: [{ id, title, subtitle, coverAssetId, photos: [] }] }` — auto-seeded with 4 defaults (Beyond the Daydream/Frame/Moment/Shutter) if empty
+- `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, featuredImageId, galleries: [{ id, title, subtitle, coverAssetId, legacySeriesId, photos: [] }] }` — auto-seeded with 4 defaults if empty
 - `siteSettings` — `{ siteName, tagline, footerQuote, footerAttr, email }`
 - `navigation` — `[{ label, href, visible }]`
 - `series` — Gallery metadata keyed by series ID (legacy)
 - `photos` — Photo arrays keyed by series ID (legacy CF Image IDs)
+- `prints` — Array of CF image IDs marked as available prints
 - `home` — Homepage slot assignments (`{ hero_bg: cfImageId }`)
 - `imgFolders` — Virtual folder organization
-- `cf` — `{ hash, assetMeta: { cfImageId: { id, filename } } }`
+- `cf` — `{ hash, assetMeta: { cfImageId: { id, filename, exif } } }`
 
 ## Server API Endpoints
 - `POST /api/images/upload` — Upload image via multer → Cloudflare Images API
@@ -97,50 +104,28 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - **Integration**: Replit AI Integrations for Anthropic (no API key needed, billed to Replit credits)
 - **Endpoint**: `POST /api/ai/enrich` with `X-Admin-Pin` header for auth
 - **Modes**: enrich (improve existing), generate (write from scratch), shorten, expand
-- **Fields**: Subtitle and Description on portfolio works; Subtitle on galleries
-- **UI**: Gold sparkle (✨) button next to enrichable fields, dropdown menu with 4 modes, loading spinner during API call
-- **System prompt**: Literary, contemplative tone for fine-art photography portfolio
+- **Fields**: All text fields on portfolio works, galleries, and standalone series
+- **UI**: Gold sparkle button next to enrichable fields, dropdown menu with 4 modes, loading spinner during API call
 
-## Admin Panel Features (Phase 3 Complete)
-- **Galleries tab**: Browse/create/delete series, set covers, upload photos, edit metadata
-- **Images tab**: Browse all CF images, organize into folders, assign to series, upload, delete
-- **Pages tab**: Page builder — select page (Home/About/Prints/Hope Hike/Contact), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
-- **Portfolio tab**: Works with expandable gallery hierarchy — create/edit/reorder/delete works, add/edit/reorder/delete galleries under each work, upload/assign photos to galleries, set gallery covers
-- **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor (add/edit/reorder/toggle visibility/delete nav items), Cloudflare connection status, config storage info
+## Admin Panel Features
+- **Portfolio tab**: Works with expandable gallery hierarchy — create/edit/reorder/delete works, add/edit/reorder/delete galleries, import default galleries into works, upload/assign photos to galleries, set gallery covers, inline editors with AI enrichment
+- **Images tab**: Browse all CF images, organize into folders, assign to galleries (under portfolio works), set as portfolio cover, mark as print, assign to legacy series, upload, delete, EXIF display on cards
+- **Pages tab**: Page builder — select page (Home/Portfolio/About/Prints/Hope Hike/Contact), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
+- **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor, Cloudflare connection status
+
+## Portfolio Hierarchy System
+Galleries page (formerly portfolio) supports 3 views via URL params:
+- **Works grid** (default): 2×2 tile grid from portfolioWorks
+- **Work detail** (`?work=WORK_ID`): Hero with cover image, info bar, gallery cards grid
+- **Gallery view** (`?work=WORK_ID&gallery=GAL_ID`): Hero + photo grid + lightbox
+
+Portfolio page is now a separate block-driven page showing artist statement, gear strip, work blocks with cover images, and print inquiry section.
 
 ## Environment Variables
 - `CF_ACCOUNT_ID` — Cloudflare account ID
 - `CF_IMAGES_TOKEN` — Cloudflare Images API token (secret)
 - `CF_IMAGES_HASH` — Cloudflare Images delivery hash
 - `SESSION_SECRET` — Session secret
-
-## Portfolio Hierarchy System (Phase 2 Complete)
-Portfolio page supports 3 views via URL params (no page reload):
-- **Works grid** (default): 2×2 tile grid from portfolioWorks, same dark tile design
-- **Work detail** (`?work=WORK_ID`): Hero with cover image, info bar (camera/location/galleries), gallery cards grid
-- **Gallery view** (`?work=WORK_ID&gallery=GAL_ID`): Hero + info bar + photo grid + full lightbox with keyboard nav
-
-Key features:
-- `history.pushState` navigation with browser back button support
-- Back buttons: Gallery → Work Detail → Portfolio grid
-- Lightbox with arrow nav, keyboard support (Esc, Left, Right)
-- Falls back to static default tiles when no portfolioWorks exist
-- Collections-grid block tiles now link directly to `?work=WORK_ID`
-
-Gallery page updated to prefer hierarchy data via `TIA.getAllGalleries()`:
-- Shows work title tag on each gallery card when hierarchy data exists
-- Falls back to legacy `TIA.getSeries()` when no hierarchy galleries exist
-
-Data layer helpers added to tia-data.js:
-- `TIA.getWorkById(workId)` — find a work by ID
-- `TIA.getGalleryPhotos(workId, galleryId)` — photos from a specific gallery
-- `getPhotos()` and `getCoverUrl()` updated to check hierarchy galleries first, then fall back to legacy series
-
-## CMS Phases
-- **Phase 1** (COMPLETE): Block renderer engine + page conversion (5 pages now block-driven)
-- **Phase 2** (COMPLETE): Portfolio hierarchy (Works → Galleries → Photos), portfolio page drill-down, gallery page update
-- **Phase 3** (COMPLETE): Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
-- **Phase 4** (COMPLETE): OG meta tags on all pages (og:type, og:title, og:description, og:url, og:image), dynamic meta from config, OG image picker in admin Pages tab, responsive polish (520px breakpoint added)
 
 ## Deployment
 - Target: autoscale

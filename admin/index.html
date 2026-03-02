@@ -872,6 +872,7 @@ function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]
 // ═══════════════════════════════════════════════════════════════
 const PAGE_SLUGS=[
   {slug:'home',label:'Home'},
+  {slug:'portfolio',label:'Portfolio'},
   {slug:'about',label:'About'},
   {slug:'prints',label:'Prints'},
   {slug:'hope-hike',label:'Hope Hike'},
@@ -895,7 +896,11 @@ const BLOCK_TYPES=[
   {type:'badge',label:'Badge',ico:'&#x25cf;'},
   {type:'details-list',label:'Details List',ico:'&#x2022;'},
   {type:'email-link',label:'Email Link',ico:'@'},
-  {type:'purpose-quote',label:'Purpose Quote',ico:'&#x2756;'}
+  {type:'purpose-quote',label:'Purpose Quote',ico:'&#x2756;'},
+  {type:'portfolio-statement',label:'Portfolio Statement',ico:'&#x270E;'},
+  {type:'gear-strip',label:'Gear Strip',ico:'&#x2699;'},
+  {type:'work-block',label:'Work Blocks',ico:'&#x25a3;'},
+  {type:'inquiry',label:'Inquiry CTA',ico:'&#x2709;'}
 ];
 let activePage='home';
 let editingBlockIdx=null;
@@ -1314,6 +1319,44 @@ function renderBlockEditor(b,idx){
     case 'purpose-quote':
       f('Text (HTML)','text',d.text,'textarea');
       break;
+    case 'portfolio-statement':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Title (HTML)','title',d.title);
+      f('Byline','byline',d.byline);
+      f('Quote (HTML)','quote',d.quote,'textarea');
+      f('Body (HTML)','body',d.body,'textarea');
+      f('Signature','signature',d.signature);
+      break;
+    case 'gear-strip':
+      html+='<div class="field"><span class="field-lbl">Gear Items</span><div class="items-list">';
+      (d.items||[]).forEach(function(item,ii){
+        html+='<div class="item-card" style="display:flex;gap:8px;align-items:center"><input class="input" value="'+esc(item||'')+'" oninput="updateBlockDetailItem('+idx+','+ii+',this.value)" style="flex:1">';
+        html+='<button class="btn red" onclick="removeBlockItem('+idx+','+ii+')">&times;</button></div>';
+      });
+      html+='</div></div>';
+      html+='<button class="btn" onclick="addBlockItem('+idx+',\'\')" style="margin-top:6px">+ Add Gear Item</button>';
+      break;
+    case 'work-block':
+      sel('Mode','mode',d.mode||'auto',[{value:'auto',label:'Auto (from Portfolio Works)'},{value:'manual',label:'Manual'}]);
+      if(d.mode==='manual'){
+        f('Title','title',d.title);
+        f('Subtitle','subtitle',d.subtitle);
+        f('Body','body',d.body,'textarea');
+        f('CTA Text','ctaText',d.ctaText);
+        f('CTA URL','ctaUrl',d.ctaUrl);
+        imgBtn('Image','imageId',d.imageId);
+      } else {
+        html+='<p style="color:var(--dim);font-size:10px;margin-top:4px">Auto-generates work blocks from Portfolio Works. Each work with a cover image gets a block with alternating layout.</p>';
+      }
+      break;
+    case 'inquiry':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Title','title',d.title);
+      f('Subtitle','subtitle',d.subtitle);
+      f('CTA Text','ctaText',d.ctaText);
+      f('CTA URL','ctaUrl',d.ctaUrl);
+      f('Note','note',d.note);
+      break;
     default:
       html+='<p style="color:var(--dim);font-size:11px">Unknown block type: '+esc(b.type)+'</p>';
   }
@@ -1689,6 +1732,25 @@ function addGalleryToWork(workIdx){
       if(pw.id!==w.id) allGals.push({gallery:g,workTitle:pw.title});
     });
   });
+  var linkedSeriesIds=new Set();
+  getPortfolioWorks().forEach(function(pw){
+    (pw.galleries||[]).forEach(function(g){if(g.legacySeriesId)linkedSeriesIds.add(g.legacySeriesId);});
+  });
+  var availableDefaults=TIA.DEFAULT_SERIES.filter(function(ds){return !linkedSeriesIds.has(ds.id);});
+  if(availableDefaults.length){
+    html+='<div class="gp-section-lbl">Import Default Gallery</div>';
+    availableDefaults.forEach(function(ds){
+      var cnt=(STATE.photos&&STATE.photos[ds.id]||[]).length;
+      var coverUrl=STATE.series&&STATE.series[ds.id]&&STATE.series[ds.id].coverAssetId?TIA.photoUrl(STATE.series[ds.id].coverAssetId,'thumb'):'';
+      html+='<div class="gp-option" onclick="importLegacyGallery(\''+esc(ds.id)+'\')" data-testid="btn-import-default-'+ds.id+'">';
+      html+='<div class="gp-option-cover">';
+      if(coverUrl) html+='<img src="'+coverUrl+'" alt="">';
+      else html+='&#x1F5BC;';
+      html+='</div>';
+      html+='<div class="gp-option-info"><div class="gp-option-title">'+esc(ds.title)+'</div>';
+      html+='<div class="gp-option-meta">'+esc(ds.type||'Series')+' &middot; '+esc(ds.location||'')+' &middot; '+cnt+' photo'+(cnt!==1?'s':'')+'</div></div></div>';
+    });
+  }
   if(existingSeriesWithPhotos.length){
     html+='<div class="gp-section-lbl">Import from Legacy Galleries</div>';
     existingSeriesWithPhotos.forEach(function(s){
@@ -2361,18 +2423,106 @@ function openAssignModal(){
   if(!imgSelected.size)return;
   const n=imgSelected.size;
   document.getElementById("amTitle").textContent="Assign "+n+" image"+(n>1?"s":"")+" to...";
-  const series=getSeries();
-  let html=`<div class="am-section">
-    <span class="am-section-lbl">Gallery Series</span>
-    ${series.map(s=>`<button class="am-opt" onclick="imgAssignToSeries('${s.id}')">
-      <span style="font-size:9px;color:var(--dim);width:20px">${s.num}</span> ${esc(s.title)}
-    </button>`).join("")}
+  let html='';
+  const works=getPortfolioWorks();
+  if(works.length){
+    html+=`<div class="am-section"><span class="am-section-lbl">Gallery (under Portfolio Work)</span>`;
+    works.forEach(function(w,wi){
+      var gals=w.galleries||[];
+      if(gals.length){
+        gals.forEach(function(g,gi){
+          html+=`<button class="am-opt" onclick="imgAssignToGallery(${wi},${gi})" data-testid="am-gal-${wi}-${gi}">
+            <span style="font-size:9px;color:var(--dim);width:20px">&#x25a3;</span> ${esc(w.title)} &rarr; ${esc(g.title||'Untitled')}
+          </button>`;
+        });
+      } else {
+        html+=`<div style="padding:4px 12px;font-size:10px;color:var(--dim)">${esc(w.title)} — no galleries yet</div>`;
+      }
+    });
+    html+=`</div>`;
+  }
+  html+=`<div class="am-section"><span class="am-section-lbl">Portfolio Cover</span>`;
+  works.forEach(function(w,wi){
+    html+=`<button class="am-opt" onclick="imgSetAsPortfolioCover(${wi})" data-testid="am-cover-${wi}">
+      <span style="font-size:9px;color:var(--dim);width:20px">&#x2606;</span> Set as cover for: ${esc(w.title)}
+    </button>`;
+  });
+  html+=`</div>`;
+  html+=`<div class="am-section"><span class="am-section-lbl">Print</span>
+    <button class="am-opt" onclick="imgMarkAsPrint()" data-testid="am-print">
+      <span style="font-size:9px;color:var(--dim);width:20px">&#x1F5BC;</span> Mark as Available Print
+    </button>
   </div>`;
+  const series=getSeries();
+  if(series.length){
+    html+=`<div class="am-section"><span class="am-section-lbl">Legacy Gallery Series</span>
+      ${series.map(s=>`<button class="am-opt" onclick="imgAssignToSeries('${s.id}')">
+        <span style="font-size:9px;color:var(--dim);width:20px">${s.num}</span> ${esc(s.title)}
+      </button>`).join("")}
+    </div>`;
+  }
   document.getElementById("amBody").innerHTML=html;
   document.getElementById("assignModal").classList.add("open");
 }
 
 function closeAssignModal(){document.getElementById("assignModal").classList.remove("open");}
+
+function imgAssignToGallery(workIdx,galIdx){
+  var works=getPortfolioWorks();
+  var w=works[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx])return;
+  var g=w.galleries[galIdx];
+  if(!g.photos)g.photos=[];
+  var added=0;
+  imgSelected.forEach(function(cfId){
+    if(!g.photos.includes(cfId)){
+      g.photos.push(cfId);
+      added++;
+    }
+    if(!CF_PHOTOS[cfId]){
+      var img=imgAllImages.find(function(i){return i.id===cfId;});
+      CF_PHOTOS[cfId]={id:cfId,filename:img?.filename||cfId};
+      if(!STATE.cf)STATE.cf={assetMeta:{}};
+      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+      STATE.cf.assetMeta[cfId]=CF_PHOTOS[cfId];
+    }
+  });
+  closeAssignModal();
+  imgSelected=new Set();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast(added+" image"+(added>1?"s":"")+" added to "+esc(g.title||"gallery")+" — Save & Publish to go live");
+}
+
+function imgSetAsPortfolioCover(workIdx){
+  var works=getPortfolioWorks();
+  var w=works[workIdx];
+  if(!w)return;
+  var firstId=imgSelected.values().next().value;
+  if(!firstId)return;
+  w.coverAssetId=firstId;
+  closeAssignModal();
+  imgSelected=new Set();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast("Cover set for "+esc(w.title)+" — Save & Publish to go live");
+}
+
+function imgMarkAsPrint(){
+  if(!STATE.prints)STATE.prints=[];
+  var added=0;
+  imgSelected.forEach(function(cfId){
+    if(!STATE.prints.includes(cfId)){
+      STATE.prints.push(cfId);
+      added++;
+    }
+  });
+  closeAssignModal();
+  imgSelected=new Set();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast(added+" image"+(added>1?"s":"")+" marked as print"+(added>1?"s":"")+" — Save & Publish to go live");
+}
 
 function imgAssignToSeries(sid){
   if(!STATE.photos[sid])STATE.photos[sid]=[];

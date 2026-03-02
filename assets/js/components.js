@@ -17,8 +17,8 @@
       mobileLinks += '<a href="' + (item.href || '/') + '">' + (item.label || '') + '</a>';
     });
   } else {
-    navLinks = '<li><a href="/">Home</a></li><li><a href="/pages/portfolio.html">Portfolio</a></li><li><a href="/pages/about.html">About</a></li><li><a href="/pages/prints.html">Prints</a></li><li><a href="/pages/hope-hike.html">Hope Hike</a></li><li><a href="/pages/contact.html">Contact</a></li>';
-    mobileLinks = '<a href="/">Home</a><a href="/pages/portfolio.html">Portfolio</a><a href="/pages/about.html">About</a><a href="/pages/prints.html">Prints</a><a href="/pages/hope-hike.html">Hope Hike</a><a href="/pages/contact.html">Contact</a>';
+    navLinks = '<li><a href="/">Home</a></li><li><a href="/pages/portfolio.html">Portfolio</a></li><li><a href="/pages/galleries.html">Galleries</a></li><li><a href="/pages/about.html">About</a></li><li><a href="/pages/prints.html">Prints</a></li><li><a href="/pages/hope-hike.html">Hope Hike</a></li><li><a href="/pages/contact.html">Contact</a></li>';
+    mobileLinks = '<a href="/">Home</a><a href="/pages/portfolio.html">Portfolio</a><a href="/pages/galleries.html">Galleries</a><a href="/pages/about.html">About</a><a href="/pages/prints.html">Prints</a><a href="/pages/hope-hike.html">Hope Hike</a><a href="/pages/contact.html">Contact</a>';
   }
 
   var navHTML = '<nav class="tia-nav">' +
@@ -41,7 +41,7 @@
       if (item.href !== '/') footerRight += '<div><a href="' + (item.href || '/') + '">' + (item.label || '') + '</a></div>';
     });
   } else {
-    footerRight = '<div><a href="/pages/portfolio.html">Portfolio</a></div><div><a href="/pages/about.html">About</a></div><div><a href="/pages/prints.html">Prints</a></div><div><a href="/pages/hope-hike.html">Hope Hike</a></div><div><a href="/pages/contact.html">Contact</a></div>';
+    footerRight = '<div><a href="/pages/portfolio.html">Portfolio</a></div><div><a href="/pages/galleries.html">Galleries</a></div><div><a href="/pages/about.html">About</a></div><div><a href="/pages/prints.html">Prints</a></div><div><a href="/pages/hope-hike.html">Hope Hike</a></div><div><a href="/pages/contact.html">Contact</a></div>';
   }
 
   var footerHTML = '<footer class="tia-footer">' +

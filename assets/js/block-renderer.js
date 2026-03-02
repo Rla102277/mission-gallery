@@ -121,7 +121,7 @@ var BlockRenderer = {
       var cls = tileClasses[i % tileClasses.length];
       var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
       var bgStyle = coverUrl ? "background-image:url('" + coverUrl + "');background-size:cover;background-position:center;" : '';
-      return '<a href="/pages/portfolio.html' + (w.id ? '?work=' + encodeURIComponent(w.id) : '') + '" class="coll-tile ' + cls + '" data-testid="coll-tile-' + (i+1) + '">' +
+      return '<a href="/pages/galleries.html' + (w.id ? '?work=' + encodeURIComponent(w.id) : '') + '" class="coll-tile ' + cls + '" data-testid="coll-tile-' + (i+1) + '">' +
         '<div class="tile-bg" style="' + bgStyle + '"></div><div class="tile-vignette"></div>' +
         '<div class="tile-content"><span class="tile-tag">' + (w.type || 'Series') + '</span><div class="tile-rule-s"></div>' +
         '<h3 class="tile-h">' + (w.title || 'Untitled') + '</h3>' +
@@ -302,6 +302,102 @@ var BlockRenderer = {
   render_email_link: function(d, state, id) {
     return '<a href="mailto:' + (d.email || '') + '" class="blk-email-link" data-testid="link-email-' + id + '">' + (d.email || '') + '</a>';
   },
+
+  render_portfolio_statement: function(d, state, id) {
+    var e = BlockRenderer.esc;
+    return '<section class="pf-statement" data-reveal data-testid="blk-pf-stmt-' + id + '">' +
+      '<div class="pf-stmt-left">' +
+        '<span class="pf-stmt-eyebrow">' + (d.eyebrow || 'Artist Statement') + '</span>' +
+        '<h1 class="pf-stmt-title">' + (d.title || '') + '</h1>' +
+        '<div class="pf-stmt-rule"></div>' +
+        '<span class="pf-stmt-byline">' + (d.byline || '') + '</span>' +
+      '</div>' +
+      '<div class="pf-stmt-right">' +
+        '<p class="pf-stmt-quote">' + (d.quote || '') + '</p>' +
+        '<div class="pf-stmt-body">' + (d.body || '') + '</div>' +
+        '<span class="pf-stmt-signature">' + (d.signature || '') + '</span>' +
+      '</div>' +
+    '</section>';
+  },
+
+  render_gear_strip: function(d, state, id) {
+    var items = d.items || [];
+    var html = '<div class="pf-gear-strip" data-testid="blk-gear-' + id + '">';
+    html += '<span class="pf-gear-label">' + (d.label || 'System') + '</span>';
+    html += '<div class="pf-gear-items">';
+    items.forEach(function(item) {
+      html += '<span class="pf-gear-item">' + (item || '') + '</span>';
+    });
+    html += '</div></div>';
+    return html;
+  },
+
+  render_work_block: function(d, state, id) {
+    var works = (state && state.portfolioWorks) || [];
+    var idx = d.workIndex !== undefined ? d.workIndex : -1;
+    var mode = d.mode || 'auto';
+    var html = '';
+
+    if (mode === 'auto') {
+      works.forEach(function(w, i) {
+        html += BlockRenderer._renderSingleWork(w, i, id, state);
+      });
+      return '<section class="pf-work-section" data-testid="blk-works-' + id + '">' + html + '</section>';
+    }
+
+    var w = works[idx];
+    if (!w) return '';
+    return '<section class="pf-work-section" data-testid="blk-work-' + id + '">' +
+      BlockRenderer._renderSingleWork(w, idx, id, state) +
+    '</section>';
+  },
+
+  _renderSingleWork: function(w, i, id, state) {
+    var isReverse = i % 2 === 1;
+    var isDark = i % 2 === 1;
+    var cls = 'pf-work-block' + (isReverse ? ' reverse' : '') + (isDark ? ' dark-text' : '');
+    var imgHtml = '';
+    var coverId = w.featuredImageId || w.coverAssetId;
+    if (coverId) {
+      var url = TIA.photoUrl(coverId, 'hero');
+      if (url) imgHtml = '<img class="pf-wv-img" src="' + url + '" alt="' + BlockRenderer.esc(w.title || '') + '" loading="lazy">';
+    }
+    if (!imgHtml) {
+      imgHtml = '<div class="pf-wv-placeholder"><div class="pf-wv-ph-label">' + BlockRenderer.esc(w.title || 'Work') + '</div></div>';
+    }
+    var galCount = (w.galleries || []).length;
+    var specs = '';
+    if (w.camera || w.location || w.format) {
+      specs += '<div class="pf-wt-specs">';
+      if (w.camera) specs += '<div class="pf-wts-row"><span class="pf-wts-key">Camera</span><span class="pf-wts-val">' + BlockRenderer.esc(w.camera) + '</span></div>';
+      if (w.location) specs += '<div class="pf-wts-row"><span class="pf-wts-key">Location</span><span class="pf-wts-val">' + BlockRenderer.esc(w.location) + '</span></div>';
+      if (w.format) specs += '<div class="pf-wts-row"><span class="pf-wts-key">Format</span><span class="pf-wts-val">' + BlockRenderer.esc(w.format) + '</span></div>';
+      if (galCount) specs += '<div class="pf-wts-row"><span class="pf-wts-key">Series</span><span class="pf-wts-val">' + galCount + ' galler' + (galCount === 1 ? 'y' : 'ies') + '</span></div>';
+      specs += '</div>';
+    }
+    return '<div class="' + cls + '" data-reveal>' +
+      '<div class="pf-work-visual" style="background:linear-gradient(145deg,rgba(10,20,30,0.9),rgba(5,10,15,0.95))">' + imgHtml + '</div>' +
+      '<div class="pf-work-text">' +
+        '<span class="pf-wt-series">' + BlockRenderer.esc(w.type || 'Series') + '</span>' +
+        '<h2 class="pf-wt-title">' + BlockRenderer.esc(w.title || '') + '</h2>' +
+        '<p class="pf-wt-sub">' + BlockRenderer.esc(w.subtitle || '') + '</p>' +
+        '<p class="pf-wt-body">' + BlockRenderer.esc(w.description || '') + '</p>' +
+        '<div class="pf-wt-rule"></div>' +
+        specs +
+        '<a href="/pages/galleries.html?work=' + (w.id || '') + '" class="pf-wt-cta" data-testid="link-work-' + (w.id || i) + '">View Galleries &nbsp;&#8594;</a>' +
+      '</div>' +
+    '</div>';
+  },
+
+  render_inquiry: function(d, state, id) {
+    return '<section class="pf-inquiry" data-reveal data-testid="blk-inquiry-' + id + '">' +
+      '<span class="pf-inq-eyebrow">' + (d.eyebrow || '') + '</span>' +
+      '<h2 class="pf-inq-title">' + (d.title || '') + '</h2>' +
+      '<p class="pf-inq-sub">' + (d.subtitle || '') + '</p>' +
+      (d.ctaUrl ? '<a href="' + d.ctaUrl + '" class="pf-inq-cta">' + (d.ctaText || 'Get in Touch') + ' &nbsp;&#8594;</a>' : '') +
+      (d.note ? '<span class="pf-inq-note">' + d.note + '</span>' : '') +
+    '</section>';
+  },
 };
 
 BlockRenderer.initReveals = function() {
@@ -339,7 +435,7 @@ BlockRenderer.PAGE_DEFAULTS = {
     { id:'h1', type:'hero', data:{ variant:'wordmark', tagline:'Beyond the Daydream', eyebrow:'Fine Art Landscape Photography', scrollText:'Enter' } },
     { id:'h2', type:'text', data:{ variant:'default', eyebrow:'The Vision', heading:'The arch frames what lies beyond.<br>Every image is a gateway.', body:'Most of us spend our lives just outside the frame &mdash; scrolling past the image, saving it for later, never quite arriving. I started chasing the places that couldn&rsquo;t be scrolled past.\n\nPhotography is where light becomes language and landscape becomes mirror. The most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re waited for. Cold mornings, uncertain skies, the moment you raise the camera toward impossible light and believe something is there before you can see it.', ctaText:'Read the Full Statement', ctaUrl:'/pages/about.html' } },
     { id:'h3', type:'divider', data:{} },
-    { id:'h4', type:'collections-grid', data:{ heading:'Four bodies of work.<br>One way of seeing.', ctaText:'View All', ctaUrl:'/pages/portfolio.html' } },
+    { id:'h4', type:'collections-grid', data:{ heading:'Four bodies of work.<br>One way of seeing.', ctaText:'View All', ctaUrl:'/pages/galleries.html' } },
     { id:'h5', type:'featured-list', data:{ eyebrow:'Signature Projects', heading:'Work that required commitment to earn.' } },
     { id:'h6', type:'divider', data:{} },
     { id:'h7', type:'process-grid', data:{ eyebrow:'The Approach', heading:'How the photographs get made.', items:[
@@ -377,6 +473,30 @@ BlockRenderer.PAGE_DEFAULTS = {
     { id:'hh2', type:'stats-bar', data:{ items:[{ value:'8,751\'', label:'Summit Elevation' }, { value:'3', label:'Days' }, { value:'&infin;', label:'Purpose' }] } },
     { id:'hh3', type:'purpose-quote', data:{ text:'\u201CThe summit is not the destination. It\u2019s the proof that you kept going.\u201D' } },
     { id:'hh4', type:'back-link', data:{ url:'/', text:'Return Home' } }
+  ],
+
+  portfolio: [
+    { id:'pf1', type:'portfolio-statement', data:{
+      eyebrow:'Artist Statement',
+      title:'The photograph isn\u2019t made. It\u2019s waited for.',
+      byline:'Randy Allen &nbsp;&middot;&nbsp; <strong>The Infinite Arch</strong> &nbsp;&middot;&nbsp; Fine Art Landscape Photography',
+      quote:'\u201CThe most honest photographs aren\u2019t taken \u2014 they\u2019re waited for. They come to the photographer who arrives early, stays late, and returns when the light changes.\u201D',
+      body:'<p>The Infinite Arch takes its name from two things at once: the natural arch in rock and the arch of a human life. Both describe the same passage \u2014 a threshold between what was and what\u2019s possible.</p><p>I shoot with Fujifilm\u2019s GFX medium format system because 102 megapixels demands intention. Every frame is a choice. Every trip into the field is a commitment to be present for whatever the light decides to do.</p><p>This work is landscape as contemplation. The camera is the last step in a process that begins with arriving, waiting, and being willing to return. The image is the record of that patience.</p>',
+      signature:'\u2014 Beyond the Daydream'
+    } },
+    { id:'pf2', type:'gear-strip', data:{
+      label:'System',
+      items:['Fujifilm GFX 100S II','GF 32\u201364mm f/4','GF 100\u2013200mm f/5.6','Fujifilm X-E5','Instax Mini Evo','Capture One']
+    } },
+    { id:'pf3', type:'work-block', data:{ mode:'auto' } },
+    { id:'pf4', type:'inquiry', data:{
+      eyebrow:'Original Fine Art Prints',
+      title:'Every print is a<br>limited edition.',
+      subtitle:'Archival pigment on Hahnem\u00FChle Fine Art paper. Each print is signed, numbered, and produced from the original GFX 102-megapixel file.',
+      ctaText:'Begin a Conversation',
+      ctaUrl:'mailto:sayhello@theinfinitearch.com?subject=Print Inquiry',
+      note:'All series available &nbsp;&middot;&nbsp; Custom sizes on request'
+    } }
   ],
 
   contact: [

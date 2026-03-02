@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Infinite Arch — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --ink:#0d0d0d; --cream:#f5f0e8; --sage-light:#e8e6e0; --sage-dark:#2a2e28;
+      --sage-bg:#3d4039; --gold:#c9a227; --max:1320px; --ease:cubic-bezier(0.25,0.1,0.25,1);
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--sage-light); color:var(--ink); font-family:'Cormorant Garamond',Georgia,serif; font-weight:400; line-height:1.75; overflow-x:hidden; }
+    a { color:inherit; text-decoration:none; }
+    nav { position:fixed; top:0; left:0; right:0; z-index:500; display:flex; align-items:center; justify-content:space-between; padding:20px 48px; background:rgba(232,230,224,0.93); backdrop-filter:blur(12px); border-bottom:1px solid rgba(0,0,0,0.06); }
+    .nav-mark { display:flex; flex-direction:column; align-items:flex-start; }
+    .nm-hr { display:block; width:60px; height:2px; background:var(--ink); margin-bottom:1px; }
+    .nm-thin { display:block; width:60px; height:1px; background:var(--ink); opacity:0.2; margin-bottom:2px; }
+    .nm-the { font-style:italic; font-size:6px; letter-spacing:6px; opacity:0.35; display:block; }
+    .nm-inf { font-family:'Playfair Display',serif; font-style:italic; font-size:10px; letter-spacing:2px; opacity:0.55; display:block; line-height:1.1; }
+    .nm-arch { font-family:'Playfair Display',serif; font-weight:900; font-size:18px; letter-spacing:-1px; line-height:0.88; display:block; }
+    .nm-tag { font-style:italic; font-size:6px; letter-spacing:3px; opacity:0.3; display:block; margin-top:1px; }
+    .nm-bot { display:block; width:60px; height:1px; background:var(--ink); opacity:0.2; margin-top:1px; }
+    .nav-links { display:flex; align-items:center; gap:36px; font-size:9px; letter-spacing:5px; text-transform:uppercase; }
+    .nav-links a { opacity:0.45; transition:opacity 0.3s; }
+    .nav-links a:hover,.nav-links a.active { opacity:1; }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; }
+    .hamburger span { display:block; width:22px; height:1px; background:var(--ink); opacity:0.6; }
+    .mob-menu { display:none; position:fixed; inset:0; z-index:999; background:rgba(232,230,224,0.98); flex-direction:column; align-items:center; justify-content:center; gap:36px; }
+    .mob-menu.open { display:flex; }
+    .mob-menu a { font-size:11px; letter-spacing:6px; text-transform:uppercase; opacity:0.45; transition:opacity 0.3s; }
+    .mob-menu a:hover { opacity:1; }
+    .mob-close { position:absolute; top:28px; right:28px; opacity:0.3; cursor:pointer; font-size:22px; }
+    /* STATEMENT */
+    .statement-section { padding:140px 80px 100px; display:grid; grid-template-columns:1fr 1fr; gap:100px; align-items:start; max-width:var(--max); margin:0 auto; }
+    .stmt-eyebrow { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:rgba(0,0,0,0.3); margin-bottom:20px; display:block; }
+    .stmt-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(32px,4vw,60px); line-height:1.05; color:var(--ink); margin-bottom:24px; }
+    .stmt-rule { width:56px; height:1.5px; background:rgba(0,0,0,0.15); margin-bottom:28px; }
+    .stmt-byline { font-size:10px; letter-spacing:5px; text-transform:uppercase; color:rgba(0,0,0,0.25); }
+    .stmt-byline strong { color:rgba(0,0,0,0.5); }
+    .stmt-body { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(17px,1.9vw,23px); color:rgba(0,0,0,0.55); line-height:1.7; margin-bottom:28px; }
+    .stmt-sub { font-size:15px; color:rgba(0,0,0,0.4); line-height:1.9; }
+    .stmt-sub p { margin-bottom:14px; }
+    .stmt-signature { font-family:'Playfair Display',serif; font-style:italic; font-size:18px; color:rgba(0,0,0,0.35); margin-top:32px; display:block; }
+    /* GEAR */
+    .gear-strip { background:var(--sage-dark); padding:28px 80px; display:flex; align-items:center; gap:48px; flex-wrap:wrap; }
+    .gear-label { font-size:8px; letter-spacing:5px; text-transform:uppercase; color:rgba(255,255,255,0.2); flex-shrink:0; }
+    .gear-items { display:flex; gap:32px; flex-wrap:wrap; }
+    .gear-item { font-family:'Playfair Display',serif; font-style:italic; font-size:14px; color:rgba(255,255,255,0.45); }
+    .gear-item::after { content:'·'; margin-left:32px; color:rgba(255,255,255,0.15); }
+    .gear-item:last-child::after { content:''; }
+    /* WORK BLOCKS */
+    .work-section { border-top:1px solid rgba(0,0,0,0.08); }
+    .work-block { display:grid; grid-template-columns:1fr 1fr; min-height:600px; max-width:var(--max); margin:0 auto; }
+    .work-block.reverse .work-text { order:2; }
+    .work-block.reverse .work-visual { order:1; }
+    .work-visual { position:relative; overflow:hidden; min-height:500px; }
+    .wv-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.8s var(--ease),filter 0.6s; filter:brightness(0.88); }
+    .work-visual:hover .wv-img { transform:scale(1.03); filter:brightness(0.75); }
+    .wv-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
+    .wv-ph-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.18); text-align:center; padding:16px; }
+    .work-text { padding:80px 72px; display:flex; flex-direction:column; justify-content:center; background:var(--sage-light); }
+    .wt-series { font-size:8px; letter-spacing:6px; text-transform:uppercase; color:rgba(0,0,0,0.25); margin-bottom:16px; display:block; }
+    .wt-type-badge { display:inline-block; font-size:8px; letter-spacing:3px; text-transform:uppercase; color:rgba(0,0,0,0.3); border:1px solid rgba(0,0,0,0.12); padding:3px 10px; margin-bottom:24px; }
+    .wt-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(26px,3vw,44px); line-height:1.1; color:var(--ink); margin-bottom:8px; }
+    .wt-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(15px,1.5vw,18px); color:rgba(0,0,0,0.4); margin-bottom:28px; }
+    .wt-body { font-size:15px; line-height:1.9; color:rgba(0,0,0,0.45); margin-bottom:32px; }
+    .wt-rule { width:40px; height:1px; background:rgba(0,0,0,0.12); margin-bottom:28px; }
+    .wt-specs { margin-bottom:36px; }
+    .wts-row { display:flex; gap:12px; margin-bottom:6px; }
+    .wts-key { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(0,0,0,0.25); width:64px; flex-shrink:0; }
+    .wts-val { font-family:'Playfair Display',serif; font-style:italic; font-size:14px; color:rgba(0,0,0,0.5); }
+    .wt-cta { display:inline-flex; align-items:center; gap:12px; font-size:9px; letter-spacing:5px; text-transform:uppercase; color:rgba(0,0,0,0.5); padding:14px 28px; border:1px solid rgba(0,0,0,0.2); transition:all 0.3s; align-self:flex-start; }
+    .wt-cta:hover { background:var(--ink); color:var(--cream); border-color:var(--ink); }
+    /* DARK treatment */
+    .work-block.dark-text .work-text { background:var(--sage-dark); }
+    .work-block.dark-text .wt-series { color:rgba(255,255,255,0.25); }
+    .work-block.dark-text .wt-type-badge { color:rgba(255,255,255,0.3); border-color:rgba(255,255,255,0.12); }
+    .work-block.dark-text .wt-title { color:var(--cream); }
+    .work-block.dark-text .wt-sub { color:rgba(255,255,255,0.4); }
+    .work-block.dark-text .wt-body { color:rgba(255,255,255,0.4); }
+    .work-block.dark-text .wt-rule { background:rgba(255,255,255,0.1); }
+    .work-block.dark-text .wts-key { color:rgba(255,255,255,0.2); }
+    .work-block.dark-text .wts-val { color:rgba(255,255,255,0.45); }
+    .work-block.dark-text .wt-cta { color:rgba(255,255,255,0.4); border-color:rgba(255,255,255,0.15); }
+    .work-block.dark-text .wt-cta:hover { background:var(--cream); color:var(--ink); border-color:var(--cream); }
+    /* INQUIRY */
+    .inquiry-section { background:var(--sage-dark); color:var(--cream); padding:100px 80px; text-align:center; }
+    .inq-eyebrow { font-size:9px; letter-spacing:6px; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:20px; display:block; }
+    .inq-title { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(28px,3.5vw,50px); color:var(--cream); line-height:1.1; margin-bottom:20px; }
+    .inq-sub { font-family:'Playfair Display',serif; font-style:italic; font-size:clamp(16px,1.7vw,21px); color:rgba(255,255,255,0.4); max-width:560px; margin:0 auto 48px; line-height:1.6; }
+    .inq-cta { display:inline-flex; align-items:center; gap:14px; font-size:9px; letter-spacing:6px; text-transform:uppercase; color:var(--cream); padding:18px 40px; border:1px solid rgba(255,255,255,0.3); transition:all 0.4s; }
+    .inq-cta:hover { background:var(--cream); color:var(--ink); border-color:var(--cream); }
+    .inq-note { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.18); margin-top:24px; display:block; }
+    /* REVEAL */
+    [data-reveal] { opacity:0; transform:translateY(24px); transition:opacity 0.9s var(--ease),transform 0.9s var(--ease); }
+    [data-reveal].vis { opacity:1; transform:translateY(0); }
+    /* FOOTER */
+    footer { background:var(--sage-light); padding:36px 80px; border-top:1px solid rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+    .footer-copy { font-size:9.5px; letter-spacing:3px; text-transform:uppercase; color:rgba(0,0,0,0.25); }
+    .footer-links { display:flex; gap:28px; }
+    .footer-links a { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(0,0,0,0.25); transition:color 0.3s; }
+    .footer-links a:hover { color:var(--ink); }
+    .footer-up { font-size:18px; color:rgba(0,0,0,0.25); cursor:pointer; transition:color 0.3s; }
+    .footer-up:hover { color:var(--ink); }
+    @media(max-width:960px) {
+      nav { padding:16px 24px; }
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+      .statement-section { grid-template-columns:1fr; gap:40px; padding:100px 24px 60px; }
+      .gear-strip { padding:24px; gap:20px; }
+      .work-block { grid-template-columns:1fr; }
+      .work-block.reverse .work-text,.work-block.reverse .work-visual { order:unset; }
+      .work-text { padding:48px 24px; }
+      .work-visual { min-height:320px; }
+      .inquiry-section { padding:60px 24px; }
+      footer { padding:28px 24px; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-mark">
+    <span class="nm-hr"></span><span class="nm-thin"></span>
+    <span class="nm-the">the</span><span class="nm-inf">Infinite</span>
+    <span class="nm-arch">ARCH</span><span class="nm-tag">Beyond the Daydream</span><span class="nm-bot"></span>
+  </a>
+  <div class="nav-links">
+    <a href="../index.html#featured">Featured</a>
+    <a href="./about.html">About</a>
+    <a href="./gallery.html">Gallery</a>
+    <a href="../index.html#contact">Contact</a>
+    <a href="./portfolio.html" class="active">Portfolio</a>
+  </div>
+  <div class="hamburger" id="ham" onclick="document.getElementById('mob').classList.toggle('open')"><span></span><span></span><span></span></div>
+</nav>
+<div class="mob-menu" id="mob">
+  <span class="mob-close" onclick="document.getElementById('mob').classList.remove('open')">&#x2715;</span>
+  <a href="../index.html#featured">Featured</a><a href="./about.html">About</a>
+  <a href="./gallery.html">Gallery</a><a href="../index.html#contact">Contact</a><a href="./portfolio.html">Portfolio</a>
+</div>
+
+<section class="statement-section">
+  <div data-reveal>
+    <span class="stmt-eyebrow">Artist Statement</span>
+    <h1 class="stmt-title">The photograph isn&rsquo;t made. It&rsquo;s waited for.</h1>
+    <div class="stmt-rule"></div>
+    <span class="stmt-byline">Randy Allen &nbsp;&middot;&nbsp; <strong>The Infinite Arch</strong> &nbsp;&middot;&nbsp; Fine Art Landscape Photography</span>
+  </div>
+  <div data-reveal>
+    <p class="stmt-body">&ldquo;The most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re waited for. They come to the photographer who arrives early, stays late, and returns when the light changes.&rdquo;</p>
+    <div class="stmt-sub">
+      <p>The Infinite Arch takes its name from two things at once: the natural arch in rock and the arch of a human life. Both describe the same passage &mdash; a threshold between what was and what&rsquo;s possible.</p>
+      <p>I shoot with Fujifilm&rsquo;s GFX medium format system because 102 megapixels demands intention. Every frame is a choice. Every trip into the field is a commitment to be present for whatever the light decides to do.</p>
+      <p>This work is landscape as contemplation. The camera is the last step in a process that begins with arriving, waiting, and being willing to return. The image is the record of that patience.</p>
+    </div>
+    <span class="stmt-signature">&mdash; Beyond the Daydream</span>
+  </div>
+</section>
+
+<div class="gear-strip">
+  <span class="gear-label">System</span>
+  <div class="gear-items">
+    <span class="gear-item">Fujifilm GFX 100S II</span>
+    <span class="gear-item">GF 32&ndash;64mm f/4</span>
+    <span class="gear-item">GF 100&ndash;200mm f/5.6</span>
+    <span class="gear-item">Fujifilm X-E5</span>
+    <span class="gear-item">Instax Mini Evo</span>
+    <span class="gear-item">Capture One</span>
+  </div>
+</div>
+
+<section class="work-section">
+
+  <div class="work-block" data-reveal>
+    <div class="work-visual" style="background:linear-gradient(145deg,#0a1828 0%,#060e1a 100%)">
+      <!-- REPLACE with: <img class="wv-img" src="YOUR_S1_COVER_URL" alt="Solitude and Scale"> -->
+      <div class="wv-placeholder"><div class="wv-ph-label">S1 &middot; Solitude &amp; Scale<br>Replace with photo</div></div>
+    </div>
+    <div class="work-text">
+      <span class="wt-series">Series 01 &middot; Iceland 2026</span>
+      <span class="wt-type-badge">Triptych</span>
+      <h2 class="wt-title">Solitude &amp; Scale</h2>
+      <p class="wt-sub">The Secret Lagoon &mdash; three frames that ask the same question from different distances</p>
+      <p class="wt-body">A progression from immensity to intimacy. B&amp;W to warm color to golden signature. Fjallsárlón at dusk, before the other photographers arrived. The glacier comes right to the water. The icebergs are the size of houses. You either feel very small or very present &mdash; sometimes both.</p>
+      <div class="wt-rule"></div>
+      <div class="wt-specs">
+        <div class="wts-row"><span class="wts-key">Camera</span><span class="wts-val">Fujifilm GFX 100S II + 32&ndash;64mm</span></div>
+        <div class="wts-row"><span class="wts-key">Location</span><span class="wts-val">Fjallsárlón Glacier Lagoon, Iceland</span></div>
+        <div class="wts-row"><span class="wts-key">Format</span><span class="wts-val">Three 16&times;24&Prime; prints (48&times;24&Prime; total)</span></div>
+        <div class="wts-row"><span class="wts-key">Edition</span><span class="wts-val">Limited &mdash; inquire for availability</span></div>
+      </div>
+      <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry — Solitude and Scale" class="wt-cta">Inquire About This Print &nbsp;&#8594;</a>
+    </div>
+  </div>
+
+  <div class="work-block reverse dark-text" data-reveal>
+    <div class="work-visual" style="background:linear-gradient(145deg,#040a18 0%,#020610 100%)">
+      <!-- REPLACE with: <img class="wv-img" src="YOUR_S3_COVER_URL" alt="Blue Trilogy"> -->
+      <div class="wv-placeholder"><div class="wv-ph-label" style="color:rgba(255,255,255,0.15)">S3 &middot; Blue Trilogy<br>Replace with photo</div></div>
+    </div>
+    <div class="work-text">
+      <span class="wt-series">Series 03 &middot; Iceland 2026</span>
+      <span class="wt-type-badge">Triptych</span>
+      <h2 class="wt-title">Blue Trilogy</h2>
+      <p class="wt-sub">The impossible blues of Iceland ice</p>
+      <p class="wt-body">This blue does not exist in nature. And yet here it is. Three images, three environments, one color: the ancient compressed blue of glacial ice. Cave darkness. Golden translucence. Twilight atmosphere. Interior &rarr; exterior &rarr; dusk.</p>
+      <div class="wt-rule"></div>
+      <div class="wt-specs">
+        <div class="wts-row"><span class="wts-key">Camera</span><span class="wts-val">X-E5 + GFX 100S II</span></div>
+        <div class="wts-row"><span class="wts-key">Location</span><span class="wts-val">Ice Cave &middot; Diamond Beach &middot; Jökulsárlón</span></div>
+        <div class="wts-row"><span class="wts-key">Format</span><span class="wts-val">Three 20&times;30&Prime; prints</span></div>
+        <div class="wts-row"><span class="wts-key">Edition</span><span class="wts-val">Limited &mdash; inquire for availability</span></div>
+      </div>
+      <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry — Blue Trilogy" class="wt-cta">Inquire About This Print &nbsp;&#8594;</a>
+    </div>
+  </div>
+
+  <div class="work-block" data-reveal>
+    <div class="work-visual" style="background:linear-gradient(145deg,#0a1020 0%,#050810 100%)">
+      <!-- REPLACE with: <img class="wv-img" src="YOUR_S2_COVER_URL" alt="Glacial Contrasts"> -->
+      <div class="wv-placeholder"><div class="wv-ph-label">S2 &middot; Glacial Contrasts<br>Replace with photo</div></div>
+    </div>
+    <div class="work-text">
+      <span class="wt-series">Series 02 &middot; Iceland 2026</span>
+      <span class="wt-type-badge">Diptych</span>
+      <h2 class="wt-title">Glacial Contrasts</h2>
+      <p class="wt-sub">Ice in two realms &mdash; floating serenity versus grounded drama</p>
+      <p class="wt-body">Same glacial ice. Two states. The ice doesn&rsquo;t change &mdash; only the relationship between ice and ground. One floats in possibility. One has arrived. Fjallsárlón and Diamond Beach, side by side.</p>
+      <div class="wt-rule"></div>
+      <div class="wt-specs">
+        <div class="wts-row"><span class="wts-key">Camera</span><span class="wts-val">GFX 100S II + 100&ndash;200mm</span></div>
+        <div class="wts-row"><span class="wts-key">Location</span><span class="wts-val">Jökulsárlón &amp; Diamond Beach</span></div>
+        <div class="wts-row"><span class="wts-key">Format</span><span class="wts-val">Two 24&times;36&Prime; prints (48&times;36&Prime; total)</span></div>
+        <div class="wts-row"><span class="wts-key">Edition</span><span class="wts-val">Limited &mdash; inquire for availability</span></div>
+      </div>
+      <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry — Glacial Contrasts" class="wt-cta">Inquire About This Print &nbsp;&#8594;</a>
+    </div>
+  </div>
+
+  <div class="work-block reverse dark-text" data-reveal>
+    <div class="work-visual" style="background:linear-gradient(145deg,#281804 0%,#1a1002 100%)">
+      <!-- REPLACE with: <img class="wv-img" src="YOUR_S5_COVER_URL" alt="The Human Element"> -->
+      <div class="wv-placeholder"><div class="wv-ph-label" style="color:rgba(255,255,255,0.15)">S5 &middot; The Human Element<br>Replace with photo</div></div>
+    </div>
+    <div class="work-text">
+      <span class="wt-series">Series 05 &middot; Iceland 2026</span>
+      <span class="wt-type-badge">Diptych</span>
+      <h2 class="wt-title">The Human Element</h2>
+      <p class="wt-sub">Presence at the edge of the world</p>
+      <p class="wt-body">Scale is only understood when there is a human to measure it against. Two frames where the photographer becomes part of the landscape &mdash; not the subject, but the witness. At sunset, beside a wild horse, at the far edge of the world.</p>
+      <div class="wt-rule"></div>
+      <div class="wt-specs">
+        <div class="wts-row"><span class="wts-key">Camera</span><span class="wts-val">Fujifilm GFX 100S II</span></div>
+        <div class="wts-row"><span class="wts-key">Location</span><span class="wts-val">South Iceland Plains</span></div>
+        <div class="wts-row"><span class="wts-key">Format</span><span class="wts-val">Two 24&times;36&Prime; prints</span></div>
+        <div class="wts-row"><span class="wts-key">Edition</span><span class="wts-val">Limited &mdash; inquire for availability</span></div>
+      </div>
+      <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry — The Human Element" class="wt-cta">Inquire About This Print &nbsp;&#8594;</a>
+    </div>
+  </div>
+
+  <div class="work-block" data-reveal>
+    <div class="work-visual" style="background:linear-gradient(145deg,#181410 0%,#0e0c08 100%)">
+      <!-- REPLACE with: <img class="wv-img" src="YOUR_S7_COVER_URL" alt="Peninsular Panorama"> -->
+      <div class="wv-placeholder"><div class="wv-ph-label">S7 &middot; Peninsular Panorama<br>Replace with photo</div></div>
+    </div>
+    <div class="work-text">
+      <span class="wt-series">Series 07 &middot; Iceland 2026</span>
+      <span class="wt-type-badge">Triptych</span>
+      <h2 class="wt-title">Peninsular Panorama</h2>
+      <p class="wt-sub">Snæfellsnes in three moods</p>
+      <p class="wt-body">The icon, the solitude, the drama. Kirkjufell, Búðir Black Church, Arnarstapi. Three frames that together describe the full emotional range of Iceland&rsquo;s most cinematic peninsula &mdash; majestic, isolated, elemental.</p>
+      <div class="wt-rule"></div>
+      <div class="wt-specs">
+        <div class="wts-row"><span class="wts-key">Camera</span><span class="wts-val">GFX 100S II + 32&ndash;64mm</span></div>
+        <div class="wts-row"><span class="wts-key">Location</span><span class="wts-val">Snæfellsnes Peninsula</span></div>
+        <div class="wts-row"><span class="wts-key">Format</span><span class="wts-val">Three 20&times;30&Prime; or single 60&times;30&Prime; panoramic</span></div>
+        <div class="wts-row"><span class="wts-key">Edition</span><span class="wts-val">Limited &mdash; inquire for availability</span></div>
+      </div>
+      <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry — Peninsular Panorama" class="wt-cta">Inquire About This Print &nbsp;&#8594;</a>
+    </div>
+  </div>
+
+</section>
+
+<section class="inquiry-section" data-reveal>
+  <span class="inq-eyebrow">Original Fine Art Prints</span>
+  <h2 class="inq-title">Every print is a<br>limited edition.</h2>
+  <p class="inq-sub">Archival pigment on Hahnemühle Fine Art paper. Each print is signed, numbered, and produced from the original GFX 102-megapixel file.</p>
+  <!-- UPDATE EMAIL -->
+  <a href="mailto:sayhello@theinfinitearch.com?subject=Print Inquiry" class="inq-cta">Begin a Conversation &nbsp;&#8594;</a>
+  <span class="inq-note">All series available &nbsp;&middot;&nbsp; Custom sizes on request</span>
+</section>
+
+<footer>
+  <span class="footer-copy">&copy; 2026 The Infinite Arch</span>
+  <div class="footer-links">
+    <a href="../index.html">Home</a>
+    <a href="./gallery.html">Gallery</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+  <span class="footer-up" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</span>
+</footer>
+
+<script>
+  const els = document.querySelectorAll('[data-reveal]');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold:0.06, rootMargin:'0px 0px -40px 0px' });
+  els.forEach(el => obs.observe(el));
+</script>
+
+<script>
+// Auto-apply Cloudinary portfolio cover images from config
+document.addEventListener('DOMContentLoaded', async () => {
+  await TIA.load();   // fetch config from Cloudinary
+  if (typeof PORTFOLIO_COVERS === 'undefined') return;
+
+  const mappings = [
+    { seriesId:'s1', selector:'.work-block:nth-child(1) .work-visual' },
+    { seriesId:'s3', selector:'.work-block:nth-child(2) .work-visual' },
+    { seriesId:'s2', selector:'.work-block:nth-child(3) .work-visual' },
+    { seriesId:'s5', selector:'.work-block:nth-child(4) .work-visual' },
+    { seriesId:'s7', selector:'.work-block:nth-child(5) .work-visual' },
+  ];
+
+  mappings.forEach(({ seriesId, selector }) => {
+    const url = PORTFOLIO_COVERS[seriesId] || COVER_URLS?.[seriesId] || PHOTO_URLS?.[seriesId]?.[0];
+    if (!url) return;
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    // Replace placeholder with real image
+    const img = document.createElement('img');
+    img.className = 'wv-img';
+    img.src = typeof cldUrl === 'function' ? cldUrl(url, 'w_1200,q_auto,f_auto') : url;
+    img.alt = '';
+    el.querySelector('.wv-placeholder')?.remove();
+    el.insertBefore(img, el.firstChild);
+  });
+});
+</script>
+
+<script src="../assets/js/tia-data.js"></script>
+<script src="../assets/js/tia-data.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Map work blocks to series
+  const map = [
+    { block: 0, seriesId: 's1', pfKey: 'pf-s1' },
+    { block: 1, seriesId: 's3', pfKey: 'pf-s3' },
+    { block: 2, seriesId: 's2', pfKey: 'pf-s2' },
+    { block: 3, seriesId: 's5', pfKey: 'pf-s5' },
+    { block: 4, seriesId: 's7', pfKey: 'pf-s7' },
+  ];
+
+  const blocks  = document.querySelectorAll('.work-block');
+  const series  = TIA.getSeries();
+
+  map.forEach(({ block, seriesId, pfKey }) => {
+    const el = blocks[block];
+    if (!el) return;
+
+    // Update title/subtitle from admin settings
+    const s = series.find(x => x.id === seriesId);
+    if (s) {
+      const t = el.querySelector('.wt-title, h2, h3');
+      const u = el.querySelector('.wt-sub,  .subtitle, .work-subtitle');
+      const d = el.querySelector('.wt-body, .work-body, p');
+      if (t && s.title)       t.textContent = s.title;
+      if (u && s.subtitle)    u.textContent = s.subtitle;
+      if (d && s.description) d.textContent = s.description;
+    }
+
+    // Apply cover photo — portfolio slot → series cover → first photo
+    const visual = el.querySelector('.work-visual, .work-photo, .wv-photo, [class*="visual"], [class*="photo"]');
+    if (!visual) return;
+
+    const url = TIA.getPortfolioUrl(pfKey, 'cover')
+             || TIA.getCoverUrl(seriesId, 'cover');
+
+    if (url) {
+      visual.style.backgroundImage    = `url('${url}')`;
+      visual.style.backgroundSize     = 'cover';
+      visual.style.backgroundPosition = 'center';
+      const ph = visual.querySelector('[class*="placeholder"], [class*="ph-"]');
+      if (ph) ph.style.display = 'none';
+    }
+  });
+});
+</script>
+</body>
+</html>
