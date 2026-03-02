@@ -228,6 +228,18 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .img-upload-zone{border:2px dashed var(--border2);padding:20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px}
 .img-upload-zone:hover,.img-upload-zone.drag{border-color:var(--gold);background:rgba(201,162,39,.04)}
 /* ASSIGN MODAL */
+#galPickerModal{position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
+#galPickerModal.open{display:flex}
+.gp-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:2px;cursor:pointer;margin-bottom:6px;transition:border-color .2s,background .2s}
+.gp-option:hover{border-color:var(--gold);background:rgba(201,162,39,.05)}
+.gp-option-cover{width:48px;height:48px;flex-shrink:0;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.3}
+.gp-option-cover img{width:100%;height:100%;object-fit:cover}
+.gp-option-info{flex:1;min-width:0}
+.gp-option-title{font-size:12px;font-weight:600;letter-spacing:1px}
+.gp-option-meta{font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.35;margin-top:2px}
+.gp-option--new{border-style:dashed;border-color:var(--gold)}
+.gp-option--new .gp-option-cover{color:var(--gold);opacity:.6;font-size:24px}
+.gp-section-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;opacity:.25;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)}
 #assignModal{position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
 #assignModal.open{display:flex}
 .am-box{background:var(--surface);border:1px solid var(--border2);width:min(440px,92vw);border-radius:2px}
@@ -364,6 +376,19 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
     <div class="pk-foot">
       <button class="btn" onclick="closePicker()">Cancel</button>
       <button class="btn gold" id="pkConfirm" onclick="confirmPick()" disabled>Use This Photo</button>
+    </div>
+  </div>
+</div>
+
+<div id="galPickerModal">
+  <div class="am-box" style="max-width:520px">
+    <div class="am-head">
+      <div class="am-title" id="galPickerTitle">Add Gallery</div>
+      <button class="am-close" onclick="closeGalPicker()">&times;</button>
+    </div>
+    <div class="am-body" id="galPickerBody"></div>
+    <div class="am-foot">
+      <button class="btn" onclick="closeGalPicker()">Cancel</button>
     </div>
   </div>
 </div>
@@ -1497,9 +1522,68 @@ function removePortfolioWork(idx){
   toast("Work removed");
 }
 
+var galPickerWorkIdx=null;
 function addGalleryToWork(workIdx){
   var works=getPortfolioWorks();
   var w=works[workIdx];
+  if(!w)return;
+  galPickerWorkIdx=workIdx;
+  var html='';
+  html+='<div class="gp-option gp-option--new" onclick="createNewGalleryForWork()" data-testid="btn-create-new-gallery">';
+  html+='<div class="gp-option-cover">+</div>';
+  html+='<div class="gp-option-info"><div class="gp-option-title">Create New Gallery</div>';
+  html+='<div class="gp-option-meta">Start fresh with a new gallery</div></div></div>';
+  var existingSeries=getSeries();
+  var existingSeriesWithPhotos=existingSeries.filter(function(s){return(STATE.photos&&STATE.photos[s.id]&&STATE.photos[s.id].length>0);});
+  var allGals=[];
+  getPortfolioWorks().forEach(function(pw){
+    (pw.galleries||[]).forEach(function(g){
+      if(pw.id!==w.id) allGals.push({gallery:g,workTitle:pw.title});
+    });
+  });
+  if(existingSeriesWithPhotos.length){
+    html+='<div class="gp-section-lbl">Import from Legacy Galleries</div>';
+    existingSeriesWithPhotos.forEach(function(s){
+      var cnt=(STATE.photos[s.id]||[]).length;
+      var coverUrl=STATE.series&&STATE.series[s.id]&&STATE.series[s.id].coverAssetId?TIA.photoUrl(STATE.series[s.id].coverAssetId,'thumb'):'';
+      html+='<div class="gp-option" onclick="importLegacyGallery(\''+esc(s.id)+'\')" data-testid="btn-import-gallery-'+s.id+'">';
+      html+='<div class="gp-option-cover">';
+      if(coverUrl) html+='<img src="'+coverUrl+'" alt="">';
+      else html+='&#x1F5BC;';
+      html+='</div>';
+      html+='<div class="gp-option-info"><div class="gp-option-title">'+esc(s.title)+'</div>';
+      html+='<div class="gp-option-meta">'+cnt+' photo'+(cnt!==1?'s':'')+' &middot; '+(s.type||'Series')+'</div></div></div>';
+    });
+  }
+  if(allGals.length){
+    html+='<div class="gp-section-lbl">Copy from Other Works</div>';
+    allGals.forEach(function(item,idx){
+      var g=item.gallery;
+      var cnt=(g.photos||[]).length;
+      var coverUrl=g.coverAssetId?TIA.photoUrl(g.coverAssetId,'thumb'):'';
+      html+='<div class="gp-option" onclick="copyGalleryToWork(\''+esc(g.id)+'\')" data-testid="btn-copy-gallery-'+idx+'">';
+      html+='<div class="gp-option-cover">';
+      if(coverUrl) html+='<img src="'+coverUrl+'" alt="">';
+      else html+='&#x1F5BC;';
+      html+='</div>';
+      html+='<div class="gp-option-info"><div class="gp-option-title">'+esc(g.title||'Untitled')+'</div>';
+      html+='<div class="gp-option-meta">'+cnt+' photo'+(cnt!==1?'s':'')+' &middot; from '+esc(item.workTitle)+'</div></div></div>';
+    });
+  }
+  document.getElementById('galPickerTitle').textContent='Add Gallery to '+w.title;
+  document.getElementById('galPickerBody').innerHTML=html;
+  document.getElementById('galPickerModal').classList.add('open');
+}
+function closeGalPicker(){
+  document.getElementById('galPickerModal').classList.remove('open');
+  galPickerWorkIdx=null;
+}
+function createNewGalleryForWork(){
+  var idx=galPickerWorkIdx;
+  closeGalPicker();
+  if(idx===null)return;
+  var works=getPortfolioWorks();
+  var w=works[idx];
   if(!w)return;
   var title=prompt("Gallery title:");
   if(!title||!title.trim())return;
@@ -1508,7 +1592,57 @@ function addGalleryToWork(workIdx){
   expandedWork=w.id;
   editingGallery=w.id+'__'+(w.galleries.length-1);
   showPortfolioPanel();
-  toast("Gallery added — upload or assign photos");
+  toast("Gallery created — upload or assign photos");
+}
+function importLegacyGallery(seriesId){
+  var idx=galPickerWorkIdx;
+  closeGalPicker();
+  if(idx===null)return;
+  var works=getPortfolioWorks();
+  var w=works[idx];
+  if(!w)return;
+  var s=getSeries().find(function(x){return x.id===seriesId;});
+  var photos=(STATE.photos&&STATE.photos[seriesId])||[];
+  var coverAssetId=(STATE.series&&STATE.series[seriesId]&&STATE.series[seriesId].coverAssetId)||'';
+  if(!w.galleries)w.galleries=[];
+  w.galleries.push({
+    id:"gal-"+Date.now(),
+    title:s?s.title:'Imported Gallery',
+    subtitle:s?s.subtitle||'':'',
+    coverAssetId:coverAssetId,
+    photos:photos.slice()
+  });
+  expandedWork=w.id;
+  editingGallery=w.id+'__'+(w.galleries.length-1);
+  showPortfolioPanel();
+  toast("Gallery imported with "+photos.length+" photo"+(photos.length!==1?"s":""));
+}
+function copyGalleryToWork(galId){
+  var idx=galPickerWorkIdx;
+  closeGalPicker();
+  if(idx===null)return;
+  var works=getPortfolioWorks();
+  var w=works[idx];
+  if(!w)return;
+  var srcGal=null;
+  works.forEach(function(pw){
+    (pw.galleries||[]).forEach(function(g){
+      if(g.id===galId)srcGal=g;
+    });
+  });
+  if(!srcGal)return;
+  if(!w.galleries)w.galleries=[];
+  w.galleries.push({
+    id:"gal-"+Date.now(),
+    title:srcGal.title||'Copied Gallery',
+    subtitle:srcGal.subtitle||'',
+    coverAssetId:srcGal.coverAssetId||'',
+    photos:(srcGal.photos||[]).slice()
+  });
+  expandedWork=w.id;
+  editingGallery=w.id+'__'+(w.galleries.length-1);
+  showPortfolioPanel();
+  toast("Gallery copied with "+(srcGal.photos||[]).length+" photo"+((srcGal.photos||[]).length!==1?"s":""));
 }
 
 function updateGallery(workIdx,galIdx,field,val){
@@ -2178,7 +2312,7 @@ function toast(msg,isErr=false){
   t.className="toast show"+(isErr?" err":"");clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove("show"),3500);
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closePicker();closeBlockPicker();}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closePicker();closeBlockPicker();closeGalPicker();}});
 if(authed)init();
 </script>
 </body>
