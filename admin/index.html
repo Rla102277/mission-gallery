@@ -234,6 +234,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .img-card.selected .img-card-check{background:var(--gold);border-color:var(--gold);color:#000}
 .img-card-info{position:absolute;bottom:0;left:0;right:0;padding:4px 6px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent)}
 .img-card-name{font-size:8px;opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.img-card-exif{font-size:7px;opacity:.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;letter-spacing:.3px}
 .img-card-badges{position:absolute;top:4px;right:4px;display:flex;gap:3px;flex-wrap:wrap}
 .img-card-badge{font-size:7px;letter-spacing:1px;text-transform:uppercase;padding:1px 5px;border-radius:1px;background:rgba(90,158,111,.8);color:#fff}
 .img-card-badge.folder{background:rgba(201,162,39,.7)}
@@ -355,10 +356,9 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <span class="tb-sync" id="syncStatus">&mdash;</span>
     </div>
     <div class="tb-nav">
-      <button class="tb-tab active" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
+      <button class="tb-tab active" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
       <button class="tb-tab" data-tab="images" onclick="switchTab('images')">Images</button>
       <button class="tb-tab" data-tab="pages" onclick="switchTab('pages')">Pages</button>
-      <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
       <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
@@ -656,7 +656,7 @@ async function init(){
   try{const cfgRes=await fetch("/api/images/config");const cfg=await cfgRes.json();if(cfg.hash){TIA.CF_HASH=cfg.hash;STATE.cf.hash=cfg.hash;}}catch{}
   if(TIA.CF_HASH&&!hadHash){await TIA.save(STATE);console.log("[Admin] Auto-saved CF hash to config");}
   setSyncStatus("ok","Synced");
-  switchTab("galleries");
+  switchTab("portfolio");
 }
 
 // SAVE
@@ -675,7 +675,7 @@ function setSyncStatus(s,l){const e=document.getElementById("syncStatus");if(e){
 
 // SIDEBAR
 function renderSidebar(){
-  if(activeTab==="galleries")showGalleriesPanel();
+  if(activeTab==="portfolio")showPortfolioPanel();
 }
 
 function createNewGallery(){
@@ -689,7 +689,7 @@ function createNewGallery(){
   if(!STATE.photos)STATE.photos={};
   STATE.photos[id]=[];
   activeView=id;
-  showGalleriesPanel();
+  showPortfolioPanel();
   toast("Gallery '"+title.trim()+"' created — Save & Publish to go live");
 }
 
@@ -702,16 +702,16 @@ function deleteGallery(sid){
   delete STATE.series[sid];
   delete STATE.photos[sid];
   activeView=null;
-  showGalleriesPanel();
+  showPortfolioPanel();
   toast("Gallery deleted — Save & Publish to apply");
 }
 
 // ROUTING
 function switchTab(tab){
+  if(tab==="galleries") tab="portfolio";
   activeTab=tab;
   document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
-  if(tab==="galleries") showGalleriesPanel();
-  else if(tab==="images") showImagesPanel();
+  if(tab==="images") showImagesPanel();
   else if(tab==="pages") showPagesPanel();
   else if(tab==="portfolio") showPortfolioPanel();
   else if(tab==="settings") showSettingsPanel();
@@ -742,7 +742,7 @@ function setView(id){
   activeView=id;
   if(id==="home-slots"){showHomeSlots();return;}
   if(id==="portfolio-slots"){showPortfolioSlots();return;}
-  showGalleriesPanel();
+  showPortfolioPanel();
 }
 function setPanel(eye,title,acts=""){
   document.querySelector(".ph").style.display="";
@@ -754,7 +754,7 @@ function setPanel(eye,title,acts=""){
 function removePhotoFromSeries(sid,pid){
   if(!STATE.photos[sid])return;
   STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==pid);
-  showGalleriesPanel();
+  showPortfolioPanel();
   toast("Photo removed from series");
 }
 
@@ -794,7 +794,7 @@ async function handleUploadFiles(files,sid){
     }
   }
   if(uploaded>0){
-    setTimeout(()=>showGalleriesPanel(),1500);
+    setTimeout(()=>showPortfolioPanel(),1500);
     toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded - Save & Publish to go live");
   }
 }
@@ -819,14 +819,14 @@ function renderSeriesContent(sid,s,photos,cover,isCustom){
   let html="";
   if(isCustom)html+=`<div style="margin-bottom:12px;text-align:right"><button class="btn red" onclick="deleteGallery('${sid}')" data-testid="btn-delete-gallery">Delete Gallery</button></div>`;
   html+=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-    <div><span class="field-lbl">Title</span><input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)"></div>
-    <div><span class="field-lbl">Subtitle</span><input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)"></div>
+    <div><span class="field-lbl">Title</span>${aiWrap(`<input class="input" value="${esc(s?.title||"")}" oninput="updateSeries('${sid}','title',this.value)" data-testid="input-series-title-${sid}">`,aiBtn('series',0,'title__'+sid))}</div>
+    <div><span class="field-lbl">Subtitle</span>${aiWrap(`<input class="input" value="${esc(s?.subtitle||"")}" oninput="updateSeries('${sid}','subtitle',this.value)" data-testid="input-series-subtitle-${sid}">`,aiBtn('series',0,'subtitle__'+sid))}</div>
     <div><span class="field-lbl">Type</span><input class="input" value="${esc(s?.type||"")}" placeholder="e.g. Triptych, Diptych, Series" oninput="updateSeries('${sid}','type',this.value)"></div>
     <div><span class="field-lbl">Number</span><input class="input" value="${esc(s?.num||"")}" placeholder="e.g. 09" oninput="updateSeries('${sid}','num',this.value)"></div>
     <div><span class="field-lbl">Camera</span><input class="input" value="${esc(s?.camera||"")}" placeholder="e.g. GFX 100S II" oninput="updateSeries('${sid}','camera',this.value)"></div>
     <div><span class="field-lbl">Location</span><input class="input" value="${esc(s?.location||"")}" placeholder="e.g. Iceland" oninput="updateSeries('${sid}','location',this.value)"></div>
     <div style="grid-column:span 2"><span class="field-lbl">Description</span>
-      <textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)">${esc(s?.description||"")}</textarea></div></div>`;
+      ${aiWrap(`<textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)" data-testid="input-series-desc-${sid}">${esc(s?.description||"")}</textarea>`,aiBtn('series',0,'description__'+sid))}</div></div>`;
   html+=`<div class="gallery-upload" id="galleryUpload"
     onclick="document.getElementById('galleryUploadInput').click()"
     ondragover="event.preventDefault();this.classList.add('drag')"
@@ -865,6 +865,7 @@ function showSeriesView(sid){
 function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid][field]=val;}
 function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showGalleriesPanel();toast("Cover set");}
 function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);showGalleriesPanel();}
+
 
 // ═══════════════════════════════════════════════════════════════
 // PAGES TAB — Block Editor (T009)
@@ -1360,15 +1361,16 @@ function getPortfolioWorks(){
 
 function showPortfolioPanel(){
   editingGallery=null;
-  setPanel("Portfolio","Works & Galleries","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Work</button>");
+  setPanel("Portfolio","Works & Galleries","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Work</button> <button class='btn' onclick='createNewGallery()' data-testid='btn-new-standalone-gallery'>+ Standalone Gallery</button>");
   var works=getPortfolioWorks();
-  var html;
+  var html='';
   if(!works.length){
-    html='<div class="empty"><p>No portfolio works yet. Click "+ Add Work" to begin.</p></div>';
+    html+='<div class="empty"><p>No portfolio works yet. Click "+ Add Work" to begin.</p></div>';
   } else {
-    html='<div class="pf-works">';
+    html+='<div class="pf-works">';
     works.forEach(function(w,i){
       var thumb=w.coverAssetId?TIA.photoUrl(w.coverAssetId,"thumb"):"";
+      var featThumb=w.featuredImageId?TIA.photoUrl(w.featuredImageId,"thumb"):"";
       var isExpanded=expandedWork===w.id;
       var galCount=(w.galleries||[]).length;
       html+='<div class="pf-work-card'+(isExpanded?' expanded':'')+'" data-testid="portfolio-work-'+i+'">';
@@ -1380,7 +1382,7 @@ function showPortfolioPanel(){
       html+='<div class="pf-work-body">';
       html+='<div class="pf-work-title">'+esc(w.title||"Untitled")+'</div>';
       html+='<div class="pf-work-sub">'+esc(w.subtitle||"")+'</div>';
-      html+='<div class="pf-work-meta">'+esc(w.type||"Series")+' &middot; '+esc(w.location||"")+' &middot; '+galCount+' galler'+(galCount===1?'y':'ies')+'</div>';
+      html+='<div class="pf-work-meta">'+esc(w.type||"Series")+' &middot; '+esc(w.location||"")+' &middot; '+galCount+' galler'+(galCount===1?'y':'ies')+(featThumb?' &middot; Featured &#10004;':'')+'</div>';
       html+='<div class="pf-work-actions" onclick="event.stopPropagation()">';
       var isEditing=editingWorkIdx===i;
       html+='<button class="btn'+(isEditing?' pri':'')+'" onclick="editPortfolioWork('+i+')" data-testid="btn-edit-work-'+i+'">'+(isEditing?'Done':'Edit')+'</button>';
@@ -1400,7 +1402,38 @@ function showPortfolioPanel(){
     });
     html+='</div>';
   }
+  var series=getSeries();
+  var standaloneGals=series.filter(function(s){return !isGalleryInWork(s.id);});
+  if(standaloneGals.length||Object.keys(STATE.series||{}).length){
+    html+='<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border)">';
+    html+='<div class="sec-lbl"><span>Standalone Galleries</span></div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
+    standaloneGals.forEach(function(s){
+      var cnt=(STATE.photos?.[s.id]||[]).length;
+      html+='<button class="sb-item '+(activeView===s.id?'active':'')+'" data-view="'+s.id+'" onclick="setView(\''+s.id+'\')" data-testid="btn-gallery-'+s.id+'"><span class="sb-name">'+esc(s.title)+'</span>'+(cnt?'<span class="sb-cnt has">'+cnt+'</span>':'')+'</button>';
+    });
+    html+='</div>';
+    if(activeView){
+      var sid=activeView;
+      var s=series.find(function(x){return x.id===sid;});
+      var photos=getSeriesPhotos(sid);
+      var cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
+      var isCustom=!TIA.DEFAULT_SERIES.find(function(d){return d.id===sid;});
+      html+=renderSeriesContent(sid,s,photos,cover,isCustom);
+    }
+    html+='</div>';
+  }
   document.getElementById("panelBody").innerHTML=html;
+}
+function isGalleryInWork(seriesId){
+  var works=getPortfolioWorks();
+  for(var i=0;i<works.length;i++){
+    var gals=works[i].galleries||[];
+    for(var j=0;j<gals.length;j++){
+      if(gals[j].legacySeriesId===seriesId)return true;
+    }
+  }
+  return false;
 }
 
 function toggleWork(workId){
@@ -1456,7 +1489,7 @@ function renderGalleryEditor(w,workIdx,galIdx){
   var html='<div class="ge-panel" data-testid="gallery-editor-'+workIdx+'-'+galIdx+'">';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">';
   var galAiIdx=workIdx*1000+galIdx;
-  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)" data-testid="input-gal-title-'+workIdx+'-'+galIdx+'"></div>';
+  html+='<div><span class="field-lbl">Title</span>'+aiWrap('<input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)" data-testid="input-gal-title-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'title'))+'</div>';
   html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(g.subtitle||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'subtitle\',this.value)" data-testid="input-gal-subtitle-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'subtitle'))+'</div>';
   html+='</div>';
   html+='<div class="gallery-upload" onclick="document.getElementById(\'geUpload_'+workIdx+'_'+galIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToGallery(event.dataTransfer.files,'+workIdx+','+galIdx+')">';
@@ -1534,18 +1567,26 @@ document.addEventListener('click',function(){closeAllAiMenus();});
 async function runAi(type,idx,field,mode){
   closeAllAiMenus();
   var w=type==='work'?getPortfolioWorks()[idx]:null;
-  if(type==='gal'){
+  var context,current,actualField=field;
+  if(type==='series'){
+    var parts=field.split('__');
+    actualField=parts[0];
+    var seriesId=parts[1];
+    var s=STATE.series?.[seriesId]||{};
+    context={title:s.title||'',type:s.type||'',location:s.location||'',camera:s.camera||'',subtitle:s.subtitle||''};
+    current=s[actualField]||'';
+  } else if(type==='gal'){
     var wIdx=Math.floor(idx/1000);
     var gIdx=idx%1000;
     var works=getPortfolioWorks();
     w=works[wIdx];
     var gal=(w&&w.galleries)?w.galleries[gIdx]:null;
-    var context={title:w?w.title:'',type:w?w.type:'',location:gal?gal.location||w.location:'',camera:gal?gal.camera||w.camera:'',subtitle:gal?gal.subtitle:''};
-    var current=gal?gal[field]||'':'';
+    context={title:w?w.title:'',type:w?w.type:'',location:gal?gal.location||w.location:'',camera:gal?gal.camera||w.camera:'',subtitle:gal?gal.subtitle:''};
+    current=gal?gal[actualField]||'':'';
   } else {
     if(!w)return;
-    var context={title:w.title||'',type:w.type||'',location:w.location||'',camera:w.camera||'',subtitle:w.subtitle||''};
-    var current=w[field]||'';
+    context={title:w.title||'',type:w.type||'',location:w.location||'',camera:w.camera||'',subtitle:w.subtitle||''};
+    current=w[actualField]||'';
   }
   if(mode!=='generate'&&!current.trim()){mode='generate';}
   var btnId=aiFieldId(type,idx,field)+'-btn';
@@ -1555,20 +1596,24 @@ async function runAi(type,idx,field,mode){
     var resp=await fetch('/api/ai/enrich',{
       method:'POST',
       headers:{'Content-Type':'application/json','X-Admin-Pin':ADMIN_PIN},
-      body:JSON.stringify({field:field,current:current,context:context,mode:mode})
+      body:JSON.stringify({field:actualField,current:current,context:context,mode:mode})
     });
     var data=await resp.json();
     if(data.error){toast(data.error,true);return;}
     if(type==='work'){
-      w[field]=data.text;
-      var input=document.querySelector('[data-testid="input-work-'+field+'-'+idx+'"]');
+      w[actualField]=data.text;
+      var input=document.querySelector('[data-testid="input-work-'+actualField+'-'+idx+'"]');
       if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
     } else if(type==='gal'&&gal){
-      gal[field]=data.text;
-      var input=document.querySelector('[data-testid="input-gal-'+field+'-'+wIdx+'-'+gIdx+'"]');
+      gal[actualField]=data.text;
+      var input=document.querySelector('[data-testid="input-gal-'+actualField+'-'+wIdx+'-'+gIdx+'"]');
+      if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
+    } else if(type==='series'){
+      if(STATE.series&&STATE.series[seriesId])STATE.series[seriesId][actualField]=data.text;
+      var input=document.querySelector('[data-testid="input-series-'+actualField+'-'+seriesId+'"]');
       if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
     }
-    toast('AI: '+field+' updated');
+    toast('AI: '+actualField+' updated');
   }catch(err){
     toast('AI error: '+err.message,true);
   }finally{
@@ -1581,11 +1626,11 @@ function aiWrap(inputHtml,aiBtnHtml){
 function renderWorkEditor(w,idx){
   var html='<div class="ge-panel" data-testid="work-editor-'+idx+'" style="margin-top:8px">';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
-  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(w.title||'')+'" oninput="updateWork('+idx+',\'title\',this.value)" data-testid="input-work-title-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Title</span>'+aiWrap('<input class="input" value="'+esc(w.title||'')+'" oninput="updateWork('+idx+',\'title\',this.value)" data-testid="input-work-title-'+idx+'">',aiBtn('work',idx,'title'))+'</div>';
   html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(w.subtitle||'')+'" oninput="updateWork('+idx+',\'subtitle\',this.value)" data-testid="input-work-subtitle-'+idx+'">',aiBtn('work',idx,'subtitle'))+'</div>';
   html+='</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">';
-  html+='<div><span class="field-lbl">Type</span><input class="input" value="'+esc(w.type||'')+'" oninput="updateWork('+idx+',\'type\',this.value)" data-testid="input-work-type-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Type</span>'+aiWrap('<input class="input" value="'+esc(w.type||'')+'" oninput="updateWork('+idx+',\'type\',this.value)" data-testid="input-work-type-'+idx+'">',aiBtn('work',idx,'type'))+'</div>';
   html+='<div><span class="field-lbl">Camera</span><input class="input" value="'+esc(w.camera||'')+'" oninput="updateWork('+idx+',\'camera\',this.value)" data-testid="input-work-camera-'+idx+'"></div>';
   html+='<div><span class="field-lbl">Format</span><input class="input" value="'+esc(w.format||'')+'" oninput="updateWork('+idx+',\'format\',this.value)" data-testid="input-work-format-'+idx+'"></div>';
   html+='</div>';
@@ -1594,6 +1639,15 @@ function renderWorkEditor(w,idx){
   html+='<div><span class="field-lbl">Cover</span><button class="btn" style="width:100%" onclick="openPicker(\''+w.id+'\',\'portfolio\',\'Cover for '+esc(w.title||'Work')+'\')" data-testid="btn-work-cover-'+idx+'">Choose Cover Image</button></div>';
   html+='</div>';
   html+='<div><span class="field-lbl">Description</span>'+aiWrap('<textarea class="input" rows="3" oninput="updateWork('+idx+',\'description\',this.value)" data-testid="input-work-desc-'+idx+'">'+esc(w.description||'')+'</textarea>',aiBtn('work',idx,'description'))+'</div>';
+  var featId=w.featuredImageId||'';
+  var featUrl=featId?TIA.photoUrl(featId,'public'):'';
+  html+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">';
+  html+='<span class="field-lbl">Featured Image <span style="font-size:8px;opacity:.4;letter-spacing:1px;text-transform:none">(hero-style single image for this work)</span></span>';
+  html+='<div style="display:flex;align-items:center;gap:12px;margin-top:6px">';
+  if(featUrl) html+='<div style="width:120px;height:80px;overflow:hidden;border:1px solid var(--border)"><img src="'+featUrl+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
+  html+='<button class="btn" onclick="openPicker(\'__feat__'+idx+'\',\'workfeat\',\'Featured Image for '+esc(w.title||'Work')+'\')" data-testid="btn-work-feat-'+idx+'">'+(featUrl?'Change':'Choose')+'</button>';
+  if(featUrl) html+='<button class="btn red" onclick="updateWork('+idx+',\'featuredImageId\',\'\');showPortfolioPanel()" data-testid="btn-work-feat-remove-'+idx+'">Remove</button>';
+  html+='</div></div>';
   html+='</div>';
   return html;
 }
@@ -2002,6 +2056,11 @@ function confirmPick(){
       if(!blocks2[bIdx2].data.photos.includes(pkActive))blocks2[bIdx2].data.photos.push(pkActive);
     }
   }
+  if(pkCtx==="workfeat"){
+    var fIdx=parseInt(pkSlotId.replace('__feat__',''));
+    var wf=getPortfolioWorks()[fIdx];
+    if(wf)wf.featuredImageId=pkActive;
+  }
   if(pkCtx==="galcover"){
     var gparts=pkSlotId.replace('__galcover__','').split('__');
     var wIdx=parseInt(gparts[0]);var gIdx=parseInt(gparts[1]);
@@ -2185,11 +2244,23 @@ function renderImgGrid(){
     let badges="";
     if(inSeries)badges+=seriesList.map(s=>`<span class="img-card-badge">${esc(s)}</span>`).join("");
     if(folderName&&imgActiveFolder===null)badges+=`<span class="img-card-badge folder">${esc(folderName)}</span>`;
+    const meta=CF_PHOTOS[img.id]||STATE.cf?.assetMeta?.[img.id];
+    const exif=meta?.exif;
+    let exifHtml="";
+    if(exif){
+      let parts=[];
+      if(exif.model)parts.push(esc(exif.model));
+      if(exif.focalLength)parts.push(Math.round(exif.focalLength)+"mm");
+      if(exif.fNumber)parts.push("f/"+exif.fNumber);
+      if(exif.exposureTime)parts.push(formatExposure(exif.exposureTime));
+      if(exif.iso)parts.push("ISO "+exif.iso);
+      if(parts.length)exifHtml=`<div class="img-card-exif">${parts.join(" &middot; ")}</div>`;
+    }
     return`<div class="img-card ${sel?"selected":""} ${inSeries?"in-series":""}" onclick="imgToggle('${img.id}')" data-testid="img-card-${img.id}">
       ${thumb?`<img src="${thumb}" loading="lazy" alt="">`:""}
       <div class="img-card-check">&#x2713;</div>
       ${badges?`<div class="img-card-badges">${badges}</div>`:""}
-      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div></div>
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div>${exifHtml}</div>
     </div>`;
   }).join("");
 }
