@@ -3,7 +3,7 @@
    theinfinitearch.com
    ═══════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&display=swap');
 
 /* ── TOKENS ── */
 :root {
@@ -33,6 +33,7 @@ body {
   background: var(--cream);
   color: var(--ink);
   font-family: var(--font-body);
+  font-weight: 500;
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -114,9 +115,10 @@ body::before {
 .nav-links a {
   font-family: var(--font-body);
   font-size: 10.5px;
+  font-weight: 600;
   letter-spacing: 4px;
   text-transform: uppercase;
-  opacity: 0.38;
+  opacity: 0.45;
   transition: opacity 0.3s ease;
   padding-bottom: 2px;
 }
@@ -213,9 +215,10 @@ body::before {
 .footer-right {
   text-align: right;
   font-size: 11px;
+  font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
-  opacity: 0.25;
+  opacity: 0.3;
   line-height: 2;
 }
 .footer-right a { opacity: 1; transition: opacity 0.3s; }

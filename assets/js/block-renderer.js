@@ -119,7 +119,14 @@ var BlockRenderer = {
     var tileClasses = ['ct-1','ct-2','ct-3','ct-4'];
     var tilesHtml = tiles.map(function(w, i) {
       var cls = tileClasses[i % tileClasses.length];
-      var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
+      var coverId = w.coverAssetId;
+      if (!coverId && w.galleries) {
+        for (var gi = 0; gi < w.galleries.length; gi++) {
+          var gp = w.galleries[gi].photos || [];
+          if (gp.length) { coverId = gp[0]; break; }
+        }
+      }
+      var coverUrl = coverId ? TIA.photoUrl(coverId, 'hero') : '';
       var bgStyle = coverUrl ? "background-image:url('" + coverUrl + "');background-size:cover;background-position:center;" : '';
       return '<a href="/pages/galleries.html' + (w.id ? '?work=' + encodeURIComponent(w.id) : '') + '" class="coll-tile ' + cls + '" data-testid="coll-tile-' + (i+1) + '">' +
         '<div class="tile-bg" style="' + bgStyle + '"></div><div class="tile-vignette"></div>' +
@@ -398,6 +405,44 @@ var BlockRenderer = {
       (d.note ? '<span class="pf-inq-note">' + d.note + '</span>' : '') +
     '</section>';
   },
+
+  render_curated_grid: function(d, state, id) {
+    var photos = d.photos || [];
+    if (!photos.length) {
+      return '<section class="pf-curated" data-reveal data-testid="blk-curated-' + id + '">' +
+        '<div class="pf-cur-empty">Curated images will appear here once selected in the admin panel.</div>' +
+      '</section>';
+    }
+    var works = state.portfolioWorks || [];
+    var tilesHtml = photos.map(function(p, i) {
+      var assetId = typeof p === 'string' ? p : p.assetId;
+      var caption = (typeof p === 'object' && p.caption) ? p.caption : '';
+      var galleryLink = '';
+      if (typeof p === 'object' && p.workId) {
+        galleryLink = '/pages/galleries.html?work=' + encodeURIComponent(p.workId);
+        if (p.galleryId) galleryLink += '&gallery=' + encodeURIComponent(p.galleryId);
+      }
+      var url = TIA.photoUrl(assetId, 'cover');
+      var sizeClass = 'cur-std';
+      if (i === 0 || i % 5 === 0) sizeClass = 'cur-wide';
+      if (i % 7 === 3) sizeClass = 'cur-tall';
+      var inner = '<div class="cur-tile ' + sizeClass + '" data-testid="curated-tile-' + i + '">' +
+        (url ? '<img src="' + url + '" alt="' + BlockRenderer.esc(caption) + '" loading="lazy">' : '') +
+        '<div class="cur-tile-overlay"></div>' +
+        (caption ? '<span class="cur-tile-caption">' + BlockRenderer.esc(caption) + '</span>' : '') +
+      '</div>';
+      if (galleryLink) {
+        return '<a href="' + galleryLink + '" class="cur-tile-link">' + inner + '</a>';
+      }
+      return inner;
+    }).join('');
+
+    return '<section class="pf-curated" data-reveal data-testid="blk-curated-' + id + '">' +
+      (d.eyebrow ? '<span class="pf-cur-eyebrow">' + d.eyebrow + '</span>' : '') +
+      (d.heading ? '<h2 class="pf-cur-heading">' + d.heading + '</h2>' : '') +
+      '<div class="cur-grid">' + tilesHtml + '</div>' +
+    '</section>';
+  },
 };
 
 BlockRenderer.initReveals = function() {
@@ -488,8 +533,9 @@ BlockRenderer.PAGE_DEFAULTS = {
       label:'System',
       items:['Fujifilm GFX 100S II','GF 32\u201364mm f/4','GF 100\u2013200mm f/5.6','Fujifilm X-E5','Instax Mini Evo','Capture One']
     } },
-    { id:'pf3', type:'work-block', data:{ mode:'auto' } },
-    { id:'pf4', type:'inquiry', data:{
+    { id:'pf3', type:'curated-grid', data:{ eyebrow:'Selected Work', heading:'Images from the field.', photos:[] } },
+    { id:'pf4', type:'work-block', data:{ mode:'auto' } },
+    { id:'pf5', type:'inquiry', data:{
       eyebrow:'Original Fine Art Prints',
       title:'Every print is a<br>limited edition.',
       subtitle:'Archival pigment on Hahnem\u00FChle Fine Art paper. Each print is signed, numbered, and produced from the original GFX 102-megapixel file.',

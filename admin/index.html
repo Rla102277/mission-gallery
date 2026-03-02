@@ -915,6 +915,7 @@ const BLOCK_TYPES=[
   {type:'purpose-quote',label:'Purpose Quote',ico:'&#x2756;'},
   {type:'portfolio-statement',label:'Portfolio Statement',ico:'&#x270E;'},
   {type:'gear-strip',label:'Gear Strip',ico:'&#x2699;'},
+  {type:'curated-grid',label:'Curated Images',ico:'&#x1F5BC;'},
   {type:'work-block',label:'Work Blocks',ico:'&#x25a3;'},
   {type:'inquiry',label:'Inquiry CTA',ico:'&#x2709;'}
 ];
@@ -1365,6 +1366,27 @@ function renderBlockEditor(b,idx){
         html+='<p style="color:var(--dim);font-size:10px;margin-top:4px">Auto-generates work blocks from Portfolio Works. Each work with a cover image gets a block with alternating layout.</p>';
       }
       break;
+    case 'curated-grid':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Heading','heading',d.heading);
+      html+='<div class="field"><span class="field-lbl">Curated Photos ('+((d.photos||[]).length)+')</span>';
+      html+='<button class="btn" onclick="pickCuratedPhoto('+idx+')" data-testid="btn-pick-curated-'+idx+'">+ Add Photo</button>';
+      if(d.photos&&d.photos.length){
+        html+='<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">';
+        d.photos.forEach(function(p,pi){
+          var aid=typeof p==='string'?p:p.assetId;
+          var cap=typeof p==='object'?(p.caption||''):'';
+          var t=TIA.cfUrl(aid,'thumb');
+          html+='<div style="display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);padding:4px">';
+          if(t) html+='<img src="'+t+'" style="width:60px;height:40px;object-fit:cover;flex-shrink:0">';
+          html+='<input class="input" value="'+esc(cap)+'" placeholder="Caption (optional)" oninput="updateCuratedCaption('+idx+','+pi+',this.value)" style="flex:1;font-size:11px">';
+          html+='<button class="btn red" onclick="removeCuratedPhoto('+idx+','+pi+')" style="flex-shrink:0;font-size:10px">&times;</button>';
+          html+='</div>';
+        });
+        html+='</div>';
+      }
+      html+='</div>';
+      break;
     case 'inquiry':
       f('Eyebrow','eyebrow',d.eyebrow);
       f('Title','title',d.title);
@@ -1395,6 +1417,35 @@ function removeBlockPhoto(idx,photoIdx){
   if(!blocks[idx]||!blocks[idx].data.photos)return;
   blocks[idx].data.photos.splice(photoIdx,1);
   showPagesPanel();
+}
+
+function pickCuratedPhoto(blockIdx){
+  pkSlotId='__curated__'+blockIdx;
+  pkCtx='curated';
+  pkActive=null;
+  document.getElementById("pkTitle").textContent='Add Curated Photo';
+  document.getElementById("pkConfirm").disabled=true;
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById("picker").classList.add("open");
+}
+
+function removeCuratedPhoto(blockIdx,photoIdx){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[blockIdx]||!blocks[blockIdx].data.photos)return;
+  blocks[blockIdx].data.photos.splice(photoIdx,1);
+  showPagesPanel();
+  saveAll();
+}
+
+function updateCuratedCaption(blockIdx,photoIdx,val){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[blockIdx]||!blocks[blockIdx].data.photos||!blocks[blockIdx].data.photos[photoIdx])return;
+  var p=blocks[blockIdx].data.photos[photoIdx];
+  if(typeof p==='string'){
+    blocks[blockIdx].data.photos[photoIdx]={assetId:p,caption:val};
+  } else {
+    p.caption=val;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2132,6 +2183,29 @@ function confirmPick(){
     if(blocks2[bIdx2]){
       if(!blocks2[bIdx2].data.photos)blocks2[bIdx2].data.photos=[];
       if(!blocks2[bIdx2].data.photos.includes(pkActive))blocks2[bIdx2].data.photos.push(pkActive);
+    }
+  }
+  if(pkCtx==="curated"){
+    var cIdx=parseInt(pkSlotId.replace('__curated__',''));
+    var cBlocks=getPageBlocks(activePage);
+    if(cBlocks[cIdx]){
+      if(!cBlocks[cIdx].data.photos)cBlocks[cIdx].data.photos=[];
+      var photoObj={assetId:pkActive,caption:''};
+      var cWorks=getPortfolioWorks();
+      for(var wi=0;wi<cWorks.length;wi++){
+        var cw=cWorks[wi];
+        if(cw.coverAssetId===pkActive){photoObj.workId=cw.id;break;}
+        var gals=cw.galleries||[];
+        var found=false;
+        for(var gi=0;gi<gals.length;gi++){
+          if((gals[gi].photos||[]).indexOf(pkActive)!==-1){
+            photoObj.workId=cw.id;photoObj.galleryId=gals[gi].id;found=true;break;
+          }
+        }
+        if(found)break;
+      }
+      var alreadyIn=cBlocks[cIdx].data.photos.some(function(p){return (typeof p==='string'?p:p.assetId)===pkActive;});
+      if(!alreadyIn)cBlocks[cIdx].data.photos.push(photoObj);
     }
   }
   if(pkCtx==="workfeat"){
