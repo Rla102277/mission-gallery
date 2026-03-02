@@ -208,6 +208,46 @@ app.post("/api/config", (req, res) => {
   }
 });
 
+import Anthropic from "@anthropic-ai/sdk";
+
+app.post("/api/ai/enrich", async (req, res) => {
+  const pin = req.headers["x-admin-pin"] as string;
+  if (pin !== "tia2026") return res.status(401).json({ error: "Unauthorized" });
+  const baseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+  const apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY;
+  if (!baseURL || !apiKey) return res.status(500).json({ error: "AI integration not configured" });
+  const { field = "", current = "", context = {}, mode: rawMode = "enrich" } = req.body;
+  let mode = rawMode;
+  const systemPrompt = "You are a writing assistant for a fine-art photography portfolio website called The Infinite Arch. " +
+    "The photographer specializes in landscape and expedition photography with a Fujifilm GFX system. " +
+    "The tone is: literary, contemplative, precise — like a quiet essay. Avoid clichés, marketing speak, and exclamation marks. " +
+    "Keep the voice grounded and authentic. Do not use em-dashes excessively.";
+  let userPrompt = "";
+  if (mode === "enrich") {
+    userPrompt = `Enrich and improve the following ${field} text for a photography portfolio work. Make it more evocative and compelling while keeping the photographer's authentic voice. Context about this work: Title: ${context.title || ""}, Type: ${context.type || ""}, Location: ${context.location || ""}, Camera: ${context.camera || ""}. Return ONLY the improved text, nothing else. Keep it roughly the same length unless the original is very short. Current text: ${current}`;
+  } else if (mode === "generate") {
+    userPrompt = `Generate a ${field} for a photography portfolio work. Context: Title: ${context.title || ""}, Type: ${context.type || ""}, Location: ${context.location || ""}, Camera: ${context.camera || ""}, Subtitle: ${context.subtitle || ""}. Return ONLY the text, nothing else. ${field === "description" ? "Write 2-3 sentences that capture the essence and intent of this body of work." : field === "subtitle" ? "Write a short, evocative subtitle (under 10 words)." : "Write appropriate content for this field."}`;
+  } else if (mode === "shorten") {
+    userPrompt = `Make this ${field} text more concise while preserving its meaning and tone: ${current}\nReturn ONLY the shortened text.`;
+  } else if (mode === "expand") {
+    userPrompt = `Expand this ${field} text with more detail and depth while maintaining its tone: ${current}\nContext: Title: ${context.title || ""}, Location: ${context.location || ""}\nReturn ONLY the expanded text.`;
+  }
+  try {
+    const client = new Anthropic({ apiKey, baseURL });
+    const message = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 8192,
+      messages: [{ role: "user", content: userPrompt }],
+      system: systemPrompt
+    });
+    const text = message.content[0] && message.content[0].type === "text" ? message.content[0].text : "";
+    res.json({ text: text.trim() });
+  } catch (err: any) {
+    console.log(`[AI] Error: ${err.message}`);
+    res.status(500).json({ error: err.message || "AI request failed" });
+  }
+});
+
 app.use(express.static(path.join(__dirname, "..")));
 
 app.listen(port, "0.0.0.0", () => {

@@ -91,6 +91,15 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `GET /api/images/config` — Returns CF delivery hash for URL building
 - `GET /api/config` — Read site configuration JSON
 - `POST /api/config` — Write site configuration JSON
+- `POST /api/ai/enrich` — AI text enrichment via Anthropic Claude (PIN-authenticated, X-Admin-Pin header required)
+
+## AI Text Enrichment
+- **Integration**: Replit AI Integrations for Anthropic (no API key needed, billed to Replit credits)
+- **Endpoint**: `POST /api/ai/enrich` with `X-Admin-Pin` header for auth
+- **Modes**: enrich (improve existing), generate (write from scratch), shorten, expand
+- **Fields**: Subtitle and Description on portfolio works; Subtitle on galleries
+- **UI**: Gold sparkle (✨) button next to enrichable fields, dropdown menu with 4 modes, loading spinner during API call
+- **System prompt**: Literary, contemplative tone for fine-art photography portfolio
 
 ## Admin Panel Features (Phase 3 Complete)
 - **Galleries tab**: Browse/create/delete series, set covers, upload photos, edit metadata

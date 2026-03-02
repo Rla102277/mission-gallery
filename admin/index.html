@@ -70,7 +70,19 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 /* INPUTS */
 .input{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
 .textarea{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:12px;outline:none;resize:vertical;min-height:64px;line-height:1.6}
-.field-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;display:block}
+.field-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ai-wrap{position:relative;display:flex;align-items:stretch;gap:0}
+.ai-wrap .input,.ai-wrap textarea.input{flex:1;border-top-right-radius:0;border-bottom-right-radius:0}
+.ai-btn{width:34px;min-width:34px;padding:0;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border2);border-left:0;color:var(--gold);cursor:pointer;font-size:15px;transition:background .2s,color .2s;position:relative}
+.ai-btn:hover{background:rgba(196,164,105,.12);color:var(--gold)}
+.ai-btn.loading{pointer-events:none;opacity:.5}
+.ai-btn.loading::after{content:"";width:12px;height:12px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:aispin .6s linear infinite;position:absolute}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.ai-menu{position:absolute;right:0;top:100%;background:var(--surface2);border:1px solid var(--border);z-index:90;min-width:150px;display:none}
+.ai-menu.show{display:block}
+.ai-menu-item{padding:8px 14px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap}
+.ai-menu-item:hover{background:rgba(196,164,105,.1);color:var(--cream)}
+.ai-menu-item .ai-mi-desc{font-size:9px;letter-spacing:0;text-transform:none;color:var(--dim);margin-top:2px}
 .sec-lbl{font-size:8px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
 .card{background:var(--surface2);border:1px solid var(--border);padding:18px;margin-bottom:14px}
 /* PHOTO GRID */
@@ -558,10 +570,10 @@ const TIA = {
 // AUTH
 // AUTH
 let authed = sessionStorage.getItem("tia_auth") === "1";
+var ADMIN_PIN = "tia2026";
 
 function doLogin() {
   const p = document.getElementById("authPass").value;
-  // PIN: tia2026
   const lp = p.toLowerCase();
   if (lp === "tia2026" || lp === "tai2026") {
     sessionStorage.setItem("tia_auth","1");
@@ -1443,8 +1455,9 @@ function renderGalleryEditor(w,workIdx,galIdx){
   var g=w.galleries[galIdx];
   var html='<div class="ge-panel" data-testid="gallery-editor-'+workIdx+'-'+galIdx+'">';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">';
-  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)"></div>';
-  html+='<div><span class="field-lbl">Subtitle</span><input class="input" value="'+esc(g.subtitle||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'subtitle\',this.value)"></div>';
+  var galAiIdx=workIdx*1000+galIdx;
+  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)" data-testid="input-gal-title-'+workIdx+'-'+galIdx+'"></div>';
+  html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(g.subtitle||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'subtitle\',this.value)" data-testid="input-gal-subtitle-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'subtitle'))+'</div>';
   html+='</div>';
   html+='<div class="gallery-upload" onclick="document.getElementById(\'geUpload_'+workIdx+'_'+galIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToGallery(event.dataTransfer.files,'+workIdx+','+galIdx+')">';
   html+='<div class="gallery-upload-ico">&#x2191;</div>';
@@ -1496,11 +1509,80 @@ function updateWork(idx,field,val){
   var w=getPortfolioWorks()[idx];
   if(w) w[field]=val;
 }
+var _aiMenuOpen=null;
+function aiFieldId(type,idx,field){return 'ai-'+type+'-'+idx+'-'+field;}
+function aiBtn(type,idx,field){
+  var id=aiFieldId(type,idx,field);
+  return '<div style="position:relative;display:inline-flex"><button class="ai-btn" id="'+id+'-btn" onclick="event.stopPropagation();toggleAiMenu(\''+id+'\')" title="AI Enrich" data-testid="ai-btn-'+type+'-'+field+'-'+idx+'">&#10024;</button>'+
+    '<div class="ai-menu" id="'+id+'-menu">'+
+    '<div class="ai-menu-item" onclick="runAi(\''+type+'\','+idx+',\''+field+'\',\'enrich\')">&#10024; Enrich<div class="ai-mi-desc">Improve existing text</div></div>'+
+    '<div class="ai-menu-item" onclick="runAi(\''+type+'\','+idx+',\''+field+'\',\'generate\')">&#9998; Generate<div class="ai-mi-desc">Write from scratch</div></div>'+
+    '<div class="ai-menu-item" onclick="runAi(\''+type+'\','+idx+',\''+field+'\',\'shorten\')">&#8600; Shorten<div class="ai-mi-desc">Make more concise</div></div>'+
+    '<div class="ai-menu-item" onclick="runAi(\''+type+'\','+idx+',\''+field+'\',\'expand\')">&#8599; Expand<div class="ai-mi-desc">Add more detail</div></div>'+
+    '</div></div>';
+}
+function toggleAiMenu(id){
+  var menu=document.getElementById(id+'-menu');
+  if(!menu)return;
+  if(_aiMenuOpen&&_aiMenuOpen!==menu){_aiMenuOpen.classList.remove('show');}
+  menu.classList.toggle('show');
+  _aiMenuOpen=menu.classList.contains('show')?menu:null;
+}
+function closeAllAiMenus(){if(_aiMenuOpen){_aiMenuOpen.classList.remove('show');_aiMenuOpen=null;}}
+document.addEventListener('click',function(){closeAllAiMenus();});
+
+async function runAi(type,idx,field,mode){
+  closeAllAiMenus();
+  var w=type==='work'?getPortfolioWorks()[idx]:null;
+  if(type==='gal'){
+    var wIdx=Math.floor(idx/1000);
+    var gIdx=idx%1000;
+    var works=getPortfolioWorks();
+    w=works[wIdx];
+    var gal=(w&&w.galleries)?w.galleries[gIdx]:null;
+    var context={title:w?w.title:'',type:w?w.type:'',location:gal?gal.location||w.location:'',camera:gal?gal.camera||w.camera:'',subtitle:gal?gal.subtitle:''};
+    var current=gal?gal[field]||'':'';
+  } else {
+    if(!w)return;
+    var context={title:w.title||'',type:w.type||'',location:w.location||'',camera:w.camera||'',subtitle:w.subtitle||''};
+    var current=w[field]||'';
+  }
+  if(mode!=='generate'&&!current.trim()){mode='generate';}
+  var btnId=aiFieldId(type,idx,field)+'-btn';
+  var btn=document.getElementById(btnId);
+  if(btn){btn.classList.add('loading');btn.innerHTML='';}
+  try{
+    var resp=await fetch('/api/ai/enrich',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Admin-Pin':ADMIN_PIN},
+      body:JSON.stringify({field:field,current:current,context:context,mode:mode})
+    });
+    var data=await resp.json();
+    if(data.error){toast(data.error,true);return;}
+    if(type==='work'){
+      w[field]=data.text;
+      var input=document.querySelector('[data-testid="input-work-'+field+'-'+idx+'"]');
+      if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
+    } else if(type==='gal'&&gal){
+      gal[field]=data.text;
+      var input=document.querySelector('[data-testid="input-gal-'+field+'-'+wIdx+'-'+gIdx+'"]');
+      if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
+    }
+    toast('AI: '+field+' updated');
+  }catch(err){
+    toast('AI error: '+err.message,true);
+  }finally{
+    if(btn){btn.classList.remove('loading');btn.innerHTML='&#10024;';}
+  }
+}
+function aiWrap(inputHtml,aiBtnHtml){
+  return '<div class="ai-wrap">'+inputHtml+aiBtnHtml+'</div>';
+}
 function renderWorkEditor(w,idx){
   var html='<div class="ge-panel" data-testid="work-editor-'+idx+'" style="margin-top:8px">';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
   html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(w.title||'')+'" oninput="updateWork('+idx+',\'title\',this.value)" data-testid="input-work-title-'+idx+'"></div>';
-  html+='<div><span class="field-lbl">Subtitle</span><input class="input" value="'+esc(w.subtitle||'')+'" oninput="updateWork('+idx+',\'subtitle\',this.value)" data-testid="input-work-subtitle-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(w.subtitle||'')+'" oninput="updateWork('+idx+',\'subtitle\',this.value)" data-testid="input-work-subtitle-'+idx+'">',aiBtn('work',idx,'subtitle'))+'</div>';
   html+='</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">';
   html+='<div><span class="field-lbl">Type</span><input class="input" value="'+esc(w.type||'')+'" oninput="updateWork('+idx+',\'type\',this.value)" data-testid="input-work-type-'+idx+'"></div>';
@@ -1511,7 +1593,7 @@ function renderWorkEditor(w,idx){
   html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(w.location||'')+'" oninput="updateWork('+idx+',\'location\',this.value)" data-testid="input-work-location-'+idx+'"></div>';
   html+='<div><span class="field-lbl">Cover</span><button class="btn" style="width:100%" onclick="openPicker(\''+w.id+'\',\'portfolio\',\'Cover for '+esc(w.title||'Work')+'\')" data-testid="btn-work-cover-'+idx+'">Choose Cover Image</button></div>';
   html+='</div>';
-  html+='<div><span class="field-lbl">Description</span><textarea class="input" rows="3" oninput="updateWork('+idx+',\'description\',this.value)" data-testid="input-work-desc-'+idx+'">'+esc(w.description||'')+'</textarea></div>';
+  html+='<div><span class="field-lbl">Description</span>'+aiWrap('<textarea class="input" rows="3" oninput="updateWork('+idx+',\'description\',this.value)" data-testid="input-work-desc-'+idx+'">'+esc(w.description||'')+'</textarea>',aiBtn('work',idx,'description'))+'</div>';
   html+='</div>';
   return html;
 }
