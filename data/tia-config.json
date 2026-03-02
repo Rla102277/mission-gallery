@@ -1,11 +1,257 @@
 {
   "cf": {
     "hash": "W2O7t84FW9eAHociDpBWSg",
-    "assetMeta": {}
+    "assetMeta": {
+      "aa1e2b18-8716-4ce7-b120-3f365aa7cb00": {
+        "id": "aa1e2b18-8716-4ce7-b120-3f365aa7cb00",
+        "filename": "TheAscent.jpg"
+      },
+      "acb4cb09-23e5-4a6a-db08-e6ed8a7f9a00": {
+        "id": "acb4cb09-23e5-4a6a-db08-e6ed8a7f9a00",
+        "filename": "WhereDragonsFly.jpg"
+      },
+      "372217eb-3612-419e-3f8a-a62275cafe00": {
+        "id": "372217eb-3612-419e-3f8a-a62275cafe00",
+        "filename": "TheStaircase.jpg"
+      },
+      "35709f79-7b3f-4672-6f6b-dc112dea2500": {
+        "id": "35709f79-7b3f-4672-6f6b-dc112dea2500",
+        "filename": "WhereDragonsFly.jpg"
+      },
+      "84d8d6da-7060-40f1-48c3-18956631e600": {
+        "id": "84d8d6da-7060-40f1-48c3-18956631e600",
+        "filename": "TheWildIcleandicHorse.jpg"
+      },
+      "8891ad4f-df85-49a0-eb99-fc0914294100": {
+        "id": "8891ad4f-df85-49a0-eb99-fc0914294100",
+        "filename": "TheWild5.jpg"
+      },
+      "8f0e4bd9-b736-4a19-298f-58d7df8ad500": {
+        "id": "8f0e4bd9-b736-4a19-298f-58d7df8ad500",
+        "filename": "TheWIld4.jpg"
+      },
+      "7a811e32-b332-4a8b-a647-be4beaacdd00": {
+        "id": "7a811e32-b332-4a8b-a647-be4beaacdd00",
+        "filename": "TheTexture.jpg"
+      },
+      "ab5ed910-bcd9-442b-492d-81d5525e2800": {
+        "id": "ab5ed910-bcd9-442b-492d-81d5525e2800",
+        "filename": "TheSurge.jpg"
+      },
+      "faf4ee33-e4c1-4d1b-8534-88eceb288f00": {
+        "id": "faf4ee33-e4c1-4d1b-8534-88eceb288f00",
+        "filename": "TheStaircase.jpg"
+      },
+      "147747a1-045a-4675-6315-cb098b808200": {
+        "id": "147747a1-045a-4675-6315-cb098b808200",
+        "filename": "TheSilentThreshold.jpg"
+      },
+      "f9b2dc84-63d9-4142-ab18-618fc1700500": {
+        "id": "f9b2dc84-63d9-4142-ab18-618fc1700500",
+        "filename": "TheSilentThreshold-2.jpg"
+      },
+      "42634935-6f83-4eee-559a-9f798ba62900": {
+        "id": "42634935-6f83-4eee-559a-9f798ba62900",
+        "filename": "TheSeaStacks.jpg"
+      },
+      "f87be321-86c0-4b79-b5e8-6de51301dd00": {
+        "id": "f87be321-86c0-4b79-b5e8-6de51301dd00",
+        "filename": "TheSeaStacks-Edit.jpg"
+      },
+      "081ed7a0-19d5-496f-ef91-6cf7147a8d00": {
+        "id": "081ed7a0-19d5-496f-ef91-6cf7147a8d00",
+        "filename": "TheSanctuaryChurch.jpg"
+      },
+      "95f870d4-31a9-49c8-8589-4d6ea1ee9200": {
+        "id": "95f870d4-31a9-49c8-8589-4d6ea1ee9200",
+        "filename": "TheRoadToLife_Walter_Mitty.jpg"
+      },
+      "f140854b-e02c-4c4e-4700-83989d680c00": {
+        "id": "f140854b-e02c-4c4e-4700-83989d680c00",
+        "filename": "TheRelic.jpg"
+      },
+      "723f307c-a3ae-4e0e-85f9-b6f0a882ad00": {
+        "id": "723f307c-a3ae-4e0e-85f9-b6f0a882ad00",
+        "filename": "TheRedRoof1.jpg"
+      },
+      "18ebfe0b-cb57-42e7-d656-2062edd24a00": {
+        "id": "18ebfe0b-cb57-42e7-d656-2062edd24a00",
+        "filename": "TheQuintessence_of_Life_The Moment.jpg"
+      },
+      "7d12fc6a-cc19-40a4-34d8-bee9df415800": {
+        "id": "7d12fc6a-cc19-40a4-34d8-bee9df415800",
+        "filename": "TheIconicSentinel.jpg"
+      },
+      "4136d14d-36e5-44c0-b338-904c8b56c900": {
+        "id": "4136d14d-36e5-44c0-b338-904c8b56c900",
+        "filename": "TheIceDiamond.jpg"
+      },
+      "1787f712-20e7-4fc0-d8f1-1bdf3af8ea00": {
+        "id": "1787f712-20e7-4fc0-d8f1-1bdf3af8ea00",
+        "filename": "TheHorizonOverRekyavik.jpg"
+      },
+      "e90e120b-4ca3-409e-e5f0-f57f641b8f00": {
+        "id": "e90e120b-4ca3-409e-e5f0-f57f641b8f00",
+        "filename": "TheHorizon.jpg"
+      },
+      "66847d6e-071d-4c3c-a91b-fa53feb48200": {
+        "id": "66847d6e-071d-4c3c-a91b-fa53feb48200",
+        "filename": "TheHidden_GljÃºfrabÃºi.jpg"
+      },
+      "d416f9ef-7677-48a3-a5f0-4cd7d4e67800": {
+        "id": "d416f9ef-7677-48a3-a5f0-4cd7d4e67800",
+        "filename": "TheFlow.jpg"
+      },
+      "cb3b4efb-e029-4243-c82e-4ae57d823600": {
+        "id": "cb3b4efb-e029-4243-c82e-4ae57d823600",
+        "filename": "TheFirstLight.jpg"
+      },
+      "fdb510a1-24e4-4678-f7bb-18edb8763000": {
+        "id": "fdb510a1-24e4-4678-f7bb-18edb8763000",
+        "filename": "TheFadingLight.jpg"
+      },
+      "2d4c2ae7-fc8d-468b-dbe6-9f41862b2800": {
+        "id": "2d4c2ae7-fc8d-468b-dbe6-9f41862b2800",
+        "filename": "TheEmptySoul.jpg"
+      },
+      "e599128b-fd5f-42a6-2f81-d692de6ab400": {
+        "id": "e599128b-fd5f-42a6-2f81-d692de6ab400",
+        "filename": "TheEmergence.jpg"
+      },
+      "914062aa-16a8-40ac-3638-cf0cface3600": {
+        "id": "914062aa-16a8-40ac-3638-cf0cface3600",
+        "filename": "TheEmergence-Edit.jpg"
+      },
+      "9359dd6f-0d9d-4b3f-1452-8a29b3ba5800": {
+        "id": "9359dd6f-0d9d-4b3f-1452-8a29b3ba5800",
+        "filename": "TheDepth.jpg"
+      },
+      "7d460cc8-532c-426f-4528-27c505e82b00": {
+        "id": "7d460cc8-532c-426f-4528-27c505e82b00",
+        "filename": "TheCrystalSkull.jpg"
+      },
+      "7cddccc6-5b4c-4397-76a1-07d48f19e600": {
+        "id": "7cddccc6-5b4c-4397-76a1-07d48f19e600",
+        "filename": "TheChasm.jpg"
+      },
+      "b42e7758-3a26-4a6e-3f33-65c7b6136400": {
+        "id": "b42e7758-3a26-4a6e-3f33-65c7b6136400",
+        "filename": "TheBirthOfABerg.jpg"
+      },
+      "4bc727d5-5b3d-401d-8771-76cc8fc10700": {
+        "id": "4bc727d5-5b3d-401d-8771-76cc8fc10700",
+        "filename": "TheBasaltMaw.jpg"
+      },
+      "38ad590f-88a8-4b86-905d-7db7a42ba100": {
+        "id": "38ad590f-88a8-4b86-905d-7db7a42ba100",
+        "filename": "TheAzureVein.jpg"
+      },
+      "52262239-7aac-4938-8b4e-cbc89d210500": {
+        "id": "52262239-7aac-4938-8b4e-cbc89d210500",
+        "filename": "TheAscent.jpg"
+      },
+      "d6571716-3f0b-4a11-8398-56c87bc56100": {
+        "id": "d6571716-3f0b-4a11-8398-56c87bc56100",
+        "filename": "TheArch1.jpg"
+      },
+      "5b1e9358-d0df-4662-7e36-994f26ade500": {
+        "id": "5b1e9358-d0df-4662-7e36-994f26ade500",
+        "filename": "TheApproach.jpg"
+      },
+      "2abca690-e8f5-4ea7-e6f5-91b858511100": {
+        "id": "2abca690-e8f5-4ea7-e6f5-91b858511100",
+        "filename": "The_Grandeur_Seljalandsfoss.jpg"
+      },
+      "d450351f-c9b0-4a45-98d8-cd829543a600": {
+        "id": "d450351f-c9b0-4a45-98d8-cd829543a600",
+        "filename": "GroundedJewels.jpg"
+      },
+      "928fe159-74a2-47b0-0cdd-9fa8b0f37300": {
+        "id": "928fe159-74a2-47b0-0cdd-9fa8b0f37300",
+        "filename": "GFXS4357.jpg"
+      },
+      "ffe5b621-fcfa-47ba-961d-22ba4d269e00": {
+        "id": "ffe5b621-fcfa-47ba-961d-22ba4d269e00",
+        "filename": "GFXS4143.jpg"
+      },
+      "81d67b2b-83dd-41eb-e312-2b1c475f2700": {
+        "id": "81d67b2b-83dd-41eb-e312-2b1c475f2700",
+        "filename": "FloatingGIants.jpg"
+      },
+      "7e61eccf-6921-46cf-3e31-ca176bced200": {
+        "id": "7e61eccf-6921-46cf-3e31-ca176bced200",
+        "filename": "EphemeralArch.jpg"
+      },
+      "86d3b556-5e0a-4f88-dc39-ad46fb873c00": {
+        "id": "86d3b556-5e0a-4f88-dc39-ad46fb873c00",
+        "filename": "DSCF2739.jpg"
+      },
+      "cf786493-77cd-48cf-aa19-2804d79fed00": {
+        "id": "cf786493-77cd-48cf-aa19-2804d79fed00",
+        "filename": "DSCF1075.jpeg"
+      },
+      "7885cd48-1894-4ed3-d551-321c6df5fe00": {
+        "id": "7885cd48-1894-4ed3-d551-321c6df5fe00",
+        "filename": "BasaltCathedral.jpg"
+      },
+      "e67e895f-a413-4748-39f1-c0d19b094400": {
+        "id": "e67e895f-a413-4748-39f1-c0d19b094400",
+        "filename": "DSCF2726.jpg"
+      }
+    }
   },
   "series": {},
   "photos": {},
-  "portfolioWorks": [],
+  "portfolioWorks": [
+    {
+      "id": "pw-daydream",
+      "title": "Beyond the Daydream",
+      "subtitle": "The places that couldn’t be scrolled past",
+      "type": "Expeditions",
+      "description": "Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act — arriving somewhere to wait for the light, the weather, the moment that justifies the journey.",
+      "camera": "GFX 100S II",
+      "location": "Iceland · Guadalupe Peak · and beyond",
+      "format": "Digital",
+      "coverAssetId": "aa1e2b18-8716-4ce7-b120-3f365aa7cb00",
+      "galleries": []
+    },
+    {
+      "id": "pw-frame",
+      "title": "Beyond the Frame",
+      "subtitle": "The near distance",
+      "type": "Home Terrain",
+      "description": "North Texas landscape — the land you drive past every day and never stop for. Palo Duro. The Trinity bottomlands. The Llano Estacado at golden hour. What’s here when you look.",
+      "camera": "GFX 100S II",
+      "location": "North Texas",
+      "format": "Digital",
+      "coverAssetId": "",
+      "galleries": []
+    },
+    {
+      "id": "pw-moment",
+      "title": "Beyond the Moment",
+      "subtitle": "The ones who also chose to be out there",
+      "type": "Figures in the Threshold",
+      "description": "People in landscape. Climbers. Hikers. The WE CLIMB community. Figures who remind us that the wilderness is not empty — it is where we go to remember who we are.",
+      "camera": "GFX 100S II",
+      "location": "Various",
+      "format": "Digital",
+      "coverAssetId": "",
+      "galleries": []
+    },
+    {
+      "id": "pw-shutter",
+      "title": "Beyond the Shutter",
+      "subtitle": "The slower eye",
+      "type": "Film · Konica Hexar",
+      "description": "The Konica Hexar sees differently. Grain, patience, the commitment of analog — no spray and pray, no instant review. One frame at a time. One chance to mean it.",
+      "camera": "Konica Hexar",
+      "location": "Various",
+      "format": "Film",
+      "coverAssetId": "",
+      "galleries": []
+    }
+  ],
   "home": {},
   "imgFolders": {}
 }

@@ -657,6 +657,22 @@ async function init(){
   if(TIA.CF_HASH&&!hadHash){await TIA.save(STATE);console.log("[Admin] Auto-saved CF hash to config");}
   setSyncStatus("ok","Synced");
   switchTab("portfolio");
+  try{
+    const listRes=await fetch("/api/images/list");
+    if(listRes.ok){
+      const listData=await listRes.json();
+      imgAllImages=listData.images||[];
+      if(listData.hash)TIA.CF_HASH=listData.hash;
+      imgAllImages.forEach(img=>{
+        if(!CF_PHOTOS[img.id]){
+          CF_PHOTOS[img.id]={id:img.id,filename:img.filename||img.id};
+          if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+          STATE.cf.assetMeta[img.id]={id:img.id,filename:img.filename||img.id};
+        }
+      });
+      console.log("[Admin] Preloaded "+imgAllImages.length+" CF images");
+    }
+  }catch(e){console.log("[Admin] CF image preload skipped:",e.message);}
 }
 
 // SAVE
@@ -2147,7 +2163,8 @@ function confirmPick(){
   closePicker();
   if(activeTab==="pages") showPagesPanel(true);
   if(activeTab==="portfolio") showPortfolioPanel();
-  toast("Photo assigned");
+  toast("Photo assigned — saving...");
+  saveAll();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2491,7 +2508,8 @@ function imgAssignToGallery(workIdx,galIdx){
   imgSelected=new Set();
   renderImgGrid();
   imgUpdateToolbar();
-  toast(added+" image"+(added>1?"s":"")+" added to "+esc(g.title||"gallery")+" — Save & Publish to go live");
+  toast(added+" image"+(added>1?"s":"")+" added to "+esc(g.title||"gallery")+" — saving...");
+  saveAll();
 }
 
 function imgSetAsPortfolioCover(workIdx){
@@ -2505,7 +2523,8 @@ function imgSetAsPortfolioCover(workIdx){
   imgSelected=new Set();
   renderImgGrid();
   imgUpdateToolbar();
-  toast("Cover set for "+esc(w.title)+" — Save & Publish to go live");
+  toast("Cover set for "+esc(w.title)+" — saving...");
+  saveAll();
 }
 
 function imgMarkAsPrint(){
@@ -2521,7 +2540,8 @@ function imgMarkAsPrint(){
   imgSelected=new Set();
   renderImgGrid();
   imgUpdateToolbar();
-  toast(added+" image"+(added>1?"s":"")+" marked as print"+(added>1?"s":"")+" — Save & Publish to go live");
+  toast(added+" image"+(added>1?"s":"")+" marked as print"+(added>1?"s":"")+" — saving...");
+  saveAll();
 }
 
 function imgAssignToSeries(sid){
@@ -2544,7 +2564,8 @@ function imgAssignToSeries(sid){
   imgSelected=new Set();
   renderImgGrid();
   imgUpdateToolbar();
-  toast(added+" image"+(added>1?"s":"")+" assigned to series — Save & Publish to go live");
+  toast(added+" image"+(added>1?"s":"")+" assigned to series — saving...");
+  saveAll();
 }
 
 async function imgDeleteSelected(){
