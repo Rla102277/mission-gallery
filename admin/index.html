@@ -576,11 +576,19 @@ function getSeriesPhotos(sid){
   });
 }
 function allPhotos(){
+  const seen=new Set();
   const all=[];
-  Object.values(STATE.photos||{}).forEach(ids=>ids.forEach(aid=>{
+  function add(aid){
+    if(!aid||seen.has(aid))return;
+    seen.add(aid);
     const m=getPhotoMeta(aid);
     all.push({assetId:aid,filename:m.filename,urlThumb:m.thumbUrl,url2048:m.fullUrl});
-  }));
+  }
+  Object.values(STATE.photos||{}).forEach(ids=>ids.forEach(add));
+  Object.keys(CF_PHOTOS||{}).forEach(add);
+  Object.keys(STATE.cf?.assetMeta||{}).forEach(add);
+  (STATE.portfolioWorks||[]).forEach(w=>(w.galleries||[]).forEach(g=>(g.photos||[]).forEach(add)));
+  imgAllImages.forEach(img=>add(img.id));
   return all;
 }
 
@@ -1710,12 +1718,17 @@ function testCfConnection(){
 
 // PICKER
 let pkSlotId=null,pkCtx=null,pkActive=null;
-function openPicker(slotId,ctx,label){
+async function openPicker(slotId,ctx,label){
   pkSlotId=slotId;pkCtx=ctx;pkActive=null;
   document.getElementById("pkTitle").textContent=label;
   document.getElementById("pkConfirm").disabled=true;
-  renderPkFilter();renderPkGrid(null);
   document.getElementById("picker").classList.add("open");
+  var grid=document.getElementById("pkGrid");
+  if(!imgAllImages.length&&!imgLoading){
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>Loading images...</p></div>";
+    await imgRefresh();
+  }
+  renderPkFilter();renderPkGrid(null);
 }
 function closePicker(){document.getElementById("picker").classList.remove("open");}
 function renderPkFilter(){
