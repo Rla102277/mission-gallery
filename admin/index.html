@@ -1298,8 +1298,17 @@ function removeBlockPhoto(idx,photoIdx){
 let expandedWork=null;
 let editingGallery=null;
 
+var DEFAULT_PORTFOLIO_WORKS=[
+  {id:'pw-daydream',title:'Beyond the Daydream',subtitle:'Iceland \u00b7 Guadalupe Peak \u00b7 and beyond',type:'Expeditions',description:'429 photographs. 8 thematic series. January light in a country that barely sees the sun.',camera:'',location:'Iceland',format:'Digital',coverAssetId:'',galleries:[]},
+  {id:'pw-frame',title:'Beyond the Frame',subtitle:'The near distance',type:'Home Terrain',description:'The land you drive past every day without stopping. Palo Duro Canyon at blue hour. The Llano Estacado in winter light.',camera:'',location:'North Texas',format:'Digital',coverAssetId:'',galleries:[]},
+  {id:'pw-moment',title:'Beyond the Moment',subtitle:'The ones who also chose to be out there',type:'Figures in the Threshold',description:'People encountered in the landscape. Not portraits — presences.',camera:'',location:'Various',format:'Digital',coverAssetId:'',galleries:[]},
+  {id:'pw-shutter',title:'Beyond the Shutter',subtitle:'The slower eye',type:'Film \u00b7 Konica Hexar',description:'The slower eye. Film work shot on Konica Hexar.',camera:'Konica Hexar',location:'Various',format:'Film',coverAssetId:'',galleries:[]}
+];
 function getPortfolioWorks(){
   if(!STATE.portfolioWorks)STATE.portfolioWorks=[];
+  if(!STATE.portfolioWorks.length){
+    STATE.portfolioWorks=JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO_WORKS));
+  }
   return STATE.portfolioWorks;
 }
 

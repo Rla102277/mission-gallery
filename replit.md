@@ -75,7 +75,7 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 
 ## Data Model (STATE / Config JSON)
 - `pages` — Object keyed by slug: `{ title, metaDescription, blocks: [{ id, type, data }] }`
-- `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, galleries: [{ id, title, subtitle, coverAssetId, photos: [] }] }`
+- `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, galleries: [{ id, title, subtitle, coverAssetId, photos: [] }] }` — auto-seeded with 4 defaults (Beyond the Daydream/Frame/Moment/Shutter) if empty
 - `siteSettings` — `{ siteName, tagline, footerQuote, footerAttr, email }`
 - `navigation` — `[{ label, href, visible }]`
 - `series` — Gallery metadata keyed by series ID (legacy)

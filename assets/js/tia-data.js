@@ -50,6 +50,13 @@ const TIA = {
   hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
+  DEFAULT_PORTFOLIO_WORKS: [
+    {id:'pw-daydream',title:'Beyond the Daydream',subtitle:'Iceland \u00b7 Guadalupe Peak \u00b7 and beyond',type:'Expeditions',description:'429 photographs. 8 thematic series. January light in a country that barely sees the sun.',camera:'',location:'Iceland',format:'Digital',coverAssetId:'',galleries:[]},
+    {id:'pw-frame',title:'Beyond the Frame',subtitle:'The near distance',type:'Home Terrain',description:'The land you drive past every day without stopping. Palo Duro Canyon at blue hour. The Llano Estacado in winter light.',camera:'',location:'North Texas',format:'Digital',coverAssetId:'',galleries:[]},
+    {id:'pw-moment',title:'Beyond the Moment',subtitle:'The ones who also chose to be out there',type:'Figures in the Threshold',description:'People encountered in the landscape. Not portraits \u2014 presences.',camera:'',location:'Various',format:'Digital',coverAssetId:'',galleries:[]},
+    {id:'pw-shutter',title:'Beyond the Shutter',subtitle:'The slower eye',type:'Film \u00b7 Konica Hexar',description:'The slower eye. Film work shot on Konica Hexar.',camera:'Konica Hexar',location:'Various',format:'Film',coverAssetId:'',galleries:[]}
+  ],
+
   DEFAULT_SERIES: [
     { id:'s1', num:'01', title:'Solitude & Scale',          subtitle:'The Secret Lagoon',                  type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Fjallsárlón Glacier Lagoon'          },
     { id:'s2', num:'02', title:'Glacial Contrasts',          subtitle:'Ice in Two Realms',                  type:'Diptych',  camera:'GFX 100S II + 100–200mm', location:'Jökulsárlón & Diamond Beach'         },
@@ -84,9 +91,16 @@ const TIA = {
   },
 
   getState() {
-    if (TIA._state) return TIA._state;
-    try { return JSON.parse(localStorage.getItem(TIA.STORE_KEY) || '{}'); }
-    catch { return {}; }
+    var s;
+    if (TIA._state) s = TIA._state;
+    else {
+      try { s = JSON.parse(localStorage.getItem(TIA.STORE_KEY) || '{}'); }
+      catch { s = {}; }
+    }
+    if (!s.portfolioWorks || !s.portfolioWorks.length) {
+      s.portfolioWorks = JSON.parse(JSON.stringify(TIA.DEFAULT_PORTFOLIO_WORKS));
+    }
+    return s;
   },
 
   async save(state) {

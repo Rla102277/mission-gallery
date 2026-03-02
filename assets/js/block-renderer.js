@@ -115,14 +115,8 @@ var BlockRenderer = {
 
   render_collections_grid: function(d, state, id) {
     var works = (state.portfolioWorks || []);
+    var tiles = works.length ? works : (typeof TIA !== 'undefined' && TIA.DEFAULT_PORTFOLIO_WORKS ? TIA.DEFAULT_PORTFOLIO_WORKS : []);
     var tileClasses = ['ct-1','ct-2','ct-3','ct-4'];
-    var defaultTiles = [
-      { type:'Expeditions', title:'Beyond the<br>Daydream', subtitle:'Iceland &middot; Guadalupe Peak &middot; and beyond' },
-      { type:'Home Terrain', title:'Beyond the<br>Frame', subtitle:'The near distance' },
-      { type:'Figures in the Threshold', title:'Beyond the<br>Moment', subtitle:'The ones who also chose to be out there' },
-      { type:'Film &middot; Konica Hexar', title:'Beyond the<br>Shutter', subtitle:'The slower eye' }
-    ];
-    var tiles = works.length ? works : defaultTiles;
     var tilesHtml = tiles.map(function(w, i) {
       var cls = tileClasses[i % tileClasses.length];
       var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
