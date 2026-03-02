@@ -1,40 +1,89 @@
-# The Infinite Arch - Photography Portfolio
+# The Infinite Arch - Photography Portfolio CMS
 
 ## Overview
-Static HTML hosting for "The Infinite Arch" photography portfolio website with an admin management panel.
+JSON-config-driven CMS photography platform with a block-rendered page system and admin panel.
 
 ## Architecture
-- **Frontend**: Static HTML/CSS/JS files served by Express
-- **Admin Panel**: `admin/index.html` — single-page admin for managing photos, series, homepage slots, and portfolio covers
+- **Frontend**: Block-rendered pages — thin HTML shells load blocks from config via `block-renderer.js`
+- **Admin Panel**: `admin/index.html` — single-page admin for managing photos, series, homepage slots, portfolio works, and content blocks
 - **Config Storage**: Server-side JSON (`/api/config` → `data/tia-config.json`)
 - **Photo Hosting**: Cloudflare Images (sole image server)
 - **Server**: Express with multer — proxies uploads to Cloudflare Images API (protects API token)
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
 
+## Block Renderer System (Phase 1 Complete)
+Pages are thin HTML shells that:
+1. Load `tia-data.js` and `block-renderer.js`
+2. Fetch config from `/api/config`
+3. Get blocks for the page via `state.pages[slug].blocks` or fall back to `BlockRenderer.defaultBlocks(slug)`
+4. Render blocks into `#pageBlocks` div via `BlockRenderer.render(blocks, state)`
+5. Call `BlockRenderer.initReveals()` for scroll animations
+6. Load `components.js` (nav/footer) and `tia.js` (page transitions)
+
+### Block Types (16 total)
+- `hero` — Full-screen hero (variants: wordmark, standard, centered, masthead)
+- `text` — Eyebrow + heading + body + CTA (variants: default, pull-quote, article)
+- `divider` — Decorative star divider
+- `collections-grid` — 2×2 portfolio work tiles (dark gradients, cream text)
+- `featured-list` — Numbered feature items with tags
+- `process-grid` — Numbered step cards
+- `callout` — Bordered card with gold accent (like Hope Hike)
+- `services-grid` — Service cards with pricing
+- `newsletter` — Email signup form
+- `quote` — Centered quote with attribution
+- `stats-bar` — Row of stat items
+- `image-text` — Side-by-side image + text
+- `photo-grid` — Grid of photos (2/3/4 columns)
+- `details-list` — Vertical list of detail items
+- `badge` — Bordered text badge
+- `email-link` — Styled mailto link
+- `purpose-quote` — Italic quote with border
+- `back-link` — Return home link
+
+### Default Block Seeds
+Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
+- `home` — 11 blocks (hero wordmark, philosophy, dividers, collections, featured, process, callout, services, newsletter, quote)
+- `about` — 5 blocks (masthead, pull-quote, divider, article, quote)
+- `prints` — 4 blocks (centered hero, details, badge, back-link)
+- `hope-hike` — 4 blocks (centered hero, stats, purpose-quote, back-link)
+- `contact` — 3 blocks (centered hero, email-link, back-link)
+
 ## Design System
-- **Color Palette**: Light cream (#f5f0e8) background with dark ink (#0d0d0d) text EVERYWHERE. Hero sections and collection tiles stay dark (have own dark gradient backgrounds) with cream text. Gold (#b5922a) accents everywhere. NEVER set body to dark/ink background.
+- **Color Palette**: Light cream (#f5f0e8) background with dark ink (#0d0d0d) text EVERYWHERE. Hero sections and collection tiles stay dark (have own dark gradient backgrounds) with cream text. Gold (#b5922a) accents. NEVER set body to dark/ink background.
 - **Typography**: Playfair Display (headings), Cormorant Garamond (body)
 - **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
-- **CSS Loading Order**: tia.css FIRST, then page-specific inline `<style>` blocks (so page-specific rules override base)
-- **CSS Variables**: `--rule: rgba(13,13,13,0.12)` for borders on light pages, `--gold: #b5922a`
+- **CSS Files**: `tia.css` (base/nav/footer) + `blocks.css` (all block type styles)
+- **CSS Variables**: `--rule-dark: rgba(13,13,13,0.12)` for borders, `--gold: #b5922a`
 
 ## Key Files
-- `index.html` — Homepage: full-bleed hero with animated wordmark, philosophy, 2×2 collections grid, featured projects, process cards, Hope Hike callout, services, newsletter, quote strip. Dynamic content from portfolioWorks.
-- `pages/portfolio.html` — Portfolio: dark hero + section intro + 2×2 tile grid from portfolioWorks data, hover reveal animations
-- `pages/about.html` — Artist Statement: cream/warm background (intentionally different from dark pages)
-- `pages/gallery.html` — Interactive gallery viewer: self-contained with its own nav, sage-light background, series navigation, lightbox, dynamic photo loading from TIA data layer
-- `pages/contact.html` — Contact page: dark hero with email link, polished layout
-- `pages/prints.html` — Prints page: dark "coming soon" with archival print details
-- `pages/hope-hike.html` — Hope Hike expedition page: dark hero with Guadalupe Peak stats, date, purpose quote
+- `index.html` — Homepage thin shell (block-driven)
+- `pages/about.html` — Artist Statement thin shell (block-driven)
+- `pages/prints.html` — Prints thin shell (block-driven)
+- `pages/hope-hike.html` — Hope Hike thin shell (block-driven)
+- `pages/contact.html` — Contact thin shell (block-driven)
+- `pages/portfolio.html` — Portfolio page (still static, Phase 2 will convert)
+- `pages/gallery.html` — Interactive gallery viewer (special-purpose, not block-driven)
 - `admin/index.html` — Admin panel (PIN-protected, case-insensitive "tia2026")
-- `assets/js/tia-data.js` — TIA data layer v7 (CF Images only, server-side config via /api/config)
-- `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions)
-- `assets/js/components.js` — Injects shared nav and footer across all pages (except gallery which has its own)
-- `assets/css/tia.css` — Global styles: dark theme tokens, nav, footer, page-content wrapper, grain overlay
-- `assets/svg/` — SVG brand assets (wordmarks, medallions)
-- `server/index.ts` — Express server with Cloudflare Images API proxy + config endpoints + static files + [CF] server-side logging for all CF API calls and config saves
-- `script/build.cjs` — Production build script (includes CF API endpoints)
-- `script/push-to-github.ts` — GitHub push script
+- `assets/js/block-renderer.js` — Block renderer engine with 16 block types + default seeds + initReveals()
+- `assets/js/tia-data.js` — TIA data layer v8 (new helpers: getPageBlocks, getPageMeta, getAllGalleries)
+- `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions) — skips reveal setup if block renderer already handled it
+- `assets/js/components.js` — Injects shared nav and footer across all pages
+- `assets/css/tia.css` — Global styles: tokens, nav, footer, page-content wrapper, grain overlay
+- `assets/css/blocks.css` — All block type CSS with responsive breakpoints + about page print/dark mode
+- `server/index.ts` — Express server with CF API proxy + config endpoints + static files
+- `script/build.cjs` — Production build script
+
+## Data Model (STATE / Config JSON)
+- `pages` — Object keyed by slug: `{ title, metaDescription, blocks: [{ id, type, data }] }`
+- `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, galleries: [{ id, title, subtitle, coverAssetId, photos: [] }] }`
+- `siteSettings` — `{ siteName, tagline, footerQuote, footerAttr, email }`
+- `navigation` — `[{ label, href, visible }]`
+- `series` — Gallery metadata keyed by series ID
+- `photos` — Photo arrays keyed by series ID (CF Image IDs)
+- `home` — Homepage slot assignments (`{ hero_bg: cfImageId }`)
+- `contentBlocks` — Legacy content block objects
+- `imgFolders` — Virtual folder organization
+- `cf` — `{ hash, assetMeta: { cfImageId: { id, filename } } }`
 
 ## Server API Endpoints
 - `POST /api/images/upload` — Upload image via multer → Cloudflare Images API
@@ -45,28 +94,12 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - `POST /api/config` — Write site configuration JSON
 
 ## Admin Panel Features
-- **Galleries tab**: Browse/create/delete series, set covers, upload photos, edit metadata (title, subtitle, type, number, camera, location, description)
-  - Default galleries (s1-s8) cannot be deleted
-  - Custom galleries can be created/deleted freely
-  - "+ New Gallery" button at bottom of sidebar
-- **Images tab**: Browse all CF images, organize into virtual folders, assign to series, upload, delete
-- **Homepage tab**: Assign photos to homepage slots (hero background only — homepage uses CSS gradients + portfolioWorks covers for tiles)
-- **Portfolio tab**: Create/edit/remove/reorder featured work blocks — each with cover photo, title, subtitle, type, description, camera, location, format
-  - `STATE.portfolioWorks` array stores work objects with {id, title, subtitle, type, description, camera, location, format, coverAssetId}
-  - Both homepage and portfolio page dynamically render from this data
-- **Content tab**: Create/edit/remove/reorder content blocks with heading, eyebrow, body text, target page, position, and style
-  - `STATE.contentBlocks` array stores block objects with {id, heading, eyebrow, body, page, position, style}
-- **Settings tab**: Shows CF connectivity status (delivery hash, image count, test connection) and server-side config storage info (storage method, last save, counts)
-
-## Data Model (STATE object)
-- `series` — Gallery metadata keyed by series ID (s1-s8 for defaults, g-{timestamp} for custom)
-- `photos` — Photo arrays keyed by series ID (Cloudflare Image IDs)
-- `home` — Homepage slot assignments (slot ID → CF image ID)
-- `portfolioWorks` — Array of featured work objects for portfolio page (title, subtitle, type, description, camera, location, format, coverAssetId)
-- `contentBlocks` — Array of content block objects with {id, heading, eyebrow, body, page, position, style}
-- `imgFolders` — Virtual folder organization for Images tab
-- `cf.assetMeta` — Cloudflare Images metadata (including EXIF data)
-- `cf.hash` — Cloudflare Images delivery hash
+- **Galleries tab**: Browse/create/delete series, set covers, upload photos, edit metadata
+- **Images tab**: Browse all CF images, organize into folders, assign to series, upload, delete
+- **Homepage tab**: Assign hero background photo
+- **Portfolio tab**: Create/edit/remove/reorder portfolio works with cover photos
+- **Content tab**: Legacy content blocks
+- **Settings tab**: CF connectivity status, config storage info
 
 ## Environment Variables
 - `CF_ACCOUNT_ID` — Cloudflare account ID
@@ -74,16 +107,11 @@ Static HTML hosting for "The Infinite Arch" photography portfolio website with a
 - `CF_IMAGES_HASH` — Cloudflare Images delivery hash
 - `SESSION_SECRET` — Session secret
 
-## Photo Resolution (TIA-DATA v7)
-Photos served exclusively via Cloudflare Images:
-- URLs: `imagedelivery.net/{hash}/{id}/{variant}`
-- Variants: thumb, cover, hero, full, public
-- Config loaded from `/api/config`, falls back to localStorage
-
-## Series (Galleries)
-- `TIA.getSeries()` merges DEFAULT_SERIES (s1-s8) with custom series from STATE
-- Custom series IDs are prefixed with `g-` followed by timestamp
-- Gallery page (`pages/gallery.html`) renders dynamically from `TIA.getSeries()`
+## CMS Phases
+- **Phase 1** (COMPLETE): Block renderer engine + page conversion (5 pages now block-driven)
+- **Phase 2** (NEXT): Portfolio hierarchy (Works → Galleries → Photos), portfolio page drill-down
+- **Phase 3**: Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
+- **Phase 4**: SEO meta editing, final responsive polish
 
 ## Deployment
 - Target: autoscale

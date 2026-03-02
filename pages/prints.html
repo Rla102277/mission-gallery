@@ -6,96 +6,28 @@
   <title>The Infinite Arch — Prints</title>
   <meta name="description" content="Fine art landscape prints by Randy Allen. Museum-quality archival prints, hand-finished and signed.">
   <link rel="stylesheet" href="/assets/css/tia.css">
-  <style>
-    .page-content { padding-top: 0; }
-
-    .cs-hero {
-      height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; text-align: center;
-      position: relative; padding: 0 40px; overflow: hidden;
-      background: var(--cream);
-    }
-    .cs-hero::after {
-      content:''; position:absolute; left:0; right:0; top:50%; height:1px;
-      background:linear-gradient(to right,transparent,rgba(181,146,42,0.15),rgba(13,13,13,0.04),rgba(181,146,42,0.15),transparent);
-      pointer-events:none;
-    }
-
-    .cs-eyebrow {
-      font-size: 9px; letter-spacing: 7px; text-transform: uppercase;
-      opacity: 0.25; margin-bottom: 32px;
-    }
-    .cs-title {
-      font-family: var(--font-display); font-weight: 900;
-      font-size: clamp(56px, 9vw, 110px); letter-spacing: -4px;
-      line-height: 0.88; margin-bottom: 20px;
-    }
-    .cs-rule {
-      width: 60px; height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold), transparent);
-      margin: 24px auto;
-    }
-    .cs-sub {
-      font-family: var(--font-display); font-style: italic;
-      font-size: clamp(17px, 2.5vw, 24px); opacity: 0.5;
-      letter-spacing: 3px; margin-bottom: 16px;
-    }
-    .cs-body {
-      font-size: 15px; line-height: 1.9; opacity: 0.4;
-      max-width: 480px; margin: 0 auto 40px;
-    }
-
-    .cs-details {
-      display: flex; flex-direction: column; gap: 10px;
-      align-items: center; margin-bottom: 48px;
-    }
-    .cs-detail {
-      font-size: 10px; letter-spacing: 5px; text-transform: uppercase;
-      opacity: 0.25;
-    }
-    .cs-detail-rule { width: 20px; height: 1px; background: var(--rule); }
-
-    .cs-notify {
-      display: inline-flex; align-items: center; gap: 16px;
-      font-family: var(--font-body); font-size: 11px;
-      letter-spacing: 4px; text-transform: uppercase; opacity: 0.5;
-      border: 1px solid var(--rule); padding: 14px 32px;
-      transition: all 0.4s; cursor: default;
-    }
-
-    .cs-back {
-      position: absolute; bottom: 48px;
-      font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
-      opacity: 0.25; display: flex; align-items: center; gap: 12px;
-      transition: opacity 0.3s;
-    }
-    .cs-back:hover { opacity: 0.6; }
-    .cs-back-line { width: 28px; height: 1px; background: var(--ink); transition: width 0.4s; }
-    .cs-back:hover .cs-back-line { width: 48px; }
-  </style>
+  <link rel="stylesheet" href="/assets/css/blocks.css">
+  <style>.page-content { padding-top: 0; }</style>
 </head>
 <body>
-<div class="page-content">
-  <section class="cs-hero" data-testid="section-prints-hero">
-    <span class="cs-eyebrow" data-testid="text-prints-eyebrow">The Infinite Arch</span>
-    <h1 class="cs-title" data-testid="text-prints-title">Prints</h1>
-    <div class="cs-rule"></div>
-    <p class="cs-sub" data-testid="text-prints-subtitle">Coming Soon</p>
-    <p class="cs-body" data-testid="text-prints-body">Museum-quality archival prints, hand-finished and signed. Each edition is produced in limited runs with meticulous attention to tonal accuracy.</p>
-    <div class="cs-details" data-testid="section-prints-details">
-      <span class="cs-detail" data-testid="text-prints-detail-1">Archival Pigment on Cotton Rag</span>
-      <div class="cs-detail-rule"></div>
-      <span class="cs-detail" data-testid="text-prints-detail-2">Limited Editions &middot; Signed & Numbered</span>
-      <div class="cs-detail-rule"></div>
-      <span class="cs-detail" data-testid="text-prints-detail-3">Custom Framing Available</span>
-    </div>
-    <div class="cs-notify" data-testid="text-prints-launch">Launching 2026</div>
-    <a href="/" class="cs-back" data-testid="link-back-home">
-      <div class="cs-back-line"></div>
-      Return Home
-    </a>
-  </section>
-</div>
+<div class="page-content" id="pageBlocks" data-testid="page-content-prints"></div>
+<script src="/assets/js/tia-data.js"></script>
+<script src="/assets/js/block-renderer.js"></script>
+<script>
+(async function() {
+  try {
+    var cfRes = await fetch('/api/images/config');
+    if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
+  } catch(e) {}
+  await TIA.load();
+  var state = TIA.getState();
+  var pageData = state.pages && state.pages['prints'];
+  var blocks = pageData ? pageData.blocks : BlockRenderer.defaultBlocks('prints');
+  document.getElementById('pageBlocks').innerHTML = BlockRenderer.render(blocks, state);
+  if (pageData && pageData.title) document.title = pageData.title;
+  BlockRenderer.initReveals();
+})();
+</script>
 <script src="/assets/js/components.js"></script>
 <script src="/assets/js/tia.js"></script>
 </body>

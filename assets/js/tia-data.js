@@ -1,17 +1,32 @@
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v7
+// TIA-DATA.JS  v8
 //
 // Photo source: Cloudflare Images
 // Config store: Server-side JSON (/api/config)
 //
 // Config schema:
 // {
-//   series:         { s1: { title, subtitle, description, coverAssetId } }
-//   photos:         { s1: [ id, id, ... ] }
-//   home:           { hero: id, ... }
-//   portfolioWorks: [ { id, title, subtitle, type, description, ... } ]
-//   cf:             { hash: 'deliveryHash', assetMeta: { cfImageId: { id, filename } } }
-//   imgFolders:     { fid: { name, images: [] } }
+//   pages: {
+//     home:      { title, metaDescription, blocks: [ { id, type, data } ] },
+//     about:     { title, metaDescription, blocks: [...] },
+//     portfolio: { title, metaDescription, blocks: [...] },
+//     prints:    { title, metaDescription, blocks: [...] },
+//     'hope-hike': { title, metaDescription, blocks: [...] },
+//     contact:   { title, metaDescription, blocks: [...] }
+//   },
+//   portfolioWorks: [
+//     { id, title, subtitle, type, description, camera, location, format, coverAssetId,
+//       galleries: [ { id, title, subtitle, coverAssetId, photos: [cfImageId, ...] } ]
+//     }
+//   ],
+//   siteSettings: { siteName, tagline, footerQuote, footerAttr, email },
+//   navigation:   [ { label, href, visible } ],
+//   series:       { s1: { title, subtitle, description, coverAssetId } },
+//   photos:       { s1: [ id, id, ... ] },
+//   home:         { hero_bg: id },
+//   cf:           { hash, assetMeta: { cfImageId: { id, filename } } },
+//   imgFolders:   { fid: { name, images: [] } },
+//   contentBlocks:[ { id, heading, eyebrow, body, page, position, style } ]
 // }
 // ═══════════════════════════════════════════════════════════════
 
@@ -89,12 +104,39 @@ const TIA = {
     }
   },
 
+  getPageBlocks(pageSlug) {
+    const state = TIA.getState();
+    return state.pages && state.pages[pageSlug] ? state.pages[pageSlug].blocks : null;
+  },
+
+  getPageMeta(pageSlug) {
+    const state = TIA.getState();
+    return state.pages && state.pages[pageSlug] ? { title: state.pages[pageSlug].title, metaDescription: state.pages[pageSlug].metaDescription } : null;
+  },
+
   getSeries() {
     const state = TIA.getState();
     const defaults = TIA.DEFAULT_SERIES.map(s => ({ ...s, ...(state.series?.[s.id] || {}) }));
     const customIds = Object.keys(state.series || {}).filter(id => !TIA.DEFAULT_SERIES.find(d => d.id === id));
     const custom = customIds.map(id => ({ id, ...state.series[id] })).filter(s => s.title);
     return [...defaults, ...custom];
+  },
+
+  getAllGalleries() {
+    const state = TIA.getState();
+    const works = state.portfolioWorks || [];
+    const galleries = [];
+    works.forEach(function(w) {
+      (w.galleries || []).forEach(function(g) {
+        galleries.push(Object.assign({}, g, { workId: w.id, workTitle: w.title }));
+      });
+    });
+    if (!galleries.length) {
+      return TIA.getSeries().map(function(s) {
+        return { id: s.id, title: s.title, subtitle: s.subtitle, workTitle: 'Default', photos: (state.photos && state.photos[s.id]) || [] };
+      });
+    }
+    return galleries;
   },
 
   getPhotos(seriesId) {

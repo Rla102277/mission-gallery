@@ -6,121 +6,28 @@
   <title>The Infinite Arch — Hope Hike</title>
   <meta name="description" content="Hope Hike — Guadalupe Peak, May 29–31, 2026. A fundraising expedition to the highest point in Texas, combining landscape photography with purpose.">
   <link rel="stylesheet" href="/assets/css/tia.css">
-  <style>
-    .page-content { padding-top: 0; }
-
-    .cs-hero {
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; text-align: center;
-      position: relative; padding: 80px 40px; overflow: hidden;
-      background: var(--cream);
-    }
-    .cs-hero::after {
-      content:''; position:absolute; left:0; right:0; top:40%; height:1px;
-      background:linear-gradient(to right,transparent,rgba(181,146,42,0.15),rgba(13,13,13,0.04),rgba(181,146,42,0.15),transparent);
-      pointer-events:none;
-    }
-
-    .cs-eyebrow {
-      font-size: 9px; letter-spacing: 7px; text-transform: uppercase;
-      opacity: 0.25; margin-bottom: 32px;
-    }
-    .cs-title {
-      font-family: var(--font-display); font-weight: 900;
-      font-size: clamp(48px, 8vw, 100px); letter-spacing: -3px;
-      line-height: 0.88; margin-bottom: 8px;
-    }
-    .cs-title-sub {
-      font-family: var(--font-display); font-weight: 900;
-      font-size: clamp(48px, 8vw, 100px); letter-spacing: -3px;
-      line-height: 0.88; margin-bottom: 20px;
-      color: var(--gold); opacity: 0.6;
-    }
-    .cs-rule {
-      width: 60px; height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold), transparent);
-      margin: 24px auto;
-    }
-    .cs-location {
-      font-size: 11px; letter-spacing: 6px; text-transform: uppercase;
-      opacity: 0.4; margin-bottom: 8px;
-    }
-    .cs-date {
-      font-family: var(--font-display); font-style: italic;
-      font-size: clamp(17px, 2.5vw, 24px); opacity: 0.55;
-      letter-spacing: 3px; margin-bottom: 24px;
-    }
-    .cs-body {
-      font-size: 15px; line-height: 1.9; opacity: 0.42;
-      max-width: 520px; margin: 0 auto 40px;
-    }
-
-    .cs-stats {
-      display: flex; gap: 48px; margin-bottom: 48px;
-      flex-wrap: wrap; justify-content: center;
-    }
-    .cs-stat { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .cs-stat-val {
-      font-family: var(--font-display); font-weight: 700;
-      font-size: 28px; letter-spacing: -1px; opacity: 0.7;
-    }
-    .cs-stat-lbl {
-      font-size: 8px; letter-spacing: 5px; text-transform: uppercase;
-      opacity: 0.25;
-    }
-
-    .cs-purpose {
-      font-family: var(--font-display); font-style: italic;
-      font-size: 15px; opacity: 0.35; letter-spacing: 1px;
-      max-width: 400px; margin: 0 auto 40px;
-      padding: 20px 0; border-top: 1px solid var(--rule);
-      border-bottom: 1px solid var(--rule);
-    }
-
-    .cs-back {
-      font-size: 9px; letter-spacing: 5px; text-transform: uppercase;
-      opacity: 0.25; display: flex; align-items: center; gap: 12px;
-      transition: opacity 0.3s; margin-top: 24px;
-    }
-    .cs-back:hover { opacity: 0.6; }
-    .cs-back-line { width: 28px; height: 1px; background: var(--ink); transition: width 0.4s; }
-    .cs-back:hover .cs-back-line { width: 48px; }
-  </style>
+  <link rel="stylesheet" href="/assets/css/blocks.css">
+  <style>.page-content { padding-top: 0; }</style>
 </head>
 <body>
-<div class="page-content">
-  <section class="cs-hero" data-testid="section-hope-hike-hero">
-    <span class="cs-eyebrow" data-testid="text-hope-hike-eyebrow">The Infinite Arch Presents</span>
-    <h1 class="cs-title" data-testid="text-hope-hike-title">Hope</h1>
-    <div class="cs-title-sub" data-testid="text-hope-hike-title-sub">Hike</div>
-    <div class="cs-rule"></div>
-    <p class="cs-location" data-testid="text-hope-hike-location">Guadalupe Peak &middot; Texas</p>
-    <p class="cs-date" data-testid="text-hope-hike-date">May 29 &ndash; 31, 2026</p>
-    <p class="cs-body" data-testid="text-hope-hike-body">A three-day expedition to the highest point in Texas, combining fine art landscape photography with a fundraising mission. Every step carries purpose — every frame tells the story of why we climb.</p>
-
-    <div class="cs-stats" data-testid="section-hope-hike-stats">
-      <div class="cs-stat">
-        <span class="cs-stat-val" data-testid="text-stat-elevation">8,751'</span>
-        <span class="cs-stat-lbl" data-testid="text-stat-elevation-label">Summit Elevation</span>
-      </div>
-      <div class="cs-stat">
-        <span class="cs-stat-val" data-testid="text-stat-days">3</span>
-        <span class="cs-stat-lbl" data-testid="text-stat-days-label">Days</span>
-      </div>
-      <div class="cs-stat">
-        <span class="cs-stat-val" data-testid="text-stat-purpose">&infin;</span>
-        <span class="cs-stat-lbl" data-testid="text-stat-purpose-label">Purpose</span>
-      </div>
-    </div>
-
-    <div class="cs-purpose" data-testid="text-hope-hike-quote">"The summit is not the destination. It's the proof that you kept going."</div>
-
-    <a href="/" class="cs-back" data-testid="link-back-home">
-      <div class="cs-back-line"></div>
-      Return Home
-    </a>
-  </section>
-</div>
+<div class="page-content" id="pageBlocks" data-testid="page-content-hope-hike"></div>
+<script src="/assets/js/tia-data.js"></script>
+<script src="/assets/js/block-renderer.js"></script>
+<script>
+(async function() {
+  try {
+    var cfRes = await fetch('/api/images/config');
+    if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
+  } catch(e) {}
+  await TIA.load();
+  var state = TIA.getState();
+  var pageData = state.pages && state.pages['hope-hike'];
+  var blocks = pageData ? pageData.blocks : BlockRenderer.defaultBlocks('hope-hike');
+  document.getElementById('pageBlocks').innerHTML = BlockRenderer.render(blocks, state);
+  if (pageData && pageData.title) document.title = pageData.title;
+  BlockRenderer.initReveals();
+})();
+</script>
 <script src="/assets/js/components.js"></script>
 <script src="/assets/js/tia.js"></script>
 </body>
