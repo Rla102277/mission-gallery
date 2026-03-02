@@ -881,7 +881,17 @@ function showPagesPanel(keepEditor){
   ensurePageDefaults(activePage);
   const pg=STATE.pages[activePage]||{title:'',metaDescription:'',blocks:[]};
   html+='<div class="page-meta"><div><span class="field-lbl">Page Title</span><input class="input" value="'+esc(pg.title||'')+'" oninput="updatePageMeta(\'title\',this.value)" data-testid="input-page-title" placeholder="e.g. About — The Infinite Arch"></div>';
-  html+='<div><span class="field-lbl">Meta Description</span><input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta"></div></div>';
+  html+='<div><span class="field-lbl">Meta Description</span><input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta"></div>';
+  html+='<div><span class="field-lbl">OG Image (Social Share)</span><div style="display:flex;align-items:center;gap:12px">';
+  if(pg.ogImage){
+    var ogThumb=TIA.photoUrl(pg.ogImage,'thumb');
+    html+='<img src="'+ogThumb+'" style="width:80px;height:45px;object-fit:cover;border-radius:4px;border:1px solid rgba(0,0,0,0.1)" data-testid="og-image-preview">';
+    html+='<button class="btn btn--sm" onclick="openPicker(\'__ogimage__'+esc(activePage)+'\',\'ogimage\',\'OG Image\')" data-testid="btn-og-image-change">Change</button>';
+    html+='<button class="btn btn--sm btn--danger" onclick="updatePageMeta(\'ogImage\',\'\');showPagesPanel(true)" data-testid="btn-og-image-remove">Remove</button>';
+  } else {
+    html+='<button class="btn btn--sm" onclick="openPicker(\'__ogimage__'+esc(activePage)+'\',\'ogimage\',\'OG Image\')" data-testid="btn-og-image-pick">Choose Image</button>';
+  }
+  html+='</div></div></div>';
   const blocks=pg.blocks||[];
   if(!blocks.length){
     html+='<div class="empty"><p>No blocks yet — click "+ Add Block" to start building this page</p></div>';
@@ -1757,8 +1767,14 @@ function confirmPick(){
       if(!w3.galleries[gIdx2].photos.includes(pkActive))w3.galleries[gIdx2].photos.push(pkActive);
     }
   }
+  if(pkCtx==="ogimage"){
+    var ogPage=pkSlotId.replace('__ogimage__','');
+    if(!STATE.pages)STATE.pages={};
+    if(!STATE.pages[ogPage])STATE.pages[ogPage]={title:'',metaDescription:'',blocks:[]};
+    STATE.pages[ogPage].ogImage=pkActive;
+  }
   closePicker();
-  if(activeTab==="pages") showPagesPanel();
+  if(activeTab==="pages") showPagesPanel(true);
   if(activeTab==="portfolio") showPortfolioPanel();
   toast("Photo assigned");
 }

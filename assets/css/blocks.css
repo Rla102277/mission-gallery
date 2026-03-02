@@ -483,4 +483,34 @@ body.dark .blk-article {
   .blk-pull-quote, .blk-article { padding: 0 40px; }
   .article-body { font-size: 17px; }
   .blk-hero--centered { padding: 80px 28px; }
+  .blk-stats { gap: 28px; }
+  .cs-stat-val { font-size: 22px; }
+  .hero-sub { font-size: 8px; letter-spacing: 4px; }
+}
+
+@media (max-width: 520px) {
+  .hw-arch { font-size: clamp(56px, 16vw, 90px); letter-spacing: -3px; }
+  .hw-infinite { font-size: 26px; letter-spacing: 5px; }
+  .hw-the { font-size: 12px; letter-spacing: 9px; }
+  .hw-tagline { font-size: 14px; letter-spacing: 5px; }
+  .hw-rule-top, .hw-rule-thin, .hw-rule-thin-b, .hw-rule-bot { width: 160px; }
+  .blk-text, .blk-featured, .blk-process, .blk-services { padding-left: 18px; padding-right: 18px; }
+  .blk-callout { margin: 0 18px 60px; padding: 36px 24px; }
+  .blk-newsletter { padding: 48px 18px; }
+  .blk-quote { padding: 48px 18px; }
+  .blk-image-text { padding: 40px 18px; gap: 24px; }
+  .blk-photo-grid { padding: 18px; gap: 6px; }
+  .blk-pg-cols-2, .blk-pg-cols-3, .blk-pg-cols-4 { grid-template-columns: 1fr; }
+  .blk-masthead-page { padding: 48px 24px 0; }
+  .mh-arch { font-size: 48px; }
+  .blk-pull-quote, .blk-article { padding: 0 24px; }
+  .article-body { font-size: 16px; }
+  .coll-tile { height: 280px; }
+  .blk-stats { gap: 20px; flex-direction: column; }
+  .blk-hero--centered { min-height: 60vh; padding: 60px 18px; }
+  .hero-scroll { bottom: 24px; }
+  .collections-header { padding: 0 18px; }
+  .blk-divider { padding: 0 18px; }
+  .hero-centered-title { font-size: clamp(36px, 10vw, 56px); }
+  .hero-centered-sub { font-size: 13px; letter-spacing: 4px; }
 }

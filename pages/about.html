@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Infinite Arch — Artist Statement</title>
   <meta name="description" content="Artist statement by Randy Allen. Fine art landscape photography as contemplation.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="The Infinite Arch — Artist Statement">
+  <meta property="og:description" content="Artist statement by Randy Allen. Fine art landscape photography as contemplation.">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
   <link rel="stylesheet" href="/assets/css/tia.css">
   <link rel="stylesheet" href="/assets/css/blocks.css">
 </head>
@@ -23,7 +28,23 @@
   var pageData = state.pages && state.pages['about'];
   var blocks = pageData ? pageData.blocks : BlockRenderer.defaultBlocks('about');
   document.getElementById('pageBlocks').innerHTML = BlockRenderer.render(blocks, state);
-  if (pageData && pageData.title) document.title = pageData.title;
+  if (pageData && pageData.title) {
+    document.title = pageData.title;
+    var ogt = document.querySelector('meta[property="og:title"]');
+    if (ogt) ogt.content = pageData.title;
+  }
+  if (pageData && pageData.metaDescription) {
+    var md = document.querySelector('meta[name="description"]');
+    if (md) md.content = pageData.metaDescription;
+    var ogd = document.querySelector('meta[property="og:description"]');
+    if (ogd) ogd.content = pageData.metaDescription;
+  }
+  if (pageData && pageData.ogImage) {
+    var ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.content = TIA.photoUrl(pageData.ogImage, 'hero');
+  }
+  var ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.content = window.location.href;
   BlockRenderer.initReveals();
 })();
 </script>

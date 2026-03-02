@@ -131,7 +131,7 @@ Data layer helpers added to tia-data.js:
 - **Phase 1** (COMPLETE): Block renderer engine + page conversion (5 pages now block-driven)
 - **Phase 2** (COMPLETE): Portfolio hierarchy (Works → Galleries → Photos), portfolio page drill-down, gallery page update
 - **Phase 3** (COMPLETE): Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
-- **Phase 4** (NEXT): SEO meta editing, final responsive polish
+- **Phase 4** (COMPLETE): OG meta tags on all pages (og:type, og:title, og:description, og:url, og:image), dynamic meta from config, OG image picker in admin Pages tab, responsive polish (520px breakpoint added)
 
 ## Deployment
 - Target: autoscale
