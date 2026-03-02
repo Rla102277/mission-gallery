@@ -240,6 +240,69 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .am-opt{display:flex;align-items:center;gap:10px;padding:6px 10px;cursor:pointer;border:1px solid var(--border);margin-bottom:4px;background:transparent;width:100%;text-align:left;color:var(--cream);font-size:11px}
 .am-opt:hover{border-color:var(--border2);background:rgba(255,255,255,.03)}
 .am-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+/* PAGES TAB — block editor */
+.page-sel{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.page-sel-btn{padding:6px 14px;font-size:9px;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
+.page-sel-btn:hover{color:var(--cream);border-color:var(--border2)}
+.page-sel-btn.active{color:var(--cream);background:rgba(255,255,255,.05);border-color:var(--gold)}
+.page-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.bl-list{display:flex;flex-direction:column;gap:6px}
+.bl-card{background:var(--surface2);border:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:default}
+.bl-card:hover{border-color:var(--border2)}
+.bl-card.editing{border-color:var(--gold)}
+.bl-type{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);min-width:90px;flex-shrink:0}
+.bl-preview{flex:1;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bl-acts{display:flex;gap:3px;flex-shrink:0}
+.bl-acts button{padding:3px 7px;font-size:10px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;line-height:1}
+.bl-acts button:hover{color:var(--cream);border-color:var(--border2)}
+.bl-acts button.del{color:var(--red)}
+.bl-editor{background:var(--surface2);border:1px solid var(--gold);padding:18px;margin-top:-1px;margin-bottom:6px}
+.bl-editor .field{margin-bottom:12px}
+.bl-editor .field:last-child{margin-bottom:0}
+.bl-editor select{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:13px;outline:none}
+.bl-editor .items-list{display:flex;flex-direction:column;gap:8px}
+.bl-editor .item-card{background:var(--bg);border:1px solid var(--border);padding:10px 12px}
+.bl-editor .item-card .field{margin-bottom:8px}
+.bl-editor .item-acts{display:flex;gap:4px;margin-top:6px}
+/* BLOCK TYPE PICKER */
+#blockPicker{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center}
+#blockPicker.open{display:flex}
+.bp-box{background:var(--surface);border:1px solid var(--border2);width:min(700px,94vw);max-height:80vh;display:flex;flex-direction:column;border-radius:2px}
+.bp-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.bp-title{font-size:16px;font-weight:300}
+.bp-close{font-size:20px;border:none;background:none;color:var(--muted);cursor:pointer}
+.bp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:18px;overflow-y:auto}
+.bp-item{padding:16px 12px;text-align:center;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
+.bp-item:hover{border-color:var(--gold);color:var(--cream);background:rgba(255,255,255,.03)}
+.bp-item-ico{font-size:22px;opacity:.4;margin-bottom:8px}
+.bp-item-name{font-size:8px;letter-spacing:3px;text-transform:uppercase}
+/* PORTFOLIO HIERARCHY */
+.pf-gal-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-left:16px;border-left:2px solid var(--border)}
+.pf-gal-card{background:var(--bg);border:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.pf-gal-card:hover{border-color:var(--border2)}
+.pf-gal-cover{width:60px;height:40px;flex-shrink:0;background:var(--surface2);overflow:hidden;cursor:pointer}
+.pf-gal-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.pf-gal-info{flex:1;min-width:0}
+.pf-gal-title{font-size:12px;font-weight:500;color:var(--cream)}
+.pf-gal-meta{font-size:9px;color:var(--dim)}
+.pf-gal-acts{display:flex;gap:3px;flex-shrink:0}
+/* GALLERY EDITOR */
+.ge-panel{background:var(--surface2);border:1px solid var(--gold);padding:16px;margin-top:8px}
+.ge-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin-top:10px}
+.ge-photo{position:relative;aspect-ratio:3/2;background:var(--surface);overflow:hidden;border:2px solid transparent;cursor:pointer}
+.ge-photo:hover{border-color:rgba(255,255,255,.2)}
+.ge-photo.cover{border-color:var(--green)}
+.ge-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.ge-photo-ov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;gap:3px;opacity:0;transition:opacity .2s}
+.ge-photo:hover .ge-photo-ov{opacity:1;background:rgba(0,0,0,.5)}
+.ge-photo-btn{padding:2px 6px;font-size:8px;letter-spacing:1px;text-transform:uppercase;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
+/* NAV EDITOR */
+.nav-list{display:flex;flex-direction:column;gap:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border)}
+.nav-item:hover{border-color:var(--border2)}
+.nav-item input[type="text"]{flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--border2);color:var(--cream);font-size:12px;outline:none}
+.nav-item-vis{width:40px;text-align:center;cursor:pointer;font-size:14px}
+.nav-item-acts{display:flex;gap:3px}
 /* MISC */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .empty{padding:50px 0;text-align:center}
@@ -270,9 +333,8 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
     <div class="tb-nav">
       <button class="tb-tab active" data-tab="galleries"  onclick="switchTab('galleries')">Galleries</button>
       <button class="tb-tab" data-tab="images" onclick="switchTab('images')">Images</button>
-      <button class="tb-tab" data-tab="homepage"   onclick="switchTab('homepage')">Homepage</button>
+      <button class="tb-tab" data-tab="pages" onclick="switchTab('pages')">Pages</button>
       <button class="tb-tab" data-tab="portfolio"  onclick="switchTab('portfolio')">Portfolio</button>
-      <button class="tb-tab" data-tab="content" onclick="switchTab('content')">Content</button>
       <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
@@ -316,6 +378,16 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
     <div class="am-foot">
       <button class="btn" onclick="closeAssignModal()">Cancel</button>
     </div>
+  </div>
+</div>
+
+<div id="blockPicker">
+  <div class="bp-box">
+    <div class="bp-head">
+      <div class="bp-title">Add Block</div>
+      <button class="bp-close" onclick="closeBlockPicker()">&times;</button>
+    </div>
+    <div class="bp-grid" id="bpGrid"></div>
   </div>
 </div>
 
@@ -515,6 +587,15 @@ function allPhotos(){
 // INIT
 async function init(){
   setSyncStatus("busy","Loading...");
+  if(typeof BlockRenderer==='undefined'){
+    await new Promise(function(resolve){
+      var s=document.createElement('script');
+      s.src='/assets/js/block-renderer.js';
+      s.onload=resolve;
+      s.onerror=resolve;
+      document.head.appendChild(s);
+    });
+  }
   STATE=await TIA.load();
   STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
   STATE.home=STATE.home||{};
@@ -584,14 +665,11 @@ function deleteGallery(sid){
 function switchTab(tab){
   activeTab=tab;
   document.querySelectorAll(".tb-tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
-  if(tab==="galleries"){
-    showGalleriesPanel();
-  }
-  else if(tab==="images")showImagesPanel();
-  else if(tab==="homepage")showHomeSlots();
-  else if(tab==="portfolio")showPortfolioSlots();
-  else if(tab==="content")showContentPanel();
-  else if(tab==="settings")showSettingsPanel();
+  if(tab==="galleries") showGalleriesPanel();
+  else if(tab==="images") showImagesPanel();
+  else if(tab==="pages") showPagesPanel();
+  else if(tab==="portfolio") showPortfolioPanel();
+  else if(tab==="settings") showSettingsPanel();
   else{setPanel("","Photo Manager");document.getElementById("panelBody").innerHTML="<div class='empty'><p>Choose a collection</p></div>";}
 }
 function showGalleriesPanel(){
@@ -743,73 +821,626 @@ function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};
 function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showGalleriesPanel();toast("Cover set");}
 function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);showGalleriesPanel();}
 
-// HOMEPAGE & PORTFOLIO SLOTS
-const HOME_SLOTS=[
-  {id:"hero_bg",label:"Hero Background (Optional)"},
+// ═══════════════════════════════════════════════════════════════
+// PAGES TAB — Block Editor (T009)
+// ═══════════════════════════════════════════════════════════════
+const PAGE_SLUGS=[
+  {slug:'home',label:'Home'},
+  {slug:'about',label:'About'},
+  {slug:'prints',label:'Prints'},
+  {slug:'hope-hike',label:'Hope Hike'},
+  {slug:'contact',label:'Contact'}
 ];
+const BLOCK_TYPES=[
+  {type:'hero',label:'Hero',ico:'&#x2606;'},
+  {type:'text',label:'Text',ico:'&#x2261;'},
+  {type:'divider',label:'Divider',ico:'&#x2736;'},
+  {type:'collections-grid',label:'Collections',ico:'&#x25a3;'},
+  {type:'featured-list',label:'Featured List',ico:'&#x2630;'},
+  {type:'process-grid',label:'Process Grid',ico:'&#x2116;'},
+  {type:'callout',label:'Callout',ico:'&#x2709;'},
+  {type:'services-grid',label:'Services',ico:'&#x2605;'},
+  {type:'newsletter',label:'Newsletter',ico:'&#x2709;'},
+  {type:'quote',label:'Quote',ico:'&#x201C;'},
+  {type:'stats-bar',label:'Stats Bar',ico:'&#x2263;'},
+  {type:'image-text',label:'Image + Text',ico:'&#x25a8;'},
+  {type:'photo-grid',label:'Photo Grid',ico:'&#x25a6;'},
+  {type:'back-link',label:'Back Link',ico:'&#x2190;'},
+  {type:'badge',label:'Badge',ico:'&#x25cf;'},
+  {type:'details-list',label:'Details List',ico:'&#x2022;'},
+  {type:'email-link',label:'Email Link',ico:'@'},
+  {type:'purpose-quote',label:'Purpose Quote',ico:'&#x2756;'}
+];
+let activePage='home';
+let editingBlockIdx=null;
+
+function getPageBlocks(slug){
+  if(!STATE.pages)STATE.pages={};
+  if(!STATE.pages[slug])STATE.pages[slug]={title:'',metaDescription:'',blocks:[]};
+  return STATE.pages[slug].blocks;
+}
+
+function ensurePageDefaults(slug){
+  if(!STATE.pages)STATE.pages={};
+  if(!STATE.pages[slug]||!STATE.pages[slug].blocks||!STATE.pages[slug].blocks.length){
+    if(typeof BlockRenderer!=='undefined'&&BlockRenderer.PAGE_DEFAULTS&&BlockRenderer.PAGE_DEFAULTS[slug]){
+      STATE.pages[slug]={title:'',metaDescription:'',blocks:JSON.parse(JSON.stringify(BlockRenderer.PAGE_DEFAULTS[slug]))};
+    }
+  }
+}
+
+function showPagesPanel(keepEditor){
+  if(!keepEditor) editingBlockIdx=null;
+  setPanel("Pages","Page Builder","<button class='btn pri' onclick='openBlockPicker()' data-testid='btn-add-block'>+ Add Block</button>");
+  let html='<div class="page-sel">';
+  PAGE_SLUGS.forEach(function(p){
+    html+='<button class="page-sel-btn '+(activePage===p.slug?'active':'')+'" onclick="selectPage(\''+p.slug+'\')" data-testid="btn-page-'+p.slug+'">'+p.label+'</button>';
+  });
+  html+='</div>';
+  if(!STATE.pages)STATE.pages={};
+  ensurePageDefaults(activePage);
+  const pg=STATE.pages[activePage]||{title:'',metaDescription:'',blocks:[]};
+  html+='<div class="page-meta"><div><span class="field-lbl">Page Title</span><input class="input" value="'+esc(pg.title||'')+'" oninput="updatePageMeta(\'title\',this.value)" data-testid="input-page-title" placeholder="e.g. About — The Infinite Arch"></div>';
+  html+='<div><span class="field-lbl">Meta Description</span><input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta"></div></div>';
+  const blocks=pg.blocks||[];
+  if(!blocks.length){
+    html+='<div class="empty"><p>No blocks yet — click "+ Add Block" to start building this page</p></div>';
+  } else {
+    html+='<div class="bl-list">';
+    blocks.forEach(function(b,i){
+      var preview=blockPreview(b);
+      html+='<div class="bl-card'+(editingBlockIdx===i?' editing':'')+'" data-testid="block-card-'+i+'">';
+      html+='<span class="bl-type">'+esc(b.type)+'</span>';
+      html+='<span class="bl-preview">'+esc(preview)+'</span>';
+      html+='<div class="bl-acts">';
+      if(i>0) html+='<button onclick="moveBlock('+i+',-1)" title="Move up" data-testid="btn-block-up-'+i+'">&#8593;</button>';
+      if(i<blocks.length-1) html+='<button onclick="moveBlock('+i+',1)" title="Move down" data-testid="btn-block-down-'+i+'">&#8595;</button>';
+      html+='<button onclick="toggleBlockEditor('+i+')" title="Edit" data-testid="btn-block-edit-'+i+'">&#9998;</button>';
+      html+='<button onclick="duplicateBlock('+i+')" title="Duplicate" data-testid="btn-block-dup-'+i+'">&#x2750;</button>';
+      html+='<button class="del" onclick="removeBlock('+i+')" title="Delete" data-testid="btn-block-del-'+i+'">&times;</button>';
+      html+='</div></div>';
+      if(editingBlockIdx===i){
+        html+=renderBlockEditor(b,i);
+      }
+    });
+    html+='</div>';
+  }
+  document.getElementById("panelBody").innerHTML=html;
+}
+
+function selectPage(slug){
+  activePage=slug;
+  editingBlockIdx=null;
+  showPagesPanel();
+}
+
+function updatePageMeta(field,val){
+  if(!STATE.pages)STATE.pages={};
+  if(!STATE.pages[activePage])STATE.pages[activePage]={title:'',metaDescription:'',blocks:[]};
+  STATE.pages[activePage][field]=val;
+}
+
+function blockPreview(b){
+  var d=b.data||{};
+  if(b.type==='hero') return d.title||d.tagline||d.variant||'Hero';
+  if(b.type==='text') return d.heading||(d.body||'').substring(0,60)||d.line1||'Text';
+  if(b.type==='divider') return '— ✦ —';
+  if(b.type==='collections-grid') return d.heading||'Collections Grid';
+  if(b.type==='featured-list') return d.heading||'Featured List';
+  if(b.type==='process-grid') return d.heading||'Process Grid';
+  if(b.type==='callout') return d.title||'Callout';
+  if(b.type==='services-grid') return d.heading||'Services';
+  if(b.type==='newsletter') return d.heading||'Newsletter';
+  if(b.type==='quote') return (d.text||'').substring(0,60)||'Quote';
+  if(b.type==='stats-bar') return (d.items||[]).map(function(it){return it.value;}).join(' | ')||'Stats';
+  if(b.type==='image-text') return d.heading||'Image + Text';
+  if(b.type==='photo-grid') return (d.photos||[]).length+' photos';
+  if(b.type==='back-link') return d.text||'Back Link';
+  if(b.type==='badge') return d.text||'Badge';
+  if(b.type==='details-list') return (d.items||[]).join(', ').substring(0,60)||'Details';
+  if(b.type==='email-link') return d.email||'Email';
+  if(b.type==='purpose-quote') return (d.text||'').substring(0,60)||'Purpose';
+  return b.type;
+}
+
+function toggleBlockEditor(idx){
+  editingBlockIdx=editingBlockIdx===idx?null:idx;
+  showPagesPanel(true);
+}
+
+function moveBlock(idx,dir){
+  var blocks=getPageBlocks(activePage);
+  var target=idx+dir;
+  if(target<0||target>=blocks.length)return;
+  var tmp=blocks[idx];blocks[idx]=blocks[target];blocks[target]=tmp;
+  if(editingBlockIdx===idx)editingBlockIdx=target;
+  else if(editingBlockIdx===target)editingBlockIdx=idx;
+  showPagesPanel(true);
+}
+
+function duplicateBlock(idx){
+  var blocks=getPageBlocks(activePage);
+  var copy=JSON.parse(JSON.stringify(blocks[idx]));
+  copy.id=copy.type.replace(/-/g,'')+'-'+Date.now();
+  blocks.splice(idx+1,0,copy);
+  editingBlockIdx=idx+1;
+  showPagesPanel(true);
+  toast("Block duplicated");
+}
+
+function removeBlock(idx){
+  var blocks=getPageBlocks(activePage);
+  if(!confirm("Delete this "+blocks[idx].type+" block?"))return;
+  blocks.splice(idx,1);
+  if(editingBlockIdx===idx)editingBlockIdx=null;
+  else if(editingBlockIdx!==null&&editingBlockIdx>idx)editingBlockIdx--;
+  showPagesPanel(true);
+  toast("Block removed");
+}
+
+function openBlockPicker(){
+  var html='';
+  BLOCK_TYPES.forEach(function(bt){
+    html+='<button class="bp-item" onclick="addBlock(\''+bt.type+'\')" data-testid="bp-'+bt.type+'">';
+    html+='<div class="bp-item-ico">'+bt.ico+'</div>';
+    html+='<div class="bp-item-name">'+bt.label+'</div>';
+    html+='</button>';
+  });
+  document.getElementById("bpGrid").innerHTML=html;
+  document.getElementById("blockPicker").classList.add("open");
+}
+function closeBlockPicker(){document.getElementById("blockPicker").classList.remove("open");}
+
+function addBlock(type){
+  closeBlockPicker();
+  var blocks=getPageBlocks(activePage);
+  var newBlock={id:type.replace(/-/g,'')+'-'+Date.now(),type:type,data:{}};
+  if(type==='hero')newBlock.data={variant:'standard',title:'',subtitle:'',eyebrow:''};
+  if(type==='text')newBlock.data={variant:'default',eyebrow:'',heading:'',body:'',ctaText:'',ctaUrl:''};
+  if(type==='divider')newBlock.data={};
+  if(type==='collections-grid')newBlock.data={heading:'',ctaText:'',ctaUrl:''};
+  if(type==='featured-list')newBlock.data={eyebrow:'',heading:''};
+  if(type==='process-grid')newBlock.data={eyebrow:'',heading:'',items:[{title:'',body:''}]};
+  if(type==='callout')newBlock.data={eyebrow:'',title:'',subtitle:'',body:'',ctaText:'',ctaUrl:''};
+  if(type==='services-grid')newBlock.data={eyebrow:'',heading:'',items:[{title:'',body:'',price:''}]};
+  if(type==='newsletter')newBlock.data={eyebrow:'',heading:'',body:'',placeholder:'your@email.com'};
+  if(type==='quote')newBlock.data={text:'',attribution:''};
+  if(type==='stats-bar')newBlock.data={items:[{value:'',label:''}]};
+  if(type==='image-text')newBlock.data={imageId:'',imagePosition:'left',heading:'',body:''};
+  if(type==='photo-grid')newBlock.data={photos:[],columns:3};
+  if(type==='back-link')newBlock.data={url:'/',text:'Return Home'};
+  if(type==='badge')newBlock.data={text:''};
+  if(type==='details-list')newBlock.data={items:['']};
+  if(type==='email-link')newBlock.data={email:''};
+  if(type==='purpose-quote')newBlock.data={text:''};
+  blocks.push(newBlock);
+  editingBlockIdx=blocks.length-1;
+  showPagesPanel(true);
+  toast(type+" block added");
+}
+
+function updateBlockData(idx,field,val){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[idx])return;
+  blocks[idx].data[field]=val;
+}
+
+function updateBlockItemField(idx,itemIdx,field,val){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[idx]||!blocks[idx].data.items)return;
+  blocks[idx].data.items[itemIdx][field]=val;
+}
+
+function addBlockItem(idx,template){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[idx])return;
+  if(!blocks[idx].data.items)blocks[idx].data.items=[];
+  blocks[idx].data.items.push(typeof template==='string'?'':JSON.parse(JSON.stringify(template)));
+  showPagesPanel();
+}
+
+function removeBlockItem(idx,itemIdx){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[idx]||!blocks[idx].data.items)return;
+  blocks[idx].data.items.splice(itemIdx,1);
+  showPagesPanel();
+}
+
+function updateBlockDetailItem(idx,itemIdx,val){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[idx]||!blocks[idx].data.items)return;
+  blocks[idx].data.items[itemIdx]=val;
+}
+
+function pickBlockImage(idx,field){
+  pkSlotId='__block__'+idx+'__'+field;
+  pkCtx='block';
+  pkActive=null;
+  document.getElementById("pkTitle").textContent='Image for block';
+  document.getElementById("pkConfirm").disabled=true;
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById("picker").classList.add("open");
+}
+
+function renderBlockEditor(b,idx){
+  var d=b.data||{};
+  var html='<div class="bl-editor" data-testid="block-editor-'+idx+'">';
+  var f=function(label,field,val,type){
+    type=type||'text';
+    html+='<div class="field"><span class="field-lbl">'+label+'</span>';
+    if(type==='textarea') html+='<textarea class="textarea" oninput="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="input-bl-'+field+'-'+idx+'">'+esc(val||'')+'</textarea>';
+    else html+='<input class="input" type="text" value="'+esc(val||'')+'" oninput="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="input-bl-'+field+'-'+idx+'">';
+    html+='</div>';
+  };
+  var sel=function(label,field,val,options){
+    html+='<div class="field"><span class="field-lbl">'+label+'</span><select onchange="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="select-bl-'+field+'-'+idx+'">';
+    options.forEach(function(o){
+      var optVal=typeof o==='string'?o:o.value;
+      var optLabel=typeof o==='string'?o:o.label;
+      html+='<option value="'+esc(optVal)+'"'+(val===optVal?' selected':'')+'>'+esc(optLabel)+'</option>';
+    });
+    html+='</select></div>';
+  };
+  var imgBtn=function(label,field,currentId){
+    var thumb=currentId?TIA.photoUrl(currentId,'thumb'):'';
+    html+='<div class="field"><span class="field-lbl">'+label+'</span>';
+    html+='<div style="display:flex;align-items:center;gap:10px">';
+    if(thumb) html+='<img src="'+thumb+'" style="width:60px;height:40px;object-fit:cover;border:1px solid var(--border)">';
+    html+='<button class="btn" onclick="pickBlockImage('+idx+',\''+field+'\')" data-testid="btn-pick-'+field+'-'+idx+'">'+(currentId?'Change':'Choose')+'</button>';
+    if(currentId) html+='<button class="btn red" onclick="updateBlockData('+idx+',\''+field+'\',\'\');showPagesPanel()">Remove</button>';
+    html+='</div></div>';
+  };
+
+  switch(b.type){
+    case 'hero':
+      sel('Variant','variant',d.variant||'standard',[
+        {value:'wordmark',label:'Wordmark (Homepage)'},
+        {value:'standard',label:'Standard'},
+        {value:'centered',label:'Centered'},
+        {value:'masthead',label:'Masthead (About)'}
+      ]);
+      if(d.variant==='wordmark'||d.variant==='masthead'){
+        f('Tagline','tagline',d.tagline);
+        if(d.variant==='masthead') f('Section Label','label',d.label);
+      } else {
+        f('Eyebrow','eyebrow',d.eyebrow);
+        f('Title','title',d.title);
+        f('Subtitle','subtitle',d.subtitle);
+        if(d.variant==='centered'){
+          f('Title Sub','titleSub',d.titleSub);
+          f('Location','location',d.location);
+          f('Body','body',d.body,'textarea');
+        }
+      }
+      f('Scroll Text','scrollText',d.scrollText);
+      imgBtn('Background Image','backgroundImage',d.backgroundImage);
+      break;
+    case 'text':
+      sel('Variant','variant',d.variant||'default',[
+        {value:'default',label:'Default'},
+        {value:'pull-quote',label:'Pull Quote'},
+        {value:'article',label:'Article'}
+      ]);
+      if(d.variant==='pull-quote'){
+        f('Line 1','line1',d.line1);
+        f('Line 2','line2',d.line2);
+      } else if(d.variant==='article'){
+        f('Body (HTML)','body',d.body,'textarea');
+        f('Closing','closing',d.closing);
+      } else {
+        f('Eyebrow','eyebrow',d.eyebrow);
+        f('Heading','heading',d.heading);
+        f('Body','body',d.body,'textarea');
+        f('CTA Text','ctaText',d.ctaText);
+        f('CTA URL','ctaUrl',d.ctaUrl);
+      }
+      break;
+    case 'divider':
+      html+='<p style="color:var(--dim);font-size:11px">No configurable options — renders a star divider.</p>';
+      break;
+    case 'collections-grid':
+      f('Heading (HTML)','heading',d.heading);
+      f('CTA Text','ctaText',d.ctaText);
+      f('CTA URL','ctaUrl',d.ctaUrl);
+      html+='<p style="color:var(--dim);font-size:10px;margin-top:4px">Tiles auto-populate from Portfolio Works.</p>';
+      break;
+    case 'featured-list':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Heading','heading',d.heading);
+      html+='<p style="color:var(--dim);font-size:10px;margin-top:4px">Items auto-populate from Portfolio Works, or you can set custom items below.</p>';
+      if(d.items&&d.items.length){
+        html+='<div class="field"><span class="field-lbl">Custom Items</span><div class="items-list">';
+        d.items.forEach(function(item,ii){
+          html+='<div class="item-card"><div class="field"><span class="field-lbl">Tag</span><input class="input" value="'+esc(item.tag||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'tag\',this.value)"></div>';
+          html+='<div class="field"><span class="field-lbl">Title</span><input class="input" value="'+esc(item.title||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'title\',this.value)"></div>';
+          html+='<div class="field"><span class="field-lbl">Description</span><textarea class="textarea" oninput="updateBlockItemField('+idx+','+ii+',\'description\',this.value)">'+esc(item.description||'')+'</textarea></div>';
+          html+='<div class="item-acts"><button class="btn red" onclick="removeBlockItem('+idx+','+ii+')">&times; Remove</button></div></div>';
+        });
+        html+='</div></div>';
+      }
+      html+='<button class="btn" onclick="addBlockItem('+idx+',{tag:\'\',title:\'\',description:\'\'})" style="margin-top:6px">+ Add Custom Item</button>';
+      break;
+    case 'process-grid':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Heading','heading',d.heading);
+      html+='<div class="field"><span class="field-lbl">Steps</span><div class="items-list">';
+      (d.items||[]).forEach(function(item,ii){
+        html+='<div class="item-card"><div class="field"><span class="field-lbl">Title</span><input class="input" value="'+esc(item.title||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'title\',this.value)"></div>';
+        html+='<div class="field"><span class="field-lbl">Body</span><textarea class="textarea" oninput="updateBlockItemField('+idx+','+ii+',\'body\',this.value)">'+esc(item.body||'')+'</textarea></div>';
+        html+='<div class="item-acts"><button class="btn red" onclick="removeBlockItem('+idx+','+ii+')">&times;</button></div></div>';
+      });
+      html+='</div></div>';
+      html+='<button class="btn" onclick="addBlockItem('+idx+',{title:\'\',body:\'\'})" style="margin-top:6px">+ Add Step</button>';
+      break;
+    case 'callout':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Title','title',d.title);
+      f('Subtitle','subtitle',d.subtitle);
+      f('Body','body',d.body,'textarea');
+      f('CTA Text','ctaText',d.ctaText);
+      f('CTA URL','ctaUrl',d.ctaUrl);
+      break;
+    case 'services-grid':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Heading','heading',d.heading);
+      html+='<div class="field"><span class="field-lbl">Services</span><div class="items-list">';
+      (d.items||[]).forEach(function(item,ii){
+        html+='<div class="item-card"><div class="field"><span class="field-lbl">Title</span><input class="input" value="'+esc(item.title||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'title\',this.value)"></div>';
+        html+='<div class="field"><span class="field-lbl">Body</span><textarea class="textarea" oninput="updateBlockItemField('+idx+','+ii+',\'body\',this.value)">'+esc(item.body||'')+'</textarea></div>';
+        html+='<div class="field"><span class="field-lbl">Price</span><input class="input" value="'+esc(item.price||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'price\',this.value)"></div>';
+        html+='<div class="item-acts"><button class="btn red" onclick="removeBlockItem('+idx+','+ii+')">&times;</button></div></div>';
+      });
+      html+='</div></div>';
+      html+='<button class="btn" onclick="addBlockItem('+idx+',{title:\'\',body:\'\',price:\'\'})" style="margin-top:6px">+ Add Service</button>';
+      break;
+    case 'newsletter':
+      f('Eyebrow','eyebrow',d.eyebrow);
+      f('Heading (HTML)','heading',d.heading);
+      f('Body','body',d.body,'textarea');
+      f('Placeholder','placeholder',d.placeholder);
+      f('Button Text','buttonText',d.buttonText);
+      break;
+    case 'quote':
+      f('Quote Text','text',d.text,'textarea');
+      f('Attribution','attribution',d.attribution);
+      break;
+    case 'stats-bar':
+      html+='<div class="field"><span class="field-lbl">Stats</span><div class="items-list">';
+      (d.items||[]).forEach(function(item,ii){
+        html+='<div class="item-card" style="display:flex;gap:8px;align-items:center"><div style="flex:1"><span class="field-lbl">Value</span><input class="input" value="'+esc(item.value||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'value\',this.value)"></div>';
+        html+='<div style="flex:1"><span class="field-lbl">Label</span><input class="input" value="'+esc(item.label||'')+'" oninput="updateBlockItemField('+idx+','+ii+',\'label\',this.value)"></div>';
+        html+='<button class="btn red" onclick="removeBlockItem('+idx+','+ii+')" style="margin-top:16px">&times;</button></div>';
+      });
+      html+='</div></div>';
+      html+='<button class="btn" onclick="addBlockItem('+idx+',{value:\'\',label:\'\'})" style="margin-top:6px">+ Add Stat</button>';
+      break;
+    case 'image-text':
+      imgBtn('Image','imageId',d.imageId);
+      sel('Image Position','imagePosition',d.imagePosition||'left',[{value:'left',label:'Left'},{value:'right',label:'Right'}]);
+      f('Heading','heading',d.heading);
+      f('Body','body',d.body,'textarea');
+      break;
+    case 'photo-grid':
+      sel('Columns','columns',String(d.columns||3),[{value:'2',label:'2 Columns'},{value:'3',label:'3 Columns'},{value:'4',label:'4 Columns'}]);
+      html+='<div class="field"><span class="field-lbl">Photos ('+((d.photos||[]).length)+')</span>';
+      html+='<button class="btn" onclick="pickBlockPhotos('+idx+')" data-testid="btn-pick-photos-'+idx+'">Add Photos from Picker</button>';
+      if(d.photos&&d.photos.length){
+        html+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">';
+        d.photos.forEach(function(pid,pi){
+          var t=TIA.photoUrl(pid,'thumb');
+          html+='<div style="position:relative;width:60px;height:40px;background:var(--surface);overflow:hidden;border:1px solid var(--border)">';
+          if(t) html+='<img src="'+t+'" style="width:100%;height:100%;object-fit:cover">';
+          html+='<button onclick="removeBlockPhoto('+idx+','+pi+')" style="position:absolute;top:1px;right:1px;width:14px;height:14px;background:rgba(0,0,0,.7);border:none;color:var(--red);font-size:10px;cursor:pointer;line-height:1">&times;</button></div>';
+        });
+        html+='</div>';
+      }
+      html+='</div>';
+      break;
+    case 'back-link':
+      f('URL','url',d.url);
+      f('Text','text',d.text);
+      break;
+    case 'badge':
+      f('Text','text',d.text);
+      break;
+    case 'details-list':
+      html+='<div class="field"><span class="field-lbl">Items</span><div class="items-list">';
+      (d.items||[]).forEach(function(item,ii){
+        html+='<div class="item-card" style="display:flex;gap:8px;align-items:center"><input class="input" value="'+esc(item||'')+'" oninput="updateBlockDetailItem('+idx+','+ii+',this.value)" style="flex:1">';
+        html+='<button class="btn red" onclick="removeBlockItem('+idx+','+ii+')">&times;</button></div>';
+      });
+      html+='</div></div>';
+      html+='<button class="btn" onclick="addBlockItem('+idx+',\'\')" style="margin-top:6px">+ Add Item</button>';
+      break;
+    case 'email-link':
+      f('Email','email',d.email);
+      break;
+    case 'purpose-quote':
+      f('Text (HTML)','text',d.text,'textarea');
+      break;
+    default:
+      html+='<p style="color:var(--dim);font-size:11px">Unknown block type: '+esc(b.type)+'</p>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function pickBlockPhotos(idx){
+  pkSlotId='__blockphotos__'+idx;
+  pkCtx='blockphotos';
+  pkActive=null;
+  document.getElementById("pkTitle").textContent='Add Photos to Grid';
+  document.getElementById("pkConfirm").disabled=true;
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById("picker").classList.add("open");
+}
+
+function removeBlockPhoto(idx,photoIdx){
+  var blocks=getPageBlocks(activePage);
+  if(!blocks[idx]||!blocks[idx].data.photos)return;
+  blocks[idx].data.photos.splice(photoIdx,1);
+  showPagesPanel();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PORTFOLIO HIERARCHY TAB (T010)
+// ═══════════════════════════════════════════════════════════════
+let expandedWork=null;
+let editingGallery=null;
+
 function getPortfolioWorks(){
   if(!STATE.portfolioWorks)STATE.portfolioWorks=[];
   return STATE.portfolioWorks;
 }
-function showHomeSlots(){setPanel("Homepage","Photo Assignments","");document.getElementById("panelBody").innerHTML=`<div class="slots">${HOME_SLOTS.map(s=>slotCard(s.id,s.label,"home")).join("")}</div>`;}
-function showPortfolioSlots(){
-  setPanel("Portfolio","Featured Works","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Work</button>");
-  const works=getPortfolioWorks();
-  let html;
+
+function showPortfolioPanel(){
+  editingGallery=null;
+  setPanel("Portfolio","Works & Galleries","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Work</button>");
+  var works=getPortfolioWorks();
+  var html;
   if(!works.length){
-    html=`<div class="empty"><p>No portfolio works yet. Click "+ Add Work" to create your first featured work.</p></div>`;
+    html='<div class="empty"><p>No portfolio works yet. Click "+ Add Work" to begin.</p></div>';
   } else {
-    html=`<div class="pf-works">${works.map((w,i)=>{
-      const thumb=w.coverAssetId?TIA.photoUrl(w.coverAssetId,"thumb"):"";
-      return`<div class="pf-work-card" data-testid="portfolio-work-${i}">
-        <div class="pf-work-cover" onclick="openPicker('${w.id}','portfolio','Cover for ${esc(w.title||"Untitled")}')">
-          ${thumb?`<img src="${thumb}" alt="" loading="lazy">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">Set cover photo</div></div>`}
-        </div>
-        <div class="pf-work-body">
-          <div class="pf-work-title">${esc(w.title||"Untitled")}</div>
-          <div class="pf-work-sub">${esc(w.subtitle||"")}</div>
-          <div class="pf-work-meta">${esc(w.type||"Series")} · ${esc(w.location||"")}</div>
-          <div class="pf-work-actions">
-            <button class="btn" onclick="editPortfolioWork(${i})" data-testid="btn-edit-work-${i}">Edit</button>
-            ${i>0?`<button class="btn sm" onclick="movePortfolioWork(${i},-1)" data-testid="btn-move-work-up-${i}">&#8593;</button>`:""}
-            ${i<works.length-1?`<button class="btn sm" onclick="movePortfolioWork(${i},1)" data-testid="btn-move-work-down-${i}">&#8595;</button>`:""}
-            <button class="btn sm red" onclick="removePortfolioWork(${i})" data-testid="btn-remove-work-${i}">&#x2715;</button>
-          </div>
-        </div>
-      </div>`;
-    }).join("")}</div>`;
+    html='<div class="pf-works">';
+    works.forEach(function(w,i){
+      var thumb=w.coverAssetId?TIA.photoUrl(w.coverAssetId,"thumb"):"";
+      var isExpanded=expandedWork===w.id;
+      var galCount=(w.galleries||[]).length;
+      html+='<div class="pf-work-card'+(isExpanded?' expanded':'')+'" data-testid="portfolio-work-'+i+'">';
+      html+='<div class="pf-work-header" onclick="toggleWork(\''+w.id+'\')">';
+      html+='<div class="pf-work-cover">';
+      if(thumb) html+='<img src="'+thumb+'" alt="" loading="lazy">';
+      else html+='<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">Cover</div></div>';
+      html+='</div>';
+      html+='<div class="pf-work-body">';
+      html+='<div class="pf-work-title">'+esc(w.title||"Untitled")+'</div>';
+      html+='<div class="pf-work-sub">'+esc(w.subtitle||"")+'</div>';
+      html+='<div class="pf-work-meta">'+esc(w.type||"Series")+' &middot; '+esc(w.location||"")+' &middot; '+galCount+' galler'+(galCount===1?'y':'ies')+'</div>';
+      html+='<div class="pf-work-actions" onclick="event.stopPropagation()">';
+      html+='<button class="btn" onclick="editPortfolioWork('+i+')" data-testid="btn-edit-work-'+i+'">Edit</button>';
+      html+='<button class="btn" onclick="openPicker(\''+w.id+'\',\'portfolio\',\'Cover for '+esc(w.title||"Untitled")+'\')" data-testid="btn-cover-work-'+i+'">Set Cover</button>';
+      if(i>0) html+='<button class="btn sm" onclick="movePortfolioWork('+i+',-1)" data-testid="btn-move-work-up-'+i+'">&#8593;</button>';
+      if(i<works.length-1) html+='<button class="btn sm" onclick="movePortfolioWork('+i+',1)" data-testid="btn-move-work-down-'+i+'">&#8595;</button>';
+      html+='<button class="btn sm red" onclick="removePortfolioWork('+i+')" data-testid="btn-remove-work-'+i+'">&#x2715;</button>';
+      html+='</div></div></div>';
+      html+='<div class="pf-work-expand">';
+      if(isExpanded){
+        html+=renderWorkGalleries(w,i);
+      }
+      html+='</div></div>';
+    });
+    html+='</div>';
   }
   document.getElementById("panelBody").innerHTML=html;
 }
-function slotCard(slotId,label,ctx){
-  const aid=STATE.home?.[slotId];
-  const thumb=aid?TIA.photoUrl(aid,"thumb"):"";
-  const filled=!!thumb;
-  return`<div class="slot ${filled?"filled":""}" onclick="openPicker('${slotId}','${ctx}','${esc(label)}')">
-    ${filled?`<img class="slot-img" src="${thumb}" alt="">`:`<div class="slot-empty"><div class="slot-empty-ico">[+]</div><div class="slot-empty-lbl">No photo assigned</div></div>`}
-    <div class="slot-info"><span class="slot-name">${label}</span><span class="slot-act">${filled?"Set - click to change":"Click to assign"}</span></div></div>`;
+
+function toggleWork(workId){
+  expandedWork=expandedWork===workId?null:workId;
+  editingGallery=null;
+  showPortfolioPanel();
+}
+
+function renderWorkGalleries(w,workIdx){
+  var html='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'" style="margin-bottom:10px">+ Add Gallery</button>';
+  var galleries=w.galleries||[];
+  if(!galleries.length){
+    html+='<div style="padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase">No galleries yet</div>';
+    return html;
+  }
+  html+='<div class="pf-gal-list">';
+  galleries.forEach(function(g,gi){
+    var gThumb=g.coverAssetId?TIA.photoUrl(g.coverAssetId,"thumb"):"";
+    if(!gThumb&&g.photos&&g.photos.length) gThumb=TIA.photoUrl(g.photos[0],"thumb");
+    var photoCount=(g.photos||[]).length;
+    html+='<div class="pf-gal-card" data-testid="gallery-card-'+workIdx+'-'+gi+'">';
+    html+='<div class="pf-gal-cover" onclick="openPicker(\'__galcover__'+workIdx+'__'+gi+'\',\'galcover\',\'Cover for '+esc(g.title||"Gallery")+'\')">';
+    if(gThumb) html+='<img src="'+gThumb+'" alt="">';
+    else html+='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:.15">[+]</div>';
+    html+='</div>';
+    html+='<div class="pf-gal-info">';
+    html+='<div class="pf-gal-title">'+esc(g.title||"Untitled Gallery")+'</div>';
+    html+='<div class="pf-gal-meta">'+photoCount+' photo'+(photoCount!==1?'s':'')+'</div>';
+    html+='</div>';
+    html+='<div class="pf-gal-acts">';
+    html+='<button class="btn" onclick="toggleGalleryEditor('+workIdx+','+gi+')" data-testid="btn-edit-gallery-'+workIdx+'-'+gi+'">Edit</button>';
+    if(gi>0) html+='<button class="btn sm" onclick="moveGallery('+workIdx+','+gi+',-1)">&#8593;</button>';
+    if(gi<galleries.length-1) html+='<button class="btn sm" onclick="moveGallery('+workIdx+','+gi+',1)">&#8595;</button>';
+    html+='<button class="btn sm red" onclick="removeGallery('+workIdx+','+gi+')" data-testid="btn-del-gallery-'+workIdx+'-'+gi+'">&times;</button>';
+    html+='</div></div>';
+    if(editingGallery===w.id+'__'+gi){
+      html+=renderGalleryEditor(w,workIdx,gi);
+    }
+  });
+  html+='</div>';
+  return html;
+}
+
+function toggleGalleryEditor(workIdx,galIdx){
+  var w=getPortfolioWorks()[workIdx];
+  var key=w.id+'__'+galIdx;
+  editingGallery=editingGallery===key?null:key;
+  showPortfolioPanel();
+}
+
+function renderGalleryEditor(w,workIdx,galIdx){
+  var g=w.galleries[galIdx];
+  var html='<div class="ge-panel" data-testid="gallery-editor-'+workIdx+'-'+galIdx+'">';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">';
+  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)"></div>';
+  html+='<div><span class="field-lbl">Subtitle</span><input class="input" value="'+esc(g.subtitle||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'subtitle\',this.value)"></div>';
+  html+='</div>';
+  html+='<div class="gallery-upload" onclick="document.getElementById(\'geUpload_'+workIdx+'_'+galIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToGallery(event.dataTransfer.files,'+workIdx+','+galIdx+')">';
+  html+='<div class="gallery-upload-ico">&#x2191;</div>';
+  html+='<div class="gallery-upload-lbl">Drop photos or click to upload</div>';
+  html+='</div>';
+  html+='<input type="file" id="geUpload_'+workIdx+'_'+galIdx+'" multiple accept="image/*" style="display:none" onchange="uploadToGallery(this.files,'+workIdx+','+galIdx+')">';
+  html+='<div style="display:flex;gap:6px;margin:8px 0"><button class="btn" onclick="assignPhotosToGallery('+workIdx+','+galIdx+')" data-testid="btn-assign-photos-'+workIdx+'-'+galIdx+'">Add from Library</button></div>';
+  html+='<div id="geUploadProgress_'+workIdx+'_'+galIdx+'"></div>';
+  var photos=g.photos||[];
+  if(photos.length){
+    html+='<div class="sec-lbl" style="margin-top:10px"><span>'+photos.length+' photo'+(photos.length!==1?'s':'')+'</span></div>';
+    html+='<div class="ge-photos">';
+    photos.forEach(function(pid,pi){
+      var t=TIA.photoUrl(pid,'thumb');
+      var isCover=pid===g.coverAssetId;
+      html+='<div class="ge-photo'+(isCover?' cover':'')+'">';
+      if(t) html+='<img src="'+t+'" loading="lazy" alt="">';
+      if(isCover) html+='<div class="pc-badge cover" style="position:absolute;top:3px;left:3px">Cover</div>';
+      html+='<div class="ge-photo-ov">';
+      html+='<button class="ge-photo-btn" onclick="setGalleryCover('+workIdx+','+galIdx+',\''+pid+'\')">Cover</button>';
+      html+='<button class="ge-photo-btn" onclick="removeGalleryPhoto('+workIdx+','+galIdx+','+pi+')">&#x2715;</button>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  } else {
+    html+='<div style="padding:16px;text-align:center;opacity:.2;font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-top:8px">No photos — upload or assign above</div>';
+  }
+  html+='</div>';
+  return html;
 }
 
 function addPortfolioWork(){
-  const title=prompt("Work title:");
+  var title=prompt("Work title:");
   if(!title||!title.trim())return;
-  const works=getPortfolioWorks();
-  works.push({id:"pw-"+Date.now(),title:title.trim(),subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:""});
-  showPortfolioSlots();
-  toast("Work added — click it to set a cover photo, then Edit to fill in details");
+  var works=getPortfolioWorks();
+  works.push({id:"pw-"+Date.now(),title:title.trim(),subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:"",galleries:[]});
+  expandedWork=works[works.length-1].id;
+  showPortfolioPanel();
+  toast("Work added");
 }
+
 function editPortfolioWork(idx){
-  const works=getPortfolioWorks();
-  const w=works[idx];
+  var works=getPortfolioWorks();
+  var w=works[idx];
   if(!w)return;
-  const f=(label,val)=>{const r=prompt(label,val);return r===null?null:r;};
-  const title=f("Title:",w.title);if(title===null)return;
-  const subtitle=f("Subtitle:",w.subtitle);if(subtitle===null)return;
-  const type=f("Type (e.g. Triptych, Diptych, Series):",w.type);if(type===null)return;
-  const description=f("Description:",w.description);if(description===null)return;
-  const camera=f("Camera:",w.camera);if(camera===null)return;
-  const location=f("Location:",w.location);if(location===null)return;
-  const format=f("Format (e.g. Three 16×24\" prints):",w.format);if(format===null)return;
+  var f=function(label,val){var r=prompt(label,val);return r===null?null:r;};
+  var title=f("Title:",w.title);if(title===null)return;
+  var subtitle=f("Subtitle:",w.subtitle);if(subtitle===null)return;
+  var type=f("Type (e.g. Triptych, Diptych, Series):",w.type);if(type===null)return;
+  var description=f("Description:",w.description);if(description===null)return;
+  var camera=f("Camera:",w.camera);if(camera===null)return;
+  var location=f("Location:",w.location);if(location===null)return;
+  var format=f("Format:",w.format);if(format===null)return;
   w.title=title.trim()||w.title;
   w.subtitle=subtitle.trim();
   w.type=type.trim()||w.type;
@@ -817,174 +1448,244 @@ function editPortfolioWork(idx){
   w.camera=camera.trim();
   w.location=location.trim();
   w.format=format.trim();
-  showPortfolioSlots();
+  showPortfolioPanel();
   toast("Work updated");
 }
+
 function movePortfolioWork(idx,dir){
-  const works=getPortfolioWorks();
-  const target=idx+dir;
+  var works=getPortfolioWorks();
+  var target=idx+dir;
   if(target<0||target>=works.length)return;
-  [works[idx],works[target]]=[works[target],works[idx]];
-  showPortfolioSlots();
-}
-function removePortfolioWork(idx){
-  const works=getPortfolioWorks();
-  if(!works[idx])return;
-  if(!confirm("Remove '"+works[idx].title+"' from portfolio?"))return;
-  works.splice(idx,1);
-  showPortfolioSlots();
-  toast("Work removed from portfolio");
+  var tmp=works[idx];works[idx]=works[target];works[target]=tmp;
+  showPortfolioPanel();
 }
 
-// CONTENT BLOCKS
-function getContentBlocks(){
-  if(!STATE.contentBlocks)STATE.contentBlocks=[];
-  return STATE.contentBlocks;
+function removePortfolioWork(idx){
+  var works=getPortfolioWorks();
+  if(!works[idx])return;
+  if(!confirm("Remove '"+works[idx].title+"' from portfolio? All galleries under it will be removed too."))return;
+  works.splice(idx,1);
+  expandedWork=null;
+  showPortfolioPanel();
+  toast("Work removed");
 }
-function showContentPanel(){
-  setPanel("Content","Content Blocks","<button class='btn pri' onclick='addContentBlock()' data-testid='btn-add-content-block'>+ Add Block</button>");
-  const blocks=getContentBlocks();
-  let html;
-  if(!blocks.length){
-    html=`<div class="empty"><p>No content blocks yet. Content blocks let you add custom text sections to any page.</p></div>`;
-  } else {
-    html=`<div class="cb-list">${blocks.map((b,i)=>{
-      return`<div class="cb-card" data-testid="content-block-${i}">
-        <div class="cb-actions">
-          <button class="btn sm" onclick="editContentBlock(${i})" data-testid="btn-edit-cb-${i}">Edit</button>
-          ${i>0?`<button class="btn sm" onclick="moveContentBlock(${i},-1)" data-testid="btn-move-cb-up-${i}">&#8593;</button>`:""}
-          ${i<blocks.length-1?`<button class="btn sm" onclick="moveContentBlock(${i},1)" data-testid="btn-move-cb-down-${i}">&#8595;</button>`:""}
-          <button class="btn sm red" onclick="removeContentBlock(${i})" data-testid="btn-remove-cb-${i}">&#x2715;</button>
-        </div>
-        <div style="margin-bottom:6px">
-          <span style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)">${esc(b.page||"homepage")} · ${esc(b.position||"after-featured")}</span>
-        </div>
-        <div style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:4px">${esc(b.heading||"Untitled Block")}</div>
-        <div style="font-size:12px;color:var(--muted);opacity:.7;line-height:1.6;max-height:60px;overflow:hidden">${esc((b.body||"").substring(0,200))}</div>
-      </div>`;
-    }).join("")}</div>`;
+
+function addGalleryToWork(workIdx){
+  var works=getPortfolioWorks();
+  var w=works[workIdx];
+  if(!w)return;
+  var title=prompt("Gallery title:");
+  if(!title||!title.trim())return;
+  if(!w.galleries)w.galleries=[];
+  w.galleries.push({id:"gal-"+Date.now(),title:title.trim(),subtitle:"",coverAssetId:"",photos:[]});
+  expandedWork=w.id;
+  editingGallery=w.id+'__'+(w.galleries.length-1);
+  showPortfolioPanel();
+  toast("Gallery added — upload or assign photos");
+}
+
+function updateGallery(workIdx,galIdx,field,val){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx])return;
+  w.galleries[galIdx][field]=val;
+}
+
+function moveGallery(workIdx,galIdx,dir){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries)return;
+  var target=galIdx+dir;
+  if(target<0||target>=w.galleries.length)return;
+  var tmp=w.galleries[galIdx];w.galleries[galIdx]=w.galleries[target];w.galleries[target]=tmp;
+  editingGallery=null;
+  showPortfolioPanel();
+}
+
+function removeGallery(workIdx,galIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx])return;
+  if(!confirm("Remove gallery '"+w.galleries[galIdx].title+"'? Photos stay in Cloudflare."))return;
+  w.galleries.splice(galIdx,1);
+  editingGallery=null;
+  showPortfolioPanel();
+  toast("Gallery removed");
+}
+
+function setGalleryCover(workIdx,galIdx,pid){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx])return;
+  w.galleries[galIdx].coverAssetId=pid;
+  showPortfolioPanel();
+  toast("Gallery cover set");
+}
+
+function removeGalleryPhoto(workIdx,galIdx,photoIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx])return;
+  w.galleries[galIdx].photos.splice(photoIdx,1);
+  showPortfolioPanel();
+}
+
+async function uploadToGallery(files,workIdx,galIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx])return;
+  var g=w.galleries[galIdx];
+  if(!g.photos)g.photos=[];
+  var progress=document.getElementById("geUploadProgress_"+workIdx+"_"+galIdx);
+  var total=Array.from(files).filter(function(f){return f.type.startsWith("image/");}).length;
+  if(!total)return toast("No image files",true);
+  var uploaded=0;
+  if(progress)progress.innerHTML='<div class="upload-item"><span class="upload-item-name">Uploading '+total+' file'+(total>1?'s':'')+'...</span><span class="upload-item-status busy">0 / '+total+'</span></div><div class="upload-bar"><div class="upload-bar-fill" id="geBar_'+workIdx+'_'+galIdx+'"></div></div>';
+  for(var fi=0;fi<files.length;fi++){
+    var file=files[fi];
+    if(!file.type.startsWith("image/"))continue;
+    try{
+      var fd=new FormData();fd.append("file",file);
+      var res=await fetch("/api/images/upload",{method:"POST",body:fd});
+      if(!res.ok)throw new Error("Upload failed");
+      var data=await res.json();
+      var cfId=data.id;
+      var meta={id:cfId,filename:data.filename||file.name};
+      if(data.exif&&Object.keys(data.exif).length>0)meta.exif=data.exif;
+      if(!STATE.cf)STATE.cf={assetMeta:{}};
+      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+      STATE.cf.assetMeta[cfId]=meta;
+      CF_PHOTOS[cfId]=meta;
+      if(!g.photos.includes(cfId))g.photos.push(cfId);
+      uploaded++;
+      var bar=document.getElementById("geBar_"+workIdx+"_"+galIdx);
+      if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";
+    }catch(err){
+      if(progress)progress.innerHTML+='<div class="upload-item"><span class="upload-item-name">'+esc(file.name)+'</span><span class="upload-item-status err">'+esc(err.message)+'</span></div>';
+    }
   }
+  if(uploaded>0){
+    setTimeout(function(){showPortfolioPanel();},1000);
+    toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded");
+  }
+}
+
+function assignPhotosToGallery(workIdx,galIdx){
+  pkSlotId='__galassign__'+workIdx+'__'+galIdx;
+  pkCtx='galassign';
+  pkActive=null;
+  document.getElementById("pkTitle").textContent='Add Photos to Gallery';
+  document.getElementById("pkConfirm").disabled=true;
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById("picker").classList.add("open");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS TAB — Nav + Site Settings + CF (T011)
+// ═══════════════════════════════════════════════════════════════
+function getNavigation(){
+  if(!STATE.navigation)STATE.navigation=[
+    {label:'Home',href:'/',visible:true},
+    {label:'Portfolio',href:'/pages/portfolio.html',visible:true},
+    {label:'About',href:'/pages/about.html',visible:true},
+    {label:'Prints',href:'/pages/prints.html',visible:true},
+    {label:'Hope Hike',href:'/pages/hope-hike.html',visible:true},
+    {label:'Contact',href:'/pages/contact.html',visible:true}
+  ];
+  return STATE.navigation;
+}
+
+function getSiteSettings(){
+  if(!STATE.siteSettings)STATE.siteSettings={siteName:'The Infinite Arch',tagline:'Beyond the Daydream',footerQuote:'Beautiful things don\u2019t ask for attention.',footerAttr:'Sean O\u2019Connell',email:''};
+  return STATE.siteSettings;
+}
+
+function showSettingsPanel(){
+  setPanel("Settings","Site Configuration","");
+  var cfHash=TIA.CF_HASH||STATE.cf?.hash||"";
+  var maskedHash=cfHash?cfHash.slice(0,6)+"****"+cfHash.slice(-4):"Not configured";
+  var totalImages=Object.keys(STATE.cf?.assetMeta||{}).length;
+  var worksCount=getPortfolioWorks().length;
+  var lastSave=localStorage.getItem("tia_last_save")||"Never";
+  var nav=getNavigation();
+  var ss=getSiteSettings();
+
+  var html='';
+
+  html+='<div class="card" style="margin-bottom:16px" data-testid="card-site-settings"><span class="sec-lbl">Site Settings</span>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+  html+='<div><span class="field-lbl">Site Name</span><input class="input" value="'+esc(ss.siteName||'')+'" oninput="getSiteSettings().siteName=this.value" data-testid="input-site-name"></div>';
+  html+='<div><span class="field-lbl">Tagline</span><input class="input" value="'+esc(ss.tagline||'')+'" oninput="getSiteSettings().tagline=this.value" data-testid="input-tagline"></div>';
+  html+='<div><span class="field-lbl">Footer Quote</span><input class="input" value="'+esc(ss.footerQuote||'')+'" oninput="getSiteSettings().footerQuote=this.value" data-testid="input-footer-quote"></div>';
+  html+='<div><span class="field-lbl">Footer Attribution</span><input class="input" value="'+esc(ss.footerAttr||'')+'" oninput="getSiteSettings().footerAttr=this.value" data-testid="input-footer-attr"></div>';
+  html+='<div><span class="field-lbl">Email Address</span><input class="input" value="'+esc(ss.email||'')+'" oninput="getSiteSettings().email=this.value" data-testid="input-email"></div>';
+  html+='</div></div>';
+
+  html+='<div class="card" style="margin-bottom:16px" data-testid="card-navigation"><span class="sec-lbl">Navigation</span>';
+  html+='<div class="nav-list">';
+  nav.forEach(function(item,i){
+    html+='<div class="nav-item" data-testid="nav-item-'+i+'">';
+    html+='<input type="text" value="'+esc(item.label||'')+'" oninput="getNavigation()['+i+'].label=this.value" placeholder="Label">';
+    html+='<input type="text" value="'+esc(item.href||'')+'" oninput="getNavigation()['+i+'].href=this.value" placeholder="URL" style="max-width:200px">';
+    html+='<span class="nav-item-vis" onclick="toggleNavVis('+i+')" title="Toggle visibility" data-testid="btn-nav-vis-'+i+'">'+(item.visible?'&#x2713;':'&#x2717;')+'</span>';
+    html+='<div class="nav-item-acts">';
+    if(i>0) html+='<button class="btn sm" onclick="moveNav('+i+',-1)">&#8593;</button>';
+    if(i<nav.length-1) html+='<button class="btn sm" onclick="moveNav('+i+',1)">&#8595;</button>';
+    html+='<button class="btn sm red" onclick="removeNav('+i+')">&times;</button>';
+    html+='</div></div>';
+  });
+  html+='</div>';
+  html+='<button class="btn" onclick="addNav()" style="margin-top:8px" data-testid="btn-add-nav">+ Add Nav Item</button>';
+  html+='</div>';
+
+  html+='<div class="settings-grid">';
+  html+='<div class="card" data-testid="card-cf-connection"><span class="sec-lbl">Cloudflare Images</span>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Delivery Hash</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-hash">'+esc(maskedHash)+'</div></div>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Total Images</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-image-count">'+totalImages+'</div></div>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Status</span><div id="cfStatus" style="font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:6px 0" data-testid="text-cf-status">';
+  html+=cfHash?'<span style="color:var(--green)">Connected</span>':'<span style="color:var(--red)">Not Connected</span>';
+  html+='</div></div><button class="btn pri" onclick="testCfConnection()" data-testid="btn-test-connection">Test Connection</button></div>';
+  html+='<div class="card" data-testid="card-config-storage"><span class="sec-lbl">Config Storage</span>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Storage</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default">Server-side JSON</div></div>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Last Save</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-last-save">'+esc(lastSave)+'</div></div>';
+  html+='<div style="display:flex;gap:12px"><div style="flex:1"><span class="field-lbl">Works</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center">'+worksCount+'</div></div></div>';
+  html+='</div></div>';
+
   document.getElementById("panelBody").innerHTML=html;
 }
-function addContentBlock(){
-  const heading=prompt("Block heading:");
-  if(!heading||!heading.trim())return;
-  const blocks=getContentBlocks();
-  blocks.push({id:"cb-"+Date.now(),heading:heading.trim(),body:"",page:"homepage",position:"after-featured",eyebrow:"",style:"default"});
-  showContentPanel();
-  toast("Content block added — click Edit to add body text");
-}
-function editContentBlock(idx){
-  const blocks=getContentBlocks();
-  const b=blocks[idx];
-  if(!b)return;
-  const f=(label,val)=>{const r=prompt(label,val);return r===null?null:r;};
-  const heading=f("Heading:",b.heading);if(heading===null)return;
-  const eyebrow=f("Eyebrow label (small text above heading):",b.eyebrow);if(eyebrow===null)return;
-  const body=f("Body text:",b.body);if(body===null)return;
-  const page=f("Page (homepage, portfolio, about, prints, contact):",b.page);if(page===null)return;
-  const position=f("Position (after-hero, after-featured, after-services, before-footer):",b.position);if(position===null)return;
-  const style=f("Style (default, gold-border, centered):",b.style);if(style===null)return;
-  b.heading=heading.trim()||b.heading;
-  b.eyebrow=eyebrow.trim();
-  b.body=body.trim();
-  b.page=page.trim()||b.page;
-  b.position=position.trim()||b.position;
-  b.style=style.trim()||b.style;
-  showContentPanel();
-  toast("Content block updated");
-}
-function moveContentBlock(idx,dir){
-  const blocks=getContentBlocks();
-  const target=idx+dir;
-  if(target<0||target>=blocks.length)return;
-  [blocks[idx],blocks[target]]=[blocks[target],blocks[idx]];
-  showContentPanel();
-}
-function removeContentBlock(idx){
-  const blocks=getContentBlocks();
-  if(!blocks[idx])return;
-  if(!confirm("Remove content block '"+blocks[idx].heading+"'?"))return;
-  blocks.splice(idx,1);
-  showContentPanel();
-  toast("Content block removed");
-}
 
-// SETTINGS
-function showSettingsPanel(){
-  setPanel("Settings","Connectivity & Configuration","");
-  const cfHash=TIA.CF_HASH||STATE.cf?.hash||"";
-  const maskedHash=cfHash?cfHash.slice(0,6)+"****"+cfHash.slice(-4):"Not configured";
-  const totalImages=Object.keys(STATE.cf?.assetMeta||{}).length;
-  const galleriesCount=getSeries().length;
-  const worksCount=getPortfolioWorks().length;
-  let totalPhotos=0;
-  if(STATE.photos){Object.values(STATE.photos).forEach(arr=>{if(Array.isArray(arr))totalPhotos+=arr.length;});}
-  const lastSave=localStorage.getItem("tia_last_save")||"Never";
-
-  document.getElementById("panelBody").innerHTML=`
-    <div class="settings-grid">
-      <div class="card" data-testid="card-cf-connection">
-        <span class="sec-lbl">Cloudflare Images Connection</span>
-        <div style="margin-bottom:12px">
-          <span class="field-lbl">Delivery Hash</span>
-          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-hash">${esc(maskedHash)}</div>
-        </div>
-        <div style="margin-bottom:12px">
-          <span class="field-lbl">Total Images</span>
-          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-image-count">${totalImages}</div>
-        </div>
-        <div style="margin-bottom:12px">
-          <span class="field-lbl">Connection Status</span>
-          <div id="cfStatus" style="font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:6px 0" data-testid="text-cf-status">
-            ${cfHash?'<span style="color:var(--green)">Connected</span>':'<span style="color:var(--red)">Not Connected</span>'}
-          </div>
-        </div>
-        <button class="btn pri" onclick="testCfConnection()" data-testid="btn-test-connection">Test Connection</button>
-      </div>
-      <div class="card" data-testid="card-config-storage">
-        <span class="sec-lbl">Config Storage</span>
-        <div style="margin-bottom:12px">
-          <span class="field-lbl">Storage Method</span>
-          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-storage-method">Server-side JSON (/api/config)</div>
-        </div>
-        <div style="margin-bottom:12px">
-          <span class="field-lbl">Last Save</span>
-          <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-last-save">${esc(lastSave)}</div>
-        </div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap">
-          <div style="flex:1;min-width:80px">
-            <span class="field-lbl">Galleries</span>
-            <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center" data-testid="text-galleries-count">${galleriesCount}</div>
-          </div>
-          <div style="flex:1;min-width:80px">
-            <span class="field-lbl">Portfolio Works</span>
-            <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center" data-testid="text-works-count">${worksCount}</div>
-          </div>
-          <div style="flex:1;min-width:80px">
-            <span class="field-lbl">Photos Assigned</span>
-            <div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center" data-testid="text-photos-count">${totalPhotos}</div>
-          </div>
-        </div>
-      </div>
-    </div>`;
+function toggleNavVis(idx){
+  var nav=getNavigation();
+  nav[idx].visible=!nav[idx].visible;
+  showSettingsPanel();
+}
+function moveNav(idx,dir){
+  var nav=getNavigation();
+  var target=idx+dir;
+  if(target<0||target>=nav.length)return;
+  var tmp=nav[idx];nav[idx]=nav[target];nav[target]=tmp;
+  showSettingsPanel();
+}
+function removeNav(idx){
+  var nav=getNavigation();
+  nav.splice(idx,1);
+  showSettingsPanel();
+}
+function addNav(){
+  var nav=getNavigation();
+  nav.push({label:'New Page',href:'/',visible:true});
+  showSettingsPanel();
 }
 
 function testCfConnection(){
-  const statusEl=document.getElementById("cfStatus");
+  var statusEl=document.getElementById("cfStatus");
   if(!statusEl)return;
   statusEl.innerHTML='<span style="color:var(--gold)">Testing...</span>';
-  fetch("/api/images/list").then(res=>{
+  fetch("/api/images/list").then(function(res){
     if(res.ok){
       statusEl.innerHTML='<span style="color:var(--green)">Connected</span>';
       toast("Cloudflare connection successful");
     } else {
       statusEl.innerHTML='<span style="color:var(--red)">Not Connected (HTTP '+res.status+')</span>';
-      toast("Connection failed","err");
+      toast("Connection failed",true);
     }
-  }).catch(err=>{
+  }).catch(function(err){
     statusEl.innerHTML='<span style="color:var(--red)">Not Connected</span>';
-    toast("Connection failed: "+err.message,"err");
+    toast("Connection failed: "+err.message,true);
   });
 }
 
@@ -1023,13 +1724,42 @@ function confirmPick(){
   if(!pkActive||!pkSlotId)return;
   if(pkCtx==="home"){STATE.home[pkSlotId]=pkActive;}
   if(pkCtx==="portfolio"){
-    const works=getPortfolioWorks();
-    const w=works.find(w=>w.id===pkSlotId);
+    var works=getPortfolioWorks();
+    var w=works.find(function(w){return w.id===pkSlotId;});
     if(w)w.coverAssetId=pkActive;
   }
-  saveAll();closePicker();
-  if(activeTab==="homepage")showHomeSlots();
-  if(activeTab==="portfolio")showPortfolioSlots();
+  if(pkCtx==="block"){
+    var parts=pkSlotId.replace('__block__','').split('__');
+    var bIdx=parseInt(parts[0]);var bField=parts[1];
+    var blocks=getPageBlocks(activePage);
+    if(blocks[bIdx])blocks[bIdx].data[bField]=pkActive;
+  }
+  if(pkCtx==="blockphotos"){
+    var bIdx2=parseInt(pkSlotId.replace('__blockphotos__',''));
+    var blocks2=getPageBlocks(activePage);
+    if(blocks2[bIdx2]){
+      if(!blocks2[bIdx2].data.photos)blocks2[bIdx2].data.photos=[];
+      if(!blocks2[bIdx2].data.photos.includes(pkActive))blocks2[bIdx2].data.photos.push(pkActive);
+    }
+  }
+  if(pkCtx==="galcover"){
+    var gparts=pkSlotId.replace('__galcover__','').split('__');
+    var wIdx=parseInt(gparts[0]);var gIdx=parseInt(gparts[1]);
+    var w2=getPortfolioWorks()[wIdx];
+    if(w2&&w2.galleries&&w2.galleries[gIdx])w2.galleries[gIdx].coverAssetId=pkActive;
+  }
+  if(pkCtx==="galassign"){
+    var aparts=pkSlotId.replace('__galassign__','').split('__');
+    var wIdx2=parseInt(aparts[0]);var gIdx2=parseInt(aparts[1]);
+    var w3=getPortfolioWorks()[wIdx2];
+    if(w3&&w3.galleries&&w3.galleries[gIdx2]){
+      if(!w3.galleries[gIdx2].photos)w3.galleries[gIdx2].photos=[];
+      if(!w3.galleries[gIdx2].photos.includes(pkActive))w3.galleries[gIdx2].photos.push(pkActive);
+    }
+  }
+  closePicker();
+  if(activeTab==="pages") showPagesPanel();
+  if(activeTab==="portfolio") showPortfolioPanel();
   toast("Photo assigned");
 }
 
@@ -1410,7 +2140,7 @@ function toast(msg,isErr=false){
   t.className="toast show"+(isErr?" err":"");clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove("show"),3500);
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closePicker();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closePicker();closeBlockPicker();}});
 if(authed)init();
 </script>
 </body>

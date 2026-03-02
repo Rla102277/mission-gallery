@@ -1,11 +1,11 @@
 # The Infinite Arch - Photography Portfolio CMS
 
 ## Overview
-JSON-config-driven CMS photography platform with a block-rendered page system and admin panel.
+JSON-config-driven CMS photography platform with a block-rendered page system and Wix-like admin page builder.
 
 ## Architecture
 - **Frontend**: Block-rendered pages — thin HTML shells load blocks from config via `block-renderer.js`
-- **Admin Panel**: `admin/index.html` — single-page admin for managing photos, series, homepage slots, portfolio works, and content blocks
+- **Admin Panel**: `admin/index.html` — single-page admin for managing pages (block editor), portfolio works with gallery hierarchy, navigation, site settings, photos, and Cloudflare images
 - **Config Storage**: Server-side JSON (`/api/config` → `data/tia-config.json`)
 - **Photo Hosting**: Cloudflare Images (sole image server)
 - **Server**: Express with multer — proxies uploads to Cloudflare Images API (protects API token)
@@ -61,13 +61,13 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `pages/prints.html` — Prints thin shell (block-driven)
 - `pages/hope-hike.html` — Hope Hike thin shell (block-driven)
 - `pages/contact.html` — Contact thin shell (block-driven)
-- `pages/portfolio.html` — Portfolio page (still static, Phase 2 will convert)
+- `pages/portfolio.html` — Portfolio page (3-view hierarchy drill-down, special-purpose)
 - `pages/gallery.html` — Interactive gallery viewer (special-purpose, not block-driven)
 - `admin/index.html` — Admin panel (PIN-protected, case-insensitive "tia2026")
 - `assets/js/block-renderer.js` — Block renderer engine with 16 block types + default seeds + initReveals()
-- `assets/js/tia-data.js` — TIA data layer v8 (new helpers: getPageBlocks, getPageMeta, getAllGalleries)
+- `assets/js/tia-data.js` — TIA data layer v8 (helpers: getPageBlocks, getPageMeta, getAllGalleries, getWorkById, getGalleryPhotos)
 - `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions) — skips reveal setup if block renderer already handled it
-- `assets/js/components.js` — Injects shared nav and footer across all pages
+- `assets/js/components.js` — Injects shared nav and footer across all pages (reads from config for dynamic nav/footer)
 - `assets/css/tia.css` — Global styles: tokens, nav, footer, page-content wrapper, grain overlay
 - `assets/css/blocks.css` — All block type CSS with responsive breakpoints + about page print/dark mode
 - `server/index.ts` — Express server with CF API proxy + config endpoints + static files
@@ -78,10 +78,9 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, galleries: [{ id, title, subtitle, coverAssetId, photos: [] }] }`
 - `siteSettings` — `{ siteName, tagline, footerQuote, footerAttr, email }`
 - `navigation` — `[{ label, href, visible }]`
-- `series` — Gallery metadata keyed by series ID
-- `photos` — Photo arrays keyed by series ID (CF Image IDs)
+- `series` — Gallery metadata keyed by series ID (legacy)
+- `photos` — Photo arrays keyed by series ID (legacy CF Image IDs)
 - `home` — Homepage slot assignments (`{ hero_bg: cfImageId }`)
-- `contentBlocks` — Legacy content block objects
 - `imgFolders` — Virtual folder organization
 - `cf` — `{ hash, assetMeta: { cfImageId: { id, filename } } }`
 
@@ -93,13 +92,12 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `GET /api/config` — Read site configuration JSON
 - `POST /api/config` — Write site configuration JSON
 
-## Admin Panel Features
+## Admin Panel Features (Phase 3 Complete)
 - **Galleries tab**: Browse/create/delete series, set covers, upload photos, edit metadata
 - **Images tab**: Browse all CF images, organize into folders, assign to series, upload, delete
-- **Homepage tab**: Assign hero background photo
-- **Portfolio tab**: Create/edit/remove/reorder portfolio works with cover photos
-- **Content tab**: Legacy content blocks
-- **Settings tab**: CF connectivity status, config storage info
+- **Pages tab**: Page builder — select page (Home/About/Prints/Hope Hike/Contact), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
+- **Portfolio tab**: Works with expandable gallery hierarchy — create/edit/reorder/delete works, add/edit/reorder/delete galleries under each work, upload/assign photos to galleries, set gallery covers
+- **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor (add/edit/reorder/toggle visibility/delete nav items), Cloudflare connection status, config storage info
 
 ## Environment Variables
 - `CF_ACCOUNT_ID` — Cloudflare account ID
@@ -132,8 +130,8 @@ Data layer helpers added to tia-data.js:
 ## CMS Phases
 - **Phase 1** (COMPLETE): Block renderer engine + page conversion (5 pages now block-driven)
 - **Phase 2** (COMPLETE): Portfolio hierarchy (Works → Galleries → Photos), portfolio page drill-down, gallery page update
-- **Phase 3** (NEXT): Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
-- **Phase 4**: SEO meta editing, final responsive polish
+- **Phase 3** (COMPLETE): Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
+- **Phase 4** (NEXT): SEO meta editing, final responsive polish
 
 ## Deployment
 - Target: autoscale
