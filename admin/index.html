@@ -1330,6 +1330,7 @@ function removeBlockPhoto(idx,photoIdx){
 // ═══════════════════════════════════════════════════════════════
 let expandedWork=null;
 let editingGallery=null;
+let editingWorkIdx=null;
 
 var DEFAULT_PORTFOLIO_WORKS=[
   {id:'pw-daydream',title:'Beyond the Daydream',subtitle:'The places that couldn\u2019t be scrolled past',type:'Expeditions',description:'Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act \u2014 arriving somewhere to wait for the light, the weather, the moment that justifies the journey.',camera:'GFX 100S II',location:'Iceland \u00b7 Guadalupe Peak \u00b7 and beyond',format:'Digital',coverAssetId:'',galleries:[]},
@@ -1369,12 +1370,16 @@ function showPortfolioPanel(){
       html+='<div class="pf-work-sub">'+esc(w.subtitle||"")+'</div>';
       html+='<div class="pf-work-meta">'+esc(w.type||"Series")+' &middot; '+esc(w.location||"")+' &middot; '+galCount+' galler'+(galCount===1?'y':'ies')+'</div>';
       html+='<div class="pf-work-actions" onclick="event.stopPropagation()">';
-      html+='<button class="btn" onclick="editPortfolioWork('+i+')" data-testid="btn-edit-work-'+i+'">Edit</button>';
+      var isEditing=editingWorkIdx===i;
+      html+='<button class="btn'+(isEditing?' pri':'')+'" onclick="editPortfolioWork('+i+')" data-testid="btn-edit-work-'+i+'">'+(isEditing?'Done':'Edit')+'</button>';
       html+='<button class="btn" onclick="openPicker(\''+w.id+'\',\'portfolio\',\'Cover for '+esc(w.title||"Untitled")+'\')" data-testid="btn-cover-work-'+i+'">Set Cover</button>';
       if(i>0) html+='<button class="btn sm" onclick="movePortfolioWork('+i+',-1)" data-testid="btn-move-work-up-'+i+'">&#8593;</button>';
       if(i<works.length-1) html+='<button class="btn sm" onclick="movePortfolioWork('+i+',1)" data-testid="btn-move-work-down-'+i+'">&#8595;</button>';
       html+='<button class="btn sm red" onclick="removePortfolioWork('+i+')" data-testid="btn-remove-work-'+i+'">&#x2715;</button>';
       html+='</div></div></div>';
+      if(isEditing){
+        html+=renderWorkEditor(w,i);
+      }
       html+='<div class="pf-work-expand">';
       if(isExpanded){
         html+=renderWorkGalleries(w,i);
@@ -1472,36 +1477,43 @@ function renderGalleryEditor(w,workIdx,galIdx){
 }
 
 function addPortfolioWork(){
-  var title=prompt("Work title:");
-  if(!title||!title.trim())return;
   var works=getPortfolioWorks();
-  works.push({id:"pw-"+Date.now(),title:title.trim(),subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:"",galleries:[]});
-  expandedWork=works[works.length-1].id;
+  works.push({id:"pw-"+Date.now(),title:"New Work",subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:"",galleries:[]});
+  editingWorkIdx=works.length-1;
+  expandedWork=null;
   showPortfolioPanel();
-  toast("Work added");
+  toast("Work added — edit the details below");
+  setTimeout(function(){var el=document.querySelector('[data-testid="input-work-title-'+(works.length-1)+'"]');if(el){el.focus();el.select();}},100);
 }
 
 function editPortfolioWork(idx){
-  var works=getPortfolioWorks();
-  var w=works[idx];
-  if(!w)return;
-  var f=function(label,val){var r=prompt(label,val);return r===null?null:r;};
-  var title=f("Title:",w.title);if(title===null)return;
-  var subtitle=f("Subtitle:",w.subtitle);if(subtitle===null)return;
-  var type=f("Type (e.g. Triptych, Diptych, Series):",w.type);if(type===null)return;
-  var description=f("Description:",w.description);if(description===null)return;
-  var camera=f("Camera:",w.camera);if(camera===null)return;
-  var location=f("Location:",w.location);if(location===null)return;
-  var format=f("Format:",w.format);if(format===null)return;
-  w.title=title.trim()||w.title;
-  w.subtitle=subtitle.trim();
-  w.type=type.trim()||w.type;
-  w.description=description.trim();
-  w.camera=camera.trim();
-  w.location=location.trim();
-  w.format=format.trim();
+  editingWorkIdx=editingWorkIdx===idx?null:idx;
+  expandedWork=null;
   showPortfolioPanel();
-  toast("Work updated");
+  return;
+}
+function updateWork(idx,field,val){
+  var w=getPortfolioWorks()[idx];
+  if(w) w[field]=val;
+}
+function renderWorkEditor(w,idx){
+  var html='<div class="ge-panel" data-testid="work-editor-'+idx+'" style="margin-top:8px">';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
+  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(w.title||'')+'" oninput="updateWork('+idx+',\'title\',this.value)" data-testid="input-work-title-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Subtitle</span><input class="input" value="'+esc(w.subtitle||'')+'" oninput="updateWork('+idx+',\'subtitle\',this.value)" data-testid="input-work-subtitle-'+idx+'"></div>';
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">';
+  html+='<div><span class="field-lbl">Type</span><input class="input" value="'+esc(w.type||'')+'" oninput="updateWork('+idx+',\'type\',this.value)" data-testid="input-work-type-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Camera</span><input class="input" value="'+esc(w.camera||'')+'" oninput="updateWork('+idx+',\'camera\',this.value)" data-testid="input-work-camera-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Format</span><input class="input" value="'+esc(w.format||'')+'" oninput="updateWork('+idx+',\'format\',this.value)" data-testid="input-work-format-'+idx+'"></div>';
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
+  html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(w.location||'')+'" oninput="updateWork('+idx+',\'location\',this.value)" data-testid="input-work-location-'+idx+'"></div>';
+  html+='<div><span class="field-lbl">Cover</span><button class="btn" style="width:100%" onclick="openPicker(\''+w.id+'\',\'portfolio\',\'Cover for '+esc(w.title||'Work')+'\')" data-testid="btn-work-cover-'+idx+'">Choose Cover Image</button></div>';
+  html+='</div>';
+  html+='<div><span class="field-lbl">Description</span><textarea class="input" rows="3" oninput="updateWork('+idx+',\'description\',this.value)" data-testid="input-work-desc-'+idx+'">'+esc(w.description||'')+'</textarea></div>';
+  html+='</div>';
+  return html;
 }
 
 function movePortfolioWork(idx,dir){
