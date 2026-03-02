@@ -107,10 +107,32 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `CF_IMAGES_HASH` — Cloudflare Images delivery hash
 - `SESSION_SECRET` — Session secret
 
+## Portfolio Hierarchy System (Phase 2 Complete)
+Portfolio page supports 3 views via URL params (no page reload):
+- **Works grid** (default): 2×2 tile grid from portfolioWorks, same dark tile design
+- **Work detail** (`?work=WORK_ID`): Hero with cover image, info bar (camera/location/galleries), gallery cards grid
+- **Gallery view** (`?work=WORK_ID&gallery=GAL_ID`): Hero + info bar + photo grid + full lightbox with keyboard nav
+
+Key features:
+- `history.pushState` navigation with browser back button support
+- Back buttons: Gallery → Work Detail → Portfolio grid
+- Lightbox with arrow nav, keyboard support (Esc, Left, Right)
+- Falls back to static default tiles when no portfolioWorks exist
+- Collections-grid block tiles now link directly to `?work=WORK_ID`
+
+Gallery page updated to prefer hierarchy data via `TIA.getAllGalleries()`:
+- Shows work title tag on each gallery card when hierarchy data exists
+- Falls back to legacy `TIA.getSeries()` when no hierarchy galleries exist
+
+Data layer helpers added to tia-data.js:
+- `TIA.getWorkById(workId)` — find a work by ID
+- `TIA.getGalleryPhotos(workId, galleryId)` — photos from a specific gallery
+- `getPhotos()` and `getCoverUrl()` updated to check hierarchy galleries first, then fall back to legacy series
+
 ## CMS Phases
 - **Phase 1** (COMPLETE): Block renderer engine + page conversion (5 pages now block-driven)
-- **Phase 2** (NEXT): Portfolio hierarchy (Works → Galleries → Photos), portfolio page drill-down
-- **Phase 3**: Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
+- **Phase 2** (COMPLETE): Portfolio hierarchy (Works → Galleries → Photos), portfolio page drill-down, gallery page update
+- **Phase 3** (NEXT): Admin page builder (Pages tab with block editor), portfolio hierarchy admin, nav/settings editor
 - **Phase 4**: SEO meta editing, final responsive polish
 
 ## Deployment

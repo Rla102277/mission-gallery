@@ -127,7 +127,7 @@ var BlockRenderer = {
       var cls = tileClasses[i % tileClasses.length];
       var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
       var bgStyle = coverUrl ? "background-image:url('" + coverUrl + "');background-size:cover;background-position:center;" : '';
-      return '<a href="/pages/portfolio.html" class="coll-tile ' + cls + '" data-testid="coll-tile-' + (i+1) + '">' +
+      return '<a href="/pages/portfolio.html' + (w.id ? '?work=' + encodeURIComponent(w.id) : '') + '" class="coll-tile ' + cls + '" data-testid="coll-tile-' + (i+1) + '">' +
         '<div class="tile-bg" style="' + bgStyle + '"></div><div class="tile-vignette"></div>' +
         '<div class="tile-content"><span class="tile-tag">' + (w.type || 'Series') + '</span><div class="tile-rule-s"></div>' +
         '<h3 class="tile-h">' + (w.title || 'Untitled') + '</h3>' +

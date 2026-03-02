@@ -128,35 +128,94 @@ const TIA = {
     const galleries = [];
     works.forEach(function(w) {
       (w.galleries || []).forEach(function(g) {
-        galleries.push(Object.assign({}, g, { workId: w.id, workTitle: w.title }));
+        galleries.push(Object.assign({}, g, {
+          workId: w.id, workTitle: w.title, type: g.type || w.type,
+          camera: g.camera || w.camera, location: g.location || w.location
+        }));
       });
     });
     if (!galleries.length) {
       return TIA.getSeries().map(function(s) {
-        return { id: s.id, title: s.title, subtitle: s.subtitle, workTitle: 'Default', photos: (state.photos && state.photos[s.id]) || [] };
+        return { id: s.id, title: s.title, subtitle: s.subtitle, type: s.type,
+          camera: s.camera, location: s.location, workTitle: 'Default',
+          coverAssetId: s.coverAssetId, photos: (state.photos && state.photos[s.id]) || [] };
       });
     }
     return galleries;
   },
 
-  getPhotos(seriesId) {
-    const state = TIA.getState();
-    return (state.photos?.[seriesId] || []).map(aid => ({
-      assetId:  aid,
-      thumb:    TIA.thumb(aid),
-      full:     TIA.full(aid),
-      cover:    TIA.cover(aid),
-      hero:     TIA.hero(aid),
-      filename: state.cf?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
-    }));
+  getWorkById(workId) {
+    var works = TIA.getState().portfolioWorks || [];
+    for (var i = 0; i < works.length; i++) {
+      if (works[i].id === workId) return works[i];
+    }
+    return null;
   },
 
-  getCoverUrl(seriesId, size = 'cover') {
-    const state    = TIA.getState();
-    const adminAid = state.series?.[seriesId]?.coverAssetId;
-    if (adminAid) return TIA[size]?.(adminAid) || '';
-    const photos   = TIA.getPhotos(seriesId);
-    return photos[0]?.[size] || photos[0]?.cover || '';
+  getGalleryPhotos(workId, galleryId) {
+    var work = TIA.getWorkById(workId);
+    if (!work) return [];
+    var galleries = work.galleries || [];
+    for (var i = 0; i < galleries.length; i++) {
+      if (galleries[i].id === galleryId) {
+        var state = TIA.getState();
+        return (galleries[i].photos || []).map(function(aid) {
+          return {
+            assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
+            cover: TIA.cover(aid), hero: TIA.hero(aid),
+            filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid
+          };
+        });
+      }
+    }
+    return [];
+  },
+
+  getPhotos(seriesId) {
+    const state = TIA.getState();
+    const works = state.portfolioWorks || [];
+    for (var i = 0; i < works.length; i++) {
+      var galleries = works[i].galleries || [];
+      for (var j = 0; j < galleries.length; j++) {
+        if (galleries[j].id === seriesId) {
+          return (galleries[j].photos || []).map(function(aid) {
+            return {
+              assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
+              cover: TIA.cover(aid), hero: TIA.hero(aid),
+              filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid.split('/').pop() || aid
+            };
+          });
+        }
+      }
+    }
+    return (state.photos && state.photos[seriesId] || []).map(function(aid) {
+      return {
+        assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
+        cover: TIA.cover(aid), hero: TIA.hero(aid),
+        filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid.split('/').pop() || aid
+      };
+    });
+  },
+
+  getCoverUrl(seriesId, size) {
+    size = size || 'cover';
+    const state = TIA.getState();
+    const works = state.portfolioWorks || [];
+    for (var i = 0; i < works.length; i++) {
+      var galleries = works[i].galleries || [];
+      for (var j = 0; j < galleries.length; j++) {
+        if (galleries[j].id === seriesId) {
+          if (galleries[j].coverAssetId) return TIA[size] ? TIA[size](galleries[j].coverAssetId) : '';
+          var gPhotos = galleries[j].photos || [];
+          if (gPhotos.length) return TIA[size] ? TIA[size](gPhotos[0]) : '';
+          return '';
+        }
+      }
+    }
+    var adminAid = state.series && state.series[seriesId] && state.series[seriesId].coverAssetId;
+    if (adminAid) return TIA[size] ? TIA[size](adminAid) : '';
+    const photos = TIA.getPhotos(seriesId);
+    return (photos[0] && photos[0][size]) || (photos[0] && photos[0].cover) || '';
   },
 
   getHomeUrl(slotId, size = 'hero') {

@@ -75,6 +75,8 @@
     .coll-arrow { position:absolute; right:44px; bottom:44px; font-size:20px; color:rgba(255,255,255,0.3); transition:transform 0.3s, color 0.3s; }
     .coll-card:hover .coll-arrow { transform:translateX(6px); color:rgba(255,255,255,0.7); }
 
+    .coll-work-tag { font-size:7px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.2); display:block; margin-bottom:4px; }
+
     /* placeholder gradients per collection */
     .c-s1 { background:linear-gradient(145deg,#1a2535 0%,#0a1520 100%); }
     .c-s2 { background:linear-gradient(145deg,#0d1828 0%,#162240 100%); }
@@ -319,30 +321,67 @@ let activeSeries = null;
 let lbIndex = 0;
 
 function buildCollections() {
-  COLLECTIONS = TIA.getSeries().map((s, i) => ({
-    id:          s.id,
-    folder:      s.folder,
-    series:      `Series ${s.num}`,
-    title:       s.title,
-    subtitle:    s.subtitle,
-    type:        s.type || 'Series',
-    featured:    i === 0,
-    coverBg:     `c-${s.id}`,
-    description: s.description || '',
-    printSpec:   s.printSpec   || '',
-    camera:      s.camera      || '',
-    location:    s.location    || '',
-  }));
+  var allGals = TIA.getAllGalleries();
+  var hasHierarchy = allGals.length && allGals[0].workId;
+  if (hasHierarchy) {
+    COLLECTIONS = allGals.map((g, i) => ({
+      id:          g.id,
+      series:      `Gallery ${String(i + 1).padStart(2, '0')}`,
+      title:       g.title || 'Untitled',
+      subtitle:    g.subtitle || '',
+      type:        g.type || 'Gallery',
+      featured:    i === 0,
+      coverBg:     `c-s${(i % 8) + 1}`,
+      description: g.description || '',
+      printSpec:   '',
+      camera:      g.camera || '',
+      location:    g.location || '',
+      workTitle:   g.workTitle || '',
+      workId:      g.workId || '',
+      photos:      g.photos || [],
+      coverAssetId: g.coverAssetId,
+    }));
+  } else {
+    COLLECTIONS = TIA.getSeries().map((s, i) => ({
+      id:          s.id,
+      folder:      s.folder,
+      series:      `Series ${s.num}`,
+      title:       s.title,
+      subtitle:    s.subtitle,
+      type:        s.type || 'Series',
+      featured:    i === 0,
+      coverBg:     `c-${s.id}`,
+      description: s.description || '',
+      printSpec:   s.printSpec   || '',
+      camera:      s.camera      || '',
+      location:    s.location    || '',
+      workTitle:   '',
+    }));
+  }
 }
 
-function getCollPhotos(seriesId) {
-  return TIA.getPhotos(seriesId).map((p, i) => ({
-    id:          `${seriesId}-${String(i+1).padStart(2,'0')}`,
+function getCollPhotos(collId) {
+  var coll = COLLECTIONS.find(c => c.id === collId);
+  if (coll && coll.photos && coll.photos.length) {
+    return coll.photos.map((aid, i) => {
+      var state = TIA.getState();
+      var meta = state.cf && state.cf.assetMeta && state.cf.assetMeta[aid];
+      var fname = meta && meta.filename ? meta.filename : aid;
+      return {
+        id:      `${collId}-${String(i+1).padStart(2,'0')}`,
+        title:   fname.replace(/[-_]/g,' ').replace(/\.[^.]+$/, ''),
+        detail:  '',
+        url:     TIA.thumb(aid),
+        fullUrl: TIA.full(aid),
+      };
+    });
+  }
+  return TIA.getPhotos(collId).map((p, i) => ({
+    id:          `${collId}-${String(i+1).padStart(2,'0')}`,
     title:       p.filename.replace(/[-_]/g,' ').replace(/\.[^.]+$/, ''),
     detail:      '',
     url:         p.thumb,
     fullUrl:     p.full,
-    bg:          'linear-gradient(145deg,#1a1a1a,#0a0a0a)',
   }));
 }
 
@@ -353,7 +392,7 @@ function renderCards() {
   if (!grid) return;
   grid.innerHTML = COLLECTIONS.map(c => {
     const photos   = getCollPhotos(c.id);
-    const coverUrl = TIA.getCoverUrl(c.id, 'cover');
+    const coverUrl = c.coverAssetId ? TIA.cover(c.coverAssetId) : TIA.getCoverUrl(c.id, 'cover');
     return `
     <div class="coll-card${c.featured ? ' featured' : ''}" onclick="openPanel('${c.id}')">
       <div class="coll-photo ${c.coverBg}"
@@ -361,6 +400,7 @@ function renderCards() {
       </div>
       <div class="coll-overlay"></div>
       <div class="coll-content">
+        ${c.workTitle ? `<span class="coll-work-tag">${c.workTitle}</span>` : ''}
         <span class="coll-series-num">${c.series}</span>
         <h2 class="coll-title">${c.title}</h2>
         <p class="coll-subtitle">${c.subtitle}</p>
@@ -379,7 +419,7 @@ function openPanel(id) {
   const c = COLLECTIONS.find(x => x.id === id);
   if (!c) return;
   const photos   = getCollPhotos(id);
-  const coverUrl = TIA.getCoverUrl(id, 'cover');
+  const coverUrl = c.coverAssetId ? TIA.cover(c.coverAssetId) : TIA.getCoverUrl(id, 'cover');
   activeSeries = { ...c, photos };
 
   document.getElementById('spEyebrow').textContent    = c.series;
