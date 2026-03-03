@@ -1146,10 +1146,12 @@ function renderGalleryView(workId, galId) {
         '<div class="gal-card-photo" ' + (fcoverUrl ? 'style="background-image:url(\'' + fcoverUrl + '\')"' : '') + '></div>' +
         '<div class="gal-card-overlay"></div>' +
         '<div class="gal-card-content">' +
-          '<span class="gal-card-num">Folder ' + String(fi + 1).padStart(2, '0') + '</span>' +
+          '<span class="gal-card-num">' + (f.type || 'Folder ' + String(fi + 1).padStart(2, '0')) + '</span>' +
           '<h3 class="gal-card-title">' + (f.title || 'Untitled Folder') + '</h3>' +
+          (f.subtitle ? '<div class="gal-card-subtitle" style="font-family:var(--body);font-size:0.85rem;opacity:0.7;margin-top:2px">' + f.subtitle + '</div>' : '') +
           '<div class="gal-card-meta">' +
             '<span class="gal-card-count">' + (fPhotoCount ? fPhotoCount + ' frame' + (fPhotoCount !== 1 ? 's' : '') : 'Empty') + '</span>' +
+            (f.location ? '<span class="gal-card-loc" style="margin-left:8px;opacity:.7">' + f.location + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<span class="gal-card-arrow">&#8594;</span>' +
@@ -1283,13 +1285,15 @@ function renderFolderView(workId, galId, folderId) {
       '<div class="gal-hero-bg" ' + (coverUrl ? 'style="background-image:url(\'' + coverUrl + '\')"' : '') + '></div>' +
       '<div class="gal-hero-overlay"></div>' +
       '<div class="gal-hero-content">' +
-        '<span class="gal-hero-series">Folder ' + String(folderIndex + 1).padStart(2, '0') + '</span>' +
+        '<span class="gal-hero-series">' + (folder.type || 'Folder ' + String(folderIndex + 1).padStart(2, '0')) + '</span>' +
         '<h1 class="gal-hero-title" data-testid="text-folder-title">' + (folder.title || 'Untitled Folder') + '</h1>' +
+        (folder.subtitle ? '<p style="font-family:var(--body);font-size:1.1rem;opacity:.7;margin-top:8px">' + folder.subtitle + '</p>' : '') +
       '</div>' +
     '</section>' +
     '<div class="gal-info-bar" data-testid="folder-info-bar">' +
       '<div><span class="gib-label">Collection</span><div class="gib-val">' + (gallery.title || '&mdash;') + '</div></div>' +
-      '<div><span class="gib-label">Collection Set</span><div class="gib-val">' + (work.title || '&mdash;') + '</div></div>' +
+      (folder.camera ? '<div><span class="gib-label">Camera</span><div class="gib-val">' + folder.camera + '</div></div>' : '') +
+      (folder.location ? '<div><span class="gib-label">Location</span><div class="gib-val">' + folder.location + '</div></div>' : '') +
       '<div><span class="gib-label">Frames</span><div class="gib-val">' + (photos.length || '&mdash;') + '</div></div>' +
     '</div>' +
     '<div class="gal-photo-section">' +

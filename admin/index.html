@@ -1608,6 +1608,11 @@ function renderGalleryEditor(w,workIdx,galIdx){
   html+='<div><span class="field-lbl">Title</span>'+aiWrap('<input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)" data-testid="input-gal-title-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'title'))+'</div>';
   html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(g.subtitle||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'subtitle\',this.value)" data-testid="input-gal-subtitle-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'subtitle'))+'</div>';
   html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">';
+  html+='<div><span class="field-lbl">Type</span><input class="input" value="'+esc(g.type||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'type\',this.value)" data-testid="input-gal-type-'+workIdx+'-'+galIdx+'" placeholder="e.g. Triptych"></div>';
+  html+='<div><span class="field-lbl">Camera</span><input class="input" value="'+esc(g.camera||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'camera\',this.value)" data-testid="input-gal-camera-'+workIdx+'-'+galIdx+'" placeholder="e.g. GFX 100S II"></div>';
+  html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(g.location||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'location\',this.value)" data-testid="input-gal-location-'+workIdx+'-'+galIdx+'" placeholder="e.g. Iceland"></div>';
+  html+='</div>';
 
   html+='<div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px">';
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
@@ -1629,7 +1634,7 @@ function renderGalleryEditor(w,workIdx,galIdx){
       html+='</div>';
       html+='<div style="flex:1;min-width:0">';
       html+='<div style="font-size:11px;font-weight:600">'+esc(f.title||'Untitled Folder')+'</div>';
-      html+='<div style="font-size:9px;opacity:.4">'+fPhotoCount+' photo'+(fPhotoCount!==1?'s':'')+'</div>';
+      html+='<div style="font-size:9px;opacity:.4">'+(f.type?esc(f.type)+' &middot; ':'')+fPhotoCount+' photo'+(fPhotoCount!==1?'s':'')+(f.location?' &middot; '+esc(f.location):'')+'</div>';
       html+='</div>';
       html+='<div onclick="event.stopPropagation()" style="display:flex;gap:4px">';
       if(fi>0) html+='<button class="btn sm" onclick="moveFolder('+workIdx+','+galIdx+','+fi+',-1)">&#8593;</button>';
@@ -1682,7 +1687,15 @@ var editingFolder=null;
 
 function renderFolderEditor(workIdx,galIdx,folderIdx,f){
   var html='<div style="padding:8px 10px;border-top:1px solid var(--border);background:rgba(0,0,0,.15)" data-testid="folder-editor-'+workIdx+'-'+galIdx+'-'+folderIdx+'">';
-  html+='<div style="margin-bottom:8px"><span class="field-lbl">Folder Title</span><input class="input" value="'+esc(f.title||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'title\',this.value)" data-testid="input-folder-title-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px"></div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(f.title||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'title\',this.value)" data-testid="input-folder-title-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px"></div>';
+  html+='<div><span class="field-lbl">Subtitle</span><input class="input" value="'+esc(f.subtitle||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'subtitle\',this.value)" data-testid="input-folder-subtitle-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px"></div>';
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">';
+  html+='<div><span class="field-lbl">Type</span><input class="input" value="'+esc(f.type||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'type\',this.value)" data-testid="input-folder-type-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Triptych"></div>';
+  html+='<div><span class="field-lbl">Camera</span><input class="input" value="'+esc(f.camera||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'camera\',this.value)" data-testid="input-folder-camera-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. GFX 100S II"></div>';
+  html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(f.location||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'location\',this.value)" data-testid="input-folder-location-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Iceland"></div>';
+  html+='</div>';
   html+='<div class="gallery-upload" style="padding:12px" onclick="document.getElementById(\'fuUpload_'+workIdx+'_'+galIdx+'_'+folderIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToFolder(event.dataTransfer.files,'+workIdx+','+galIdx+','+folderIdx+')">';
   html+='<div class="gallery-upload-ico" style="font-size:14px">&#x2191;</div>';
   html+='<div class="gallery-upload-lbl" style="font-size:9px">Drop photos or click</div>';
