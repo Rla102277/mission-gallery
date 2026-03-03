@@ -14,7 +14,7 @@ const dataDir = path.join(rootDir, "data");
 const distDataDir = path.join(distDir, "data");
 mkdirSync(distDataDir, { recursive: true });
 const distConfig = path.join(distDataDir, "tia-config.json");
-if (!existsSync(distConfig) && existsSync(path.join(dataDir, "tia-config.json"))) {
+if (existsSync(path.join(dataDir, "tia-config.json"))) {
   cpSync(path.join(dataDir, "tia-config.json"), distConfig);
 }
 
