@@ -453,7 +453,7 @@ body.dark .blk-masthead-page,
 body.dark .blk-pull-quote,
 body.dark .blk-article {
   --ink: #f5f0e8;
-  --cream: #0d0d0d;
+  --cream: #000000;
   --muted: #5a5650;
   --rule: #2a2820;
 }

@@ -7,14 +7,14 @@
 
 /* ── TOKENS ── */
 :root {
-  --ink:        #0d0d0d;
+  --ink:        #000000;
   --cream:      #f5f0e8;
   --warm:       #ede8de;
   --gold:       #b5922a;
   --muted:      #7a7468;
-  --rule:       rgba(13,13,13,0.12);
-  --rule-dark:  rgba(13,13,13,0.12);
-  --rule-light: rgba(13,13,13,0.12);
+  --rule:       rgba(0,0,0,0.12);
+  --rule-dark:  rgba(0,0,0,0.12);
+  --rule-light: rgba(0,0,0,0.12);
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body:    'Cormorant Garamond', Georgia, serif;
   --nav-h:      88px;
