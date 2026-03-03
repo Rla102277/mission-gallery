@@ -213,7 +213,23 @@
       "location": "Iceland · Guadalupe Peak · and beyond",
       "format": "Digital",
       "coverAssetId": "aa1e2b18-8716-4ce7-b120-3f365aa7cb00",
-      "galleries": []
+      "galleries": [
+        {
+          "id": "gal-1772505839730",
+          "title": "Test Collection",
+          "subtitle": "",
+          "coverAssetId": "",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1772505881959",
+              "title": "Iceland Day 1",
+              "coverAssetId": "",
+              "photos": []
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "pw-frame",
@@ -225,7 +241,16 @@
       "location": "North Texas",
       "format": "Digital",
       "coverAssetId": "",
-      "galleries": []
+      "galleries": [
+        {
+          "id": "gal-1772505442065",
+          "title": "Test Collection",
+          "subtitle": "",
+          "coverAssetId": "",
+          "photos": [],
+          "folders": []
+        }
+      ]
     },
     {
       "id": "pw-moment",

@@ -916,7 +916,7 @@
   <section class="hero" data-testid="section-hero">
     <p class="hero-eyebrow" data-testid="text-hero-eyebrow">Fine Art Landscape Photography</p>
     <h1 class="hero-title" data-testid="text-hero-title">Galleries</h1>
-    <p class="hero-subtitle" data-testid="text-hero-subtitle">Beyond the Daydream</p>
+    <p class="hero-subtitle" data-testid="text-hero-subtitle">Organized by Collection</p>
     <div class="hero-scroll" data-testid="hero-scroll">
       <div class="scroll-line"></div>
       <span>Explore</span>
@@ -924,10 +924,10 @@
   </section>
 
   <div class="section-intro" data-reveal="0" data-testid="section-intro">
-    <span class="section-label-vert">Collections</span>
+    <span class="section-label-vert">Collection Sets</span>
     <div class="section-text">
       <p class="section-headline">Four bodies of work.<br>One way of seeing.</p>
-      <p class="section-body">Each collection is a different threshold &mdash; a different way of arriving at the moment the camera earns its place. Hover to enter. Click to explore.</p>
+      <p class="section-body">Each collection set is a different threshold &mdash; a different way of arriving at the moment the camera earns its place. Click to explore its collections and folders.</p>
     </div>
   </div>
 
@@ -948,6 +948,8 @@
 <div id="vWork" style="display:none" data-testid="view-work-detail"></div>
 
 <div id="vGallery" style="display:none" data-testid="view-gallery"></div>
+
+<div id="vFolder" style="display:none" data-testid="view-folder"></div>
 
 <div class="lightbox" id="lightbox" data-testid="lightbox">
   <span class="lb-close" onclick="closeLightbox()" data-testid="btn-lightbox-close">&#x2715;</span>
@@ -975,16 +977,26 @@ function navTo(params) {
   window.scrollTo(0, 0);
 }
 
+function countAllPhotos(obj) {
+  var c = (obj.photos || []).length;
+  (obj.folders || []).forEach(function(f) { c += (f.photos || []).length; });
+  return c;
+}
+
 function renderView() {
   var params = new URLSearchParams(window.location.search);
   var workId = params.get('work');
   var galId = params.get('gallery');
+  var folderId = params.get('folder');
 
   document.getElementById('vWorks').style.display = 'none';
   document.getElementById('vWork').style.display = 'none';
   document.getElementById('vGallery').style.display = 'none';
+  document.getElementById('vFolder').style.display = 'none';
 
-  if (galId && workId) {
+  if (folderId && galId && workId) {
+    renderFolderView(workId, galId, folderId);
+  } else if (galId && workId) {
     renderGalleryView(workId, galId);
   } else if (workId) {
     renderWorkView(workId);
@@ -1005,18 +1017,19 @@ function renderWorksGrid() {
     var num = String(i + 1).padStart(2, '0');
     var coverUrl = w.coverAssetId ? TIA.photoUrl(w.coverAssetId, 'hero') : '';
     var bgStyle = coverUrl ? "background-image:url('" + coverUrl + "');background-size:cover;background-position:center;" : '';
+    var colCount = (w.galleries || []).length;
     return '<div class="tile ' + cls + '" onclick="navTo(\'?work=' + encodeURIComponent(w.id) + '\')" data-testid="portfolio-tile-' + (i+1) + '">' +
       '<div class="tile-bg" style="' + bgStyle + '"></div>' +
       '<div class="tile-vignette"></div>' +
       '<div class="tile-hover-overlay"></div>' +
       '<div class="tile-content">' +
         '<span class="tile-number">' + num + '</span>' +
-        '<span class="tile-tag">' + (w.type || 'Series') + '</span>' +
+        '<span class="tile-tag">' + (w.type || 'Collection Set') + '</span>' +
         '<div class="tile-rule"></div>' +
         '<h2 class="tile-title">' + (w.title || 'Untitled') + '</h2>' +
         (w.subtitle ? '<p class="tile-subtitle">' + w.subtitle + '</p>' : '') +
         (w.description ? '<p class="tile-description">' + w.description + '</p>' : '') +
-        '<span class="tile-cta" data-testid="link-tile-cta-' + (i+1) + '"><div class="tile-cta-line"></div>Enter</span>' +
+        '<span class="tile-cta" data-testid="link-tile-cta-' + (i+1) + '"><div class="tile-cta-line"></div>' + (colCount ? colCount + ' Collection' + (colCount !== 1 ? 's' : '') : 'Enter') + '</span>' +
       '</div></div>';
   }).join('');
 }
@@ -1040,17 +1053,28 @@ function renderWorkView(workId) {
   if (galCount > 0) {
     galCardsHtml = galleries.map(function(g, i) {
       var gcoverUrl = g.coverAssetId ? TIA.photoUrl(g.coverAssetId, 'cover') : '';
-      var photoCount = (g.photos || []).length;
+      if (!gcoverUrl && g.photos && g.photos.length) gcoverUrl = TIA.photoUrl(g.photos[0], 'cover');
+      if (!gcoverUrl && g.folders) {
+        for (var fi = 0; fi < g.folders.length; fi++) {
+          if (g.folders[fi].photos && g.folders[fi].photos.length) { gcoverUrl = TIA.photoUrl(g.folders[fi].photos[0], 'cover'); break; }
+        }
+      }
+      var totalPhotos = countAllPhotos(g);
+      var folderCount = (g.folders || []).length;
       var gcCls = 'gc-' + ((i % 6) + 1);
+      var metaText = '';
+      if (folderCount) metaText = folderCount + ' folder' + (folderCount !== 1 ? 's' : '') + (totalPhotos ? ' &middot; ' + totalPhotos + ' frame' + (totalPhotos !== 1 ? 's' : '') : '');
+      else if (totalPhotos) metaText = totalPhotos + ' frame' + (totalPhotos !== 1 ? 's' : '');
+      else metaText = 'Coming soon';
       return '<div class="gal-card ' + gcCls + '" onclick="navTo(\'?work=' + encodeURIComponent(workId) + '&gallery=' + encodeURIComponent(g.id) + '\')" data-testid="gal-card-' + (i+1) + '">' +
         '<div class="gal-card-photo" ' + (gcoverUrl ? 'style="background-image:url(\'' + gcoverUrl + '\')"' : '') + '></div>' +
         '<div class="gal-card-overlay"></div>' +
         '<div class="gal-card-content">' +
-          '<span class="gal-card-num">Gallery ' + String(i + 1).padStart(2, '0') + '</span>' +
-          '<h3 class="gal-card-title">' + (g.title || 'Untitled Gallery') + '</h3>' +
+          '<span class="gal-card-num">Collection ' + String(i + 1).padStart(2, '0') + '</span>' +
+          '<h3 class="gal-card-title">' + (g.title || 'Untitled Collection') + '</h3>' +
           (g.subtitle ? '<p class="gal-card-sub">' + g.subtitle + '</p>' : '') +
           '<div class="gal-card-meta">' +
-            '<span class="gal-card-count">' + (photoCount ? photoCount + ' frame' + (photoCount !== 1 ? 's' : '') : 'Coming soon') + '</span>' +
+            '<span class="gal-card-count">' + metaText + '</span>' +
             (g.type ? '<span class="gal-card-type">' + g.type + '</span>' : '') +
           '</div>' +
         '</div>' +
@@ -1058,16 +1082,16 @@ function renderWorkView(workId) {
       '</div>';
     }).join('');
   } else {
-    galCardsHtml = '<div class="work-empty">No galleries have been added to this collection yet<small>Create galleries in the admin panel</small></div>';
+    galCardsHtml = '<div class="work-empty">No collections have been added to this set yet<small>Create collections in the admin panel</small></div>';
   }
 
   el.innerHTML =
     '<section class="work-hero" data-testid="work-hero">' +
-      '<div class="port-back" onclick="navTo(\'\')" data-testid="link-back-galleries">&#8592; <span>Galleries</span></div>' +
+      '<div class="port-back" onclick="navTo(\'\')" data-testid="link-back-galleries">&#8592; <span>All Collection Sets</span></div>' +
       '<div class="work-hero-bg" style="' + bgProp + '"></div>' +
       '<div class="work-hero-overlay"></div>' +
       '<div class="work-hero-content">' +
-        '<span class="work-hero-type">' + (work.type || 'Collection') + '</span>' +
+        '<span class="work-hero-type">Collection Set &middot; ' + (work.type || '') + '</span>' +
         '<h1 class="work-hero-title" data-testid="text-work-title">' + (work.title || 'Untitled') + '</h1>' +
         (work.subtitle ? '<p class="work-hero-subtitle">' + work.subtitle + '</p>' : '') +
         (work.description ? '<p class="work-hero-desc">' + work.description + '</p>' : '') +
@@ -1077,11 +1101,11 @@ function renderWorkView(workId) {
     '<div class="work-info-bar" data-testid="work-info-bar">' +
       '<div><span class="wib-label">Camera</span><div class="wib-val">' + (work.camera || '&mdash;') + '</div></div>' +
       '<div><span class="wib-label">Location</span><div class="wib-val">' + (work.location || '&mdash;') + '</div></div>' +
-      '<div><span class="wib-label">Galleries</span><div class="wib-val">' + (galCount ? galCount + ' collection' + (galCount !== 1 ? 's' : '') : 'None yet') + '</div></div>' +
+      '<div><span class="wib-label">Collections</span><div class="wib-val">' + (galCount ? galCount + ' collection' + (galCount !== 1 ? 's' : '') : 'None yet') + '</div></div>' +
     '</div>' +
     '<div class="work-gal-section">' +
       '<div class="work-gal-header">' +
-        '<span class="wg-eyebrow">Galleries</span>' +
+        '<span class="wg-eyebrow">Collections</span>' +
         '<h2>' + (galCount ? galCount + ' collection' + (galCount !== 1 ? 's' : '') + ' to explore.' : 'Coming soon.') + '</h2>' +
       '</div>' +
       '<div class="work-gal-grid" data-testid="galleries-grid">' + galCardsHtml + '</div>' +
@@ -1104,29 +1128,90 @@ function renderGalleryView(workId, galId) {
 
   var coverUrl = gallery.coverAssetId ? TIA.photoUrl(gallery.coverAssetId, 'hero') :
                  (work.coverAssetId ? TIA.photoUrl(work.coverAssetId, 'hero') : '');
-  var photos = gallery.photos || [];
-  currentPhotos = photos.map(function(aid) {
-    var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-    var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-    return {
-      assetId: aid,
-      thumb: TIA.thumb(aid),
-      full: TIA.full(aid),
-      title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '')
-    };
-  });
 
-  var photosHtml = '';
-  if (currentPhotos.length > 0) {
-    photosHtml = currentPhotos.map(function(p, i) {
-      return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
-        '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
-        '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
-        '<span class="gal-photo-expand">&#x26F6;</span>' +
+  var folders = gallery.folders || [];
+  var photos = gallery.photos || [];
+  var hasFolders = folders.length > 0;
+  var totalPhotos = countAllPhotos(gallery);
+
+  var contentHtml = '';
+
+  if (hasFolders) {
+    var folderCardsHtml = folders.map(function(f, fi) {
+      var fcoverUrl = f.coverAssetId ? TIA.photoUrl(f.coverAssetId, 'cover') : '';
+      if (!fcoverUrl && f.photos && f.photos.length) fcoverUrl = TIA.photoUrl(f.photos[0], 'cover');
+      var fPhotoCount = (f.photos || []).length;
+      var fcCls = 'gc-' + ((fi % 6) + 1);
+      return '<div class="gal-card ' + fcCls + '" onclick="navTo(\'?work=' + encodeURIComponent(workId) + '&gallery=' + encodeURIComponent(galId) + '&folder=' + encodeURIComponent(f.id) + '\')" data-testid="folder-card-' + (fi+1) + '">' +
+        '<div class="gal-card-photo" ' + (fcoverUrl ? 'style="background-image:url(\'' + fcoverUrl + '\')"' : '') + '></div>' +
+        '<div class="gal-card-overlay"></div>' +
+        '<div class="gal-card-content">' +
+          '<span class="gal-card-num">Folder ' + String(fi + 1).padStart(2, '0') + '</span>' +
+          '<h3 class="gal-card-title">' + (f.title || 'Untitled Folder') + '</h3>' +
+          '<div class="gal-card-meta">' +
+            '<span class="gal-card-count">' + (fPhotoCount ? fPhotoCount + ' frame' + (fPhotoCount !== 1 ? 's' : '') : 'Empty') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<span class="gal-card-arrow">&#8594;</span>' +
       '</div>';
     }).join('');
+
+    contentHtml =
+      '<div class="work-gal-section">' +
+        '<div class="work-gal-header">' +
+          '<span class="wg-eyebrow">Folders</span>' +
+          '<h2>' + folders.length + ' folder' + (folders.length !== 1 ? 's' : '') + ' in this collection.</h2>' +
+        '</div>' +
+        '<div class="work-gal-grid" data-testid="folders-grid">' + folderCardsHtml + '</div>' +
+      '</div>';
+
+    if (photos.length > 0) {
+      currentPhotos = photos.map(function(aid) {
+        var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
+        var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
+        return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
+      });
+      contentHtml +=
+        '<div class="work-gal-section" style="padding-top:0">' +
+          '<div class="work-gal-header">' +
+            '<span class="wg-eyebrow">Unsorted Photos</span>' +
+            '<h2>' + photos.length + ' photo' + (photos.length !== 1 ? 's' : '') + ' not in folders.</h2>' +
+          '</div>' +
+          '<div class="gal-photo-section" style="background:transparent">' +
+            '<div class="gal-photo-grid" data-testid="unsorted-photo-grid">' +
+              currentPhotos.map(function(p, i) {
+                return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
+                  '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
+                  '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
+                  '<span class="gal-photo-expand">&#x26F6;</span></div>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
   } else {
-    photosHtml = '<div class="gal-photo-empty">No photos uploaded yet<small>Upload photos in the admin panel</small></div>';
+    currentPhotos = photos.map(function(aid) {
+      var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
+      var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
+      return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
+    });
+
+    var photosHtml = '';
+    if (currentPhotos.length > 0) {
+      photosHtml = currentPhotos.map(function(p, i) {
+        return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
+          '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
+          '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
+          '<span class="gal-photo-expand">&#x26F6;</span></div>';
+      }).join('');
+    } else {
+      photosHtml = '<div class="gal-photo-empty">No photos or folders yet<small>Add folders or photos in the admin panel</small></div>';
+    }
+
+    contentHtml =
+      '<div class="gal-photo-section">' +
+        '<div class="gal-photo-grid" data-testid="photo-grid">' + photosHtml + '</div>' +
+      '</div>';
   }
 
   el.innerHTML =
@@ -1135,8 +1220,8 @@ function renderGalleryView(workId, galId) {
       '<div class="gal-hero-bg" ' + (coverUrl ? 'style="background-image:url(\'' + coverUrl + '\')"' : '') + '></div>' +
       '<div class="gal-hero-overlay"></div>' +
       '<div class="gal-hero-content">' +
-        '<span class="gal-hero-series">Gallery ' + String(galIndex + 1).padStart(2, '0') + (gallery.type ? ' &middot; ' + gallery.type : '') + '</span>' +
-        '<h1 class="gal-hero-title" data-testid="text-gallery-title">' + (gallery.title || 'Untitled Gallery') + '</h1>' +
+        '<span class="gal-hero-series">Collection ' + String(galIndex + 1).padStart(2, '0') + (gallery.type ? ' &middot; ' + gallery.type : '') + '</span>' +
+        '<h1 class="gal-hero-title" data-testid="text-gallery-title">' + (gallery.title || 'Untitled Collection') + '</h1>' +
         (gallery.subtitle ? '<p class="gal-hero-sub">' + gallery.subtitle + '</p>' : '') +
         (gallery.description ? '<p class="gal-hero-desc">' + gallery.description + '</p>' : '') +
       '</div>' +
@@ -1144,6 +1229,67 @@ function renderGalleryView(workId, galId) {
     '<div class="gal-info-bar" data-testid="gallery-info-bar">' +
       '<div><span class="gib-label">Camera</span><div class="gib-val">' + (work.camera || '&mdash;') + '</div></div>' +
       '<div><span class="gib-label">Location</span><div class="gib-val">' + (gallery.location || work.location || '&mdash;') + '</div></div>' +
+      '<div><span class="gib-label">' + (hasFolders ? 'Total Frames' : 'Frames') + '</span><div class="gib-val">' + (totalPhotos || '&mdash;') + '</div></div>' +
+    '</div>' +
+    contentHtml;
+}
+
+function renderFolderView(workId, galId, folderId) {
+  var work = TIA.getWorkById(workId);
+  if (!work) { navTo(''); return; }
+  var gallery = null;
+  var galleries = work.galleries || [];
+  for (var i = 0; i < galleries.length; i++) {
+    if (galleries[i].id === galId) { gallery = galleries[i]; break; }
+  }
+  if (!gallery) { navTo('?work=' + encodeURIComponent(workId)); return; }
+
+  var folder = null;
+  var folderIndex = -1;
+  var folders = gallery.folders || [];
+  for (var fi = 0; fi < folders.length; fi++) {
+    if (folders[fi].id === folderId) { folder = folders[fi]; folderIndex = fi; break; }
+  }
+  if (!folder) { navTo('?work=' + encodeURIComponent(workId) + '&gallery=' + encodeURIComponent(galId)); return; }
+
+  var el = document.getElementById('vFolder');
+  el.style.display = '';
+
+  var coverUrl = folder.coverAssetId ? TIA.photoUrl(folder.coverAssetId, 'hero') :
+                 (gallery.coverAssetId ? TIA.photoUrl(gallery.coverAssetId, 'hero') :
+                 (work.coverAssetId ? TIA.photoUrl(work.coverAssetId, 'hero') : ''));
+  var photos = folder.photos || [];
+  currentPhotos = photos.map(function(aid) {
+    var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
+    var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
+    return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
+  });
+
+  var photosHtml = '';
+  if (currentPhotos.length > 0) {
+    photosHtml = currentPhotos.map(function(p, i) {
+      return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
+        '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
+        '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
+        '<span class="gal-photo-expand">&#x26F6;</span></div>';
+    }).join('');
+  } else {
+    photosHtml = '<div class="gal-photo-empty">No photos in this folder yet<small>Add photos in the admin panel</small></div>';
+  }
+
+  el.innerHTML =
+    '<section class="gal-hero" data-testid="folder-hero">' +
+      '<div class="port-back" onclick="navTo(\'?work=' + encodeURIComponent(workId) + '&gallery=' + encodeURIComponent(galId) + '\')" data-testid="link-back-collection">&#8592; <span>' + (gallery.title || 'Back') + '</span></div>' +
+      '<div class="gal-hero-bg" ' + (coverUrl ? 'style="background-image:url(\'' + coverUrl + '\')"' : '') + '></div>' +
+      '<div class="gal-hero-overlay"></div>' +
+      '<div class="gal-hero-content">' +
+        '<span class="gal-hero-series">Folder ' + String(folderIndex + 1).padStart(2, '0') + '</span>' +
+        '<h1 class="gal-hero-title" data-testid="text-folder-title">' + (folder.title || 'Untitled Folder') + '</h1>' +
+      '</div>' +
+    '</section>' +
+    '<div class="gal-info-bar" data-testid="folder-info-bar">' +
+      '<div><span class="gib-label">Collection</span><div class="gib-val">' + (gallery.title || '&mdash;') + '</div></div>' +
+      '<div><span class="gib-label">Collection Set</span><div class="gib-val">' + (work.title || '&mdash;') + '</div></div>' +
       '<div><span class="gib-label">Frames</span><div class="gib-val">' + (photos.length || '&mdash;') + '</div></div>' +
     '</div>' +
     '<div class="gal-photo-section">' +

@@ -63,7 +63,7 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 ## Key Files
 - `index.html` — Homepage thin shell (block-driven)
 - `pages/portfolio.html` — Portfolio page thin shell (block-driven, artist statement + work blocks + inquiry)
-- `pages/galleries.html` — Galleries page (3-view hierarchy drill-down, special-purpose)
+- `pages/galleries.html` — Galleries page (4-level Lightroom-style drill-down: Collection Sets → Collections → Folders → Photos)
 - `pages/about.html` — Artist Statement thin shell (block-driven)
 - `pages/prints.html` — Prints thin shell (block-driven)
 - `pages/hope-hike.html` — Hope Hike thin shell (block-driven)
@@ -81,7 +81,7 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 
 ## Data Model (STATE / Config JSON)
 - `pages` — Object keyed by slug: `{ title, metaDescription, blocks: [{ id, type, data }] }`
-- `portfolioWorks` — Array of work objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, featuredImageId, galleries: [{ id, title, subtitle, coverAssetId, legacySeriesId, photos: [] }] }` — auto-seeded with 4 defaults if empty
+- `portfolioWorks` — Array of Collection Set objects: `{ id, title, subtitle, type, description, camera, location, format, coverAssetId, featuredImageId, galleries: [{ id, title, subtitle, coverAssetId, legacySeriesId, photos: [], folders: [{ id, title, coverAssetId, photos: [] }] }] }` — auto-seeded with 4 defaults if empty
 - `siteSettings` — `{ siteName, tagline, footerQuote, footerAttr, email }`
 - `navigation` — `[{ label, href, visible }]`
 - `series` — Gallery metadata keyed by series ID (legacy)
@@ -113,13 +113,16 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - **Pages tab**: Page builder — select page (Home/Portfolio/About/Prints/Hope Hike/Contact), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
 - **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor, Cloudflare connection status
 
-## Portfolio Hierarchy System
-Galleries page (formerly portfolio) supports 3 views via URL params:
-- **Works grid** (default): 2×2 tile grid from portfolioWorks
-- **Work detail** (`?work=WORK_ID`): Hero with cover image, info bar, gallery cards grid
-- **Gallery view** (`?work=WORK_ID&gallery=GAL_ID`): Hero + photo grid + lightbox
+## Portfolio & Gallery Hierarchy System (Lightroom-style)
+Galleries page supports 4-level Lightroom-style hierarchy via URL params:
+- **Collection Sets grid** (default): 2×2 tile grid from portfolioWorks
+- **Collection Set detail** (`?work=WORK_ID`): Hero + info bar + collection cards grid
+- **Collection detail** (`?work=WORK_ID&gallery=GAL_ID`): If has folders → folder cards grid + unsorted photos; if no folders → photo grid + lightbox
+- **Folder view** (`?work=WORK_ID&gallery=GAL_ID&folder=FLD_ID`): Hero + photo grid + lightbox
 
-Portfolio page is now a separate block-driven page showing artist statement, gear strip, work blocks with cover images, and print inquiry section.
+Portfolio page is a separate block-driven page showing artist statement, gear strip, work blocks with cover images, and print inquiry section.
+
+Admin terminology: Collection Sets (works), Collections (galleries), Folders (new sub-level under collections). Folders support upload, library assignment, cover photos, reordering, and move-photo-to-folder from collection root.
 
 ## Environment Variables
 - `CF_ACCOUNT_ID` — Cloudflare account ID

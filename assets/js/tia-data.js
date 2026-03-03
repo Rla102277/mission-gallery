@@ -14,9 +14,13 @@
 //     'hope-hike': { title, metaDescription, blocks: [...] },
 //     contact:   { title, metaDescription, blocks: [...] }
 //   },
-//   portfolioWorks: [
+//   portfolioWorks: [  (Collection Sets)
 //     { id, title, subtitle, type, description, camera, location, format, coverAssetId,
-//       galleries: [ { id, title, subtitle, coverAssetId, photos: [cfImageId, ...] } ]
+//       galleries: [  (Collections)
+//         { id, title, subtitle, coverAssetId, photos: [cfImageId, ...],
+//           folders: [ { id, title, coverAssetId, photos: [cfImageId, ...] } ]
+//         }
+//       ]
 //     }
 //   ],
 //   siteSettings: { siteName, tagline, footerQuote, footerAttr, email },
@@ -142,9 +146,11 @@ const TIA = {
     const galleries = [];
     works.forEach(function(w) {
       (w.galleries || []).forEach(function(g) {
+        var allPhotos = TIA._allGalleryPhotos(g);
         galleries.push(Object.assign({}, g, {
           workId: w.id, workTitle: w.title, type: g.type || w.type,
-          camera: g.camera || w.camera, location: g.location || w.location
+          camera: g.camera || w.camera, location: g.location || w.location,
+          totalPhotos: allPhotos.length
         }));
       });
     });
@@ -166,20 +172,51 @@ const TIA = {
     return null;
   },
 
+  _allGalleryPhotos(gallery) {
+    var ids = (gallery.photos || []).slice();
+    (gallery.folders || []).forEach(function(f) {
+      (f.photos || []).forEach(function(pid) {
+        if (ids.indexOf(pid) === -1) ids.push(pid);
+      });
+    });
+    return ids;
+  },
+
+  _mapPhotoIds(ids) {
+    var state = TIA.getState();
+    return ids.map(function(aid) {
+      return {
+        assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
+        cover: TIA.cover(aid), hero: TIA.hero(aid),
+        filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid.split('/').pop() || aid
+      };
+    });
+  },
+
   getGalleryPhotos(workId, galleryId) {
     var work = TIA.getWorkById(workId);
     if (!work) return [];
     var galleries = work.galleries || [];
     for (var i = 0; i < galleries.length; i++) {
       if (galleries[i].id === galleryId) {
-        var state = TIA.getState();
-        return (galleries[i].photos || []).map(function(aid) {
-          return {
-            assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
-            cover: TIA.cover(aid), hero: TIA.hero(aid),
-            filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid
-          };
-        });
+        return TIA._mapPhotoIds(TIA._allGalleryPhotos(galleries[i]));
+      }
+    }
+    return [];
+  },
+
+  getFolderPhotos(workId, galleryId, folderId) {
+    var work = TIA.getWorkById(workId);
+    if (!work) return [];
+    var galleries = work.galleries || [];
+    for (var i = 0; i < galleries.length; i++) {
+      if (galleries[i].id === galleryId) {
+        var folders = galleries[i].folders || [];
+        for (var fi = 0; fi < folders.length; fi++) {
+          if (folders[fi].id === folderId) {
+            return TIA._mapPhotoIds(folders[fi].photos || []);
+          }
+        }
       }
     }
     return [];
@@ -192,13 +229,7 @@ const TIA = {
       var galleries = works[i].galleries || [];
       for (var j = 0; j < galleries.length; j++) {
         if (galleries[j].id === seriesId) {
-          return (galleries[j].photos || []).map(function(aid) {
-            return {
-              assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
-              cover: TIA.cover(aid), hero: TIA.hero(aid),
-              filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid.split('/').pop() || aid
-            };
-          });
+          return TIA._mapPhotoIds(TIA._allGalleryPhotos(galleries[j]));
         }
       }
     }
@@ -220,8 +251,8 @@ const TIA = {
       for (var j = 0; j < galleries.length; j++) {
         if (galleries[j].id === seriesId) {
           if (galleries[j].coverAssetId) return TIA[size] ? TIA[size](galleries[j].coverAssetId) : '';
-          var gPhotos = galleries[j].photos || [];
-          if (gPhotos.length) return TIA[size] ? TIA[size](gPhotos[0]) : '';
+          var allPhotos = TIA._allGalleryPhotos(galleries[j]);
+          if (allPhotos.length) return TIA[size] ? TIA[size](allPhotos[0]) : '';
           return '';
         }
       }

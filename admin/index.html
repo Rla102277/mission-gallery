@@ -1469,13 +1469,13 @@ function getPortfolioWorks(){
   return STATE.portfolioWorks;
 }
 
-function showPortfolioPanel(){
-  editingGallery=null;
-  setPanel("Portfolio","Works & Galleries","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Work</button> <button class='btn' onclick='createNewGallery()' data-testid='btn-new-standalone-gallery'>+ Standalone Gallery</button>");
+function showPortfolioPanel(keepEditing){
+  if(!keepEditing)editingGallery=null;
+  setPanel("Portfolio","Collection Sets &amp; Collections","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Collection Set</button> <button class='btn' onclick='createNewGallery()' data-testid='btn-new-standalone-gallery'>+ Standalone Gallery</button>");
   var works=getPortfolioWorks();
   var html='';
   if(!works.length){
-    html+='<div class="empty"><p>No portfolio works yet. Click "+ Add Work" to begin.</p></div>';
+    html+='<div class="empty"><p>No collection sets yet. Click "+ Add Collection Set" to begin.</p></div>';
   } else {
     html+='<div class="pf-works">';
     works.forEach(function(w,i){
@@ -1492,7 +1492,7 @@ function showPortfolioPanel(){
       html+='<div class="pf-work-body">';
       html+='<div class="pf-work-title">'+esc(w.title||"Untitled")+'</div>';
       html+='<div class="pf-work-sub">'+esc(w.subtitle||"")+'</div>';
-      html+='<div class="pf-work-meta">'+esc(w.type||"Series")+' &middot; '+esc(w.location||"")+' &middot; '+galCount+' galler'+(galCount===1?'y':'ies')+(featThumb?' &middot; Featured &#10004;':'')+'</div>';
+      html+='<div class="pf-work-meta">'+esc(w.type||"Series")+' &middot; '+esc(w.location||"")+' &middot; '+galCount+' collection'+(galCount===1?'':'s')+(featThumb?' &middot; Featured &#10004;':'')+'</div>';
       html+='<div class="pf-work-actions" onclick="event.stopPropagation()">';
       var isEditing=editingWorkIdx===i;
       html+='<button class="btn'+(isEditing?' pri':'')+'" onclick="editPortfolioWork('+i+')" data-testid="btn-edit-work-'+i+'">'+(isEditing?'Done':'Edit')+'</button>';
@@ -1553,10 +1553,10 @@ function toggleWork(workId){
 }
 
 function renderWorkGalleries(w,workIdx){
-  var html='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'" style="margin-bottom:10px">+ Add Gallery</button>';
+  var html='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'" style="margin-bottom:10px">+ Add Collection</button>';
   var galleries=w.galleries||[];
   if(!galleries.length){
-    html+='<div style="padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase">No galleries yet</div>';
+    html+='<div style="padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase">No collections yet</div>';
     return html;
   }
   html+='<div class="pf-gal-list">';
@@ -1564,14 +1564,20 @@ function renderWorkGalleries(w,workIdx){
     var gThumb=g.coverAssetId?TIA.photoUrl(g.coverAssetId,"thumb"):"";
     if(!gThumb&&g.photos&&g.photos.length) gThumb=TIA.photoUrl(g.photos[0],"thumb");
     var photoCount=(g.photos||[]).length;
+    var folderCount=(g.folders||[]).length;
+    var folderPhotoCount=0;
+    (g.folders||[]).forEach(function(f){folderPhotoCount+=(f.photos||[]).length;});
+    var totalPhotos=photoCount+folderPhotoCount;
+    var metaText=totalPhotos+' photo'+(totalPhotos!==1?'s':'');
+    if(folderCount) metaText+=' &middot; '+folderCount+' folder'+(folderCount!==1?'s':'');
     html+='<div class="pf-gal-card" data-testid="gallery-card-'+workIdx+'-'+gi+'">';
-    html+='<div class="pf-gal-cover" onclick="openPicker(\'__galcover__'+workIdx+'__'+gi+'\',\'galcover\',\'Cover for '+esc(g.title||"Gallery")+'\')">';
+    html+='<div class="pf-gal-cover" onclick="openPicker(\'__galcover__'+workIdx+'__'+gi+'\',\'galcover\',\'Cover for '+esc(g.title||"Collection")+'\')">';
     if(gThumb) html+='<img src="'+gThumb+'" alt="">';
     else html+='<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:.15">[+]</div>';
     html+='</div>';
     html+='<div class="pf-gal-info">';
-    html+='<div class="pf-gal-title">'+esc(g.title||"Untitled Gallery")+'</div>';
-    html+='<div class="pf-gal-meta">'+photoCount+' photo'+(photoCount!==1?'s':'')+'</div>';
+    html+='<div class="pf-gal-title">'+esc(g.title||"Untitled Collection")+'</div>';
+    html+='<div class="pf-gal-meta">'+metaText+'</div>';
     html+='</div>';
     html+='<div class="pf-gal-acts">';
     html+='<button class="btn" onclick="toggleGalleryEditor('+workIdx+','+gi+')" data-testid="btn-edit-gallery-'+workIdx+'-'+gi+'">Edit</button>';
@@ -1591,7 +1597,7 @@ function toggleGalleryEditor(workIdx,galIdx){
   var w=getPortfolioWorks()[workIdx];
   var key=w.id+'__'+galIdx;
   editingGallery=editingGallery===key?null:key;
-  showPortfolioPanel();
+  showPortfolioPanel(true);
 }
 
 function renderGalleryEditor(w,workIdx,galIdx){
@@ -1602,6 +1608,45 @@ function renderGalleryEditor(w,workIdx,galIdx){
   html+='<div><span class="field-lbl">Title</span>'+aiWrap('<input class="input" value="'+esc(g.title||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'title\',this.value)" data-testid="input-gal-title-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'title'))+'</div>';
   html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(g.subtitle||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'subtitle\',this.value)" data-testid="input-gal-subtitle-'+workIdx+'-'+galIdx+'">',aiBtn('gal',galAiIdx,'subtitle'))+'</div>';
   html+='</div>';
+
+  html+='<div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+  html+='<div class="sec-lbl" style="margin:0"><span>Folders</span></div>';
+  html+='<button class="btn pri" onclick="addFolderToGallery('+workIdx+','+galIdx+')" data-testid="btn-add-folder-'+workIdx+'-'+galIdx+'" style="font-size:10px;padding:3px 10px">+ Add Folder</button>';
+  html+='</div>';
+  var folders=g.folders||[];
+  if(folders.length){
+    folders.forEach(function(f,fi){
+      var fThumb='';
+      if(f.coverAssetId) fThumb=TIA.photoUrl(f.coverAssetId,'thumb');
+      else if(f.photos&&f.photos.length) fThumb=TIA.photoUrl(f.photos[0],'thumb');
+      var fPhotoCount=(f.photos||[]).length;
+      var isEditingFolder=editingFolder===workIdx+'__'+galIdx+'__'+fi;
+      html+='<div style="border:1px solid var(--border);border-radius:4px;margin-bottom:6px;overflow:hidden" data-testid="folder-card-'+workIdx+'-'+galIdx+'-'+fi+'">';
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer" onclick="toggleFolderEditor('+workIdx+','+galIdx+','+fi+')">';
+      html+='<div style="width:36px;height:36px;border-radius:3px;overflow:hidden;flex-shrink:0;background:#222">';
+      if(fThumb) html+='<img src="'+fThumb+'" style="width:100%;height:100%;object-fit:cover" alt="">';
+      html+='</div>';
+      html+='<div style="flex:1;min-width:0">';
+      html+='<div style="font-size:11px;font-weight:600">'+esc(f.title||'Untitled Folder')+'</div>';
+      html+='<div style="font-size:9px;opacity:.4">'+fPhotoCount+' photo'+(fPhotoCount!==1?'s':'')+'</div>';
+      html+='</div>';
+      html+='<div onclick="event.stopPropagation()" style="display:flex;gap:4px">';
+      if(fi>0) html+='<button class="btn sm" onclick="moveFolder('+workIdx+','+galIdx+','+fi+',-1)">&#8593;</button>';
+      if(fi<folders.length-1) html+='<button class="btn sm" onclick="moveFolder('+workIdx+','+galIdx+','+fi+',1)">&#8595;</button>';
+      html+='<button class="btn sm red" onclick="removeFolder('+workIdx+','+galIdx+','+fi+')" data-testid="btn-del-folder-'+workIdx+'-'+galIdx+'-'+fi+'">&times;</button>';
+      html+='</div></div>';
+      if(isEditingFolder){
+        html+=renderFolderEditor(workIdx,galIdx,fi,f);
+      }
+      html+='</div>';
+    });
+  } else {
+    html+='<div style="padding:10px;text-align:center;opacity:.25;font-size:9px;letter-spacing:3px;text-transform:uppercase">No folders &mdash; photos shown directly</div>';
+  }
+  html+='</div>';
+
+  html+='<div class="sec-lbl" style="margin-bottom:6px"><span>'+(folders.length?'Unsorted Photos (Collection Root)':'Photos')+'</span></div>';
   html+='<div class="gallery-upload" onclick="document.getElementById(\'geUpload_'+workIdx+'_'+galIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToGallery(event.dataTransfer.files,'+workIdx+','+galIdx+')">';
   html+='<div class="gallery-upload-ico">&#x2191;</div>';
   html+='<div class="gallery-upload-lbl">Drop photos or click to upload</div>';
@@ -1621,6 +1666,7 @@ function renderGalleryEditor(w,workIdx,galIdx){
       if(isCover) html+='<div class="pc-badge cover" style="position:absolute;top:3px;left:3px">Cover</div>';
       html+='<div class="ge-photo-ov">';
       html+='<button class="ge-photo-btn" onclick="setGalleryCover('+workIdx+','+galIdx+',\''+pid+'\')">Cover</button>';
+      if(folders.length) html+='<button class="ge-photo-btn" onclick="movePhotoToFolder('+workIdx+','+galIdx+','+pi+')" data-testid="btn-move-to-folder-'+pi+'">&#x2192; Folder</button>';
       html+='<button class="ge-photo-btn" onclick="removeGalleryPhoto('+workIdx+','+galIdx+','+pi+')">&#x2715;</button>';
       html+='</div></div>';
     });
@@ -1632,13 +1678,165 @@ function renderGalleryEditor(w,workIdx,galIdx){
   return html;
 }
 
+var editingFolder=null;
+
+function renderFolderEditor(workIdx,galIdx,folderIdx,f){
+  var html='<div style="padding:8px 10px;border-top:1px solid var(--border);background:rgba(0,0,0,.15)" data-testid="folder-editor-'+workIdx+'-'+galIdx+'-'+folderIdx+'">';
+  html+='<div style="margin-bottom:8px"><span class="field-lbl">Folder Title</span><input class="input" value="'+esc(f.title||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'title\',this.value)" data-testid="input-folder-title-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px"></div>';
+  html+='<div class="gallery-upload" style="padding:12px" onclick="document.getElementById(\'fuUpload_'+workIdx+'_'+galIdx+'_'+folderIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToFolder(event.dataTransfer.files,'+workIdx+','+galIdx+','+folderIdx+')">';
+  html+='<div class="gallery-upload-ico" style="font-size:14px">&#x2191;</div>';
+  html+='<div class="gallery-upload-lbl" style="font-size:9px">Drop photos or click</div>';
+  html+='</div>';
+  html+='<input type="file" id="fuUpload_'+workIdx+'_'+galIdx+'_'+folderIdx+'" multiple accept="image/*" style="display:none" onchange="uploadToFolder(this.files,'+workIdx+','+galIdx+','+folderIdx+')">';
+  html+='<div style="display:flex;gap:6px;margin:6px 0"><button class="btn" onclick="assignPhotosToFolder('+workIdx+','+galIdx+','+folderIdx+')" data-testid="btn-assign-folder-photos-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:10px">Add from Library</button></div>';
+  html+='<div id="fuUploadProgress_'+workIdx+'_'+galIdx+'_'+folderIdx+'"></div>';
+  var photos=f.photos||[];
+  if(photos.length){
+    html+='<div class="ge-photos" style="margin-top:6px">';
+    photos.forEach(function(pid,pi){
+      var t=TIA.photoUrl(pid,'thumb');
+      var isCover=pid===f.coverAssetId;
+      html+='<div class="ge-photo'+(isCover?' cover':'')+'">';
+      if(t) html+='<img src="'+t+'" loading="lazy" alt="">';
+      if(isCover) html+='<div class="pc-badge cover" style="position:absolute;top:3px;left:3px">Cover</div>';
+      html+='<div class="ge-photo-ov">';
+      html+='<button class="ge-photo-btn" onclick="setFolderCover('+workIdx+','+galIdx+','+folderIdx+',\''+pid+'\')">Cover</button>';
+      html+='<button class="ge-photo-btn" onclick="removeFolderPhoto('+workIdx+','+galIdx+','+folderIdx+','+pi+')">&#x2715;</button>';
+      html+='</div></div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function toggleFolderEditor(workIdx,galIdx,folderIdx){
+  var key=workIdx+'__'+galIdx+'__'+folderIdx;
+  editingFolder=editingFolder===key?null:key;
+  showPortfolioPanel(true);
+}
+
+function addFolderToGallery(workIdx,galIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx])return;
+  if(!w.galleries[galIdx].folders)w.galleries[galIdx].folders=[];
+  w.galleries[galIdx].folders.push({id:'fld-'+Date.now(),title:'New Folder',coverAssetId:'',photos:[]});
+  var fi=w.galleries[galIdx].folders.length-1;
+  editingFolder=workIdx+'__'+galIdx+'__'+fi;
+  showPortfolioPanel(true);
+  saveAll();
+  toast('Folder added');
+}
+
+function updateFolder(workIdx,galIdx,folderIdx,field,val){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders||!w.galleries[galIdx].folders[folderIdx])return;
+  w.galleries[galIdx].folders[folderIdx][field]=val;
+}
+
+function removeFolder(workIdx,galIdx,folderIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders)return;
+  if(!confirm('Remove this folder and all its photos?'))return;
+  w.galleries[galIdx].folders.splice(folderIdx,1);
+  editingFolder=null;
+  showPortfolioPanel(true);
+  saveAll();
+  toast('Folder removed');
+}
+
+function moveFolder(workIdx,galIdx,folderIdx,dir){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders)return;
+  var arr=w.galleries[galIdx].folders;
+  var newIdx=folderIdx+dir;
+  if(newIdx<0||newIdx>=arr.length)return;
+  var temp=arr[folderIdx];arr[folderIdx]=arr[newIdx];arr[newIdx]=temp;
+  editingFolder=null;
+  showPortfolioPanel(true);
+  saveAll();
+}
+
+function setFolderCover(workIdx,galIdx,folderIdx,assetId){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders||!w.galleries[galIdx].folders[folderIdx])return;
+  w.galleries[galIdx].folders[folderIdx].coverAssetId=assetId;
+  showPortfolioPanel(true);
+  saveAll();
+  toast('Folder cover set');
+}
+
+function removeFolderPhoto(workIdx,galIdx,folderIdx,photoIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders||!w.galleries[galIdx].folders[folderIdx])return;
+  w.galleries[galIdx].folders[folderIdx].photos.splice(photoIdx,1);
+  showPortfolioPanel(true);
+  saveAll();
+}
+
+function movePhotoToFolder(workIdx,galIdx,photoIdx){
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx])return;
+  var g=w.galleries[galIdx];
+  var folders=g.folders||[];
+  if(!folders.length){toast('No folders yet');return;}
+  var choice=prompt('Move photo to which folder?\\n'+folders.map(function(f,fi){return (fi+1)+'. '+(f.title||'Untitled');}).join('\\n')+'\\n\\nEnter number:');
+  if(!choice)return;
+  var fi=parseInt(choice,10)-1;
+  if(isNaN(fi)||fi<0||fi>=folders.length)return;
+  var pid=g.photos[photoIdx];
+  if(!pid)return;
+  g.photos.splice(photoIdx,1);
+  if(!folders[fi].photos)folders[fi].photos=[];
+  folders[fi].photos.push(pid);
+  showPortfolioPanel(true);
+  saveAll();
+  toast('Photo moved to '+esc(folders[fi].title||'folder'));
+}
+
+async function uploadToFolder(files,workIdx,galIdx,folderIdx){
+  if(!files||!files.length)return;
+  var w=getPortfolioWorks()[workIdx];
+  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders||!w.galleries[galIdx].folders[folderIdx])return;
+  var prog=document.getElementById('fuUploadProgress_'+workIdx+'_'+galIdx+'_'+folderIdx);
+  var total=files.length,done=0;
+  if(prog)prog.innerHTML='<div style="font-size:10px;opacity:.5">Uploading 0/'+total+'...</div>';
+  for(var i=0;i<files.length;i++){
+    var fd=new FormData();fd.append('file',files[i]);
+    try{
+      var res=await fetch('/api/images/upload',{method:'POST',body:fd});
+      if(res.ok){
+        var data=await res.json();
+        if(data.id){
+          w.galleries[galIdx].folders[folderIdx].photos.push(data.id);
+          if(STATE.cf){if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};STATE.cf.assetMeta[data.id]={id:data.id,filename:data.filename||files[i].name};}
+        }
+      }
+    }catch(e){}
+    done++;
+    if(prog)prog.innerHTML='<div style="font-size:10px;opacity:.5">Uploading '+done+'/'+total+'...</div>';
+  }
+  if(prog)prog.innerHTML='';
+  saveAll();
+  showPortfolioPanel(true);
+  toast(done+' photo'+(done!==1?'s':'')+' uploaded to folder');
+}
+
+function assignPhotosToFolder(workIdx,galIdx,folderIdx){
+  pickerTarget='__folder__'+workIdx+'__'+galIdx+'__'+folderIdx;
+  pickerMode='folder';
+  pickerLabel='Add photos to folder';
+  renderPkFilter();renderPkGrid(null);
+  document.getElementById('picker').classList.add('open');
+}
+
 function addPortfolioWork(){
   var works=getPortfolioWorks();
-  works.push({id:"pw-"+Date.now(),title:"New Work",subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:"",galleries:[]});
+  works.push({id:"pw-"+Date.now(),title:"New Collection Set",subtitle:"",type:"Series",description:"",camera:"",location:"",format:"",coverAssetId:"",galleries:[]});
   editingWorkIdx=works.length-1;
   expandedWork=null;
   showPortfolioPanel();
-  toast("Work added — edit the details below");
+  toast("Collection set added — edit the details below");
   setTimeout(function(){var el=document.querySelector('[data-testid="input-work-title-'+(works.length-1)+'"]');if(el){el.focus();el.select();}},100);
 }
 
@@ -1789,8 +1987,8 @@ function addGalleryToWork(workIdx){
   var html='';
   html+='<div class="gp-option gp-option--new" onclick="createNewGalleryForWork()" data-testid="btn-create-new-gallery">';
   html+='<div class="gp-option-cover">+</div>';
-  html+='<div class="gp-option-info"><div class="gp-option-title">Create New Gallery</div>';
-  html+='<div class="gp-option-meta">Start fresh with a new gallery</div></div></div>';
+  html+='<div class="gp-option-info"><div class="gp-option-title">Create New Collection</div>';
+  html+='<div class="gp-option-meta">Start fresh with a new collection</div></div></div>';
   var existingSeries=getSeries();
   var existingSeriesWithPhotos=existingSeries.filter(function(s){return(STATE.photos&&STATE.photos[s.id]&&STATE.photos[s.id].length>0);});
   var allGals=[];
@@ -1862,14 +2060,15 @@ function createNewGalleryForWork(){
   var works=getPortfolioWorks();
   var w=works[idx];
   if(!w)return;
-  var title=prompt("Gallery title:");
+  var title=prompt("Collection title:","New Collection");
   if(!title||!title.trim())return;
   if(!w.galleries)w.galleries=[];
-  w.galleries.push({id:"gal-"+Date.now(),title:title.trim(),subtitle:"",coverAssetId:"",photos:[]});
+  w.galleries.push({id:"gal-"+Date.now(),title:title.trim(),subtitle:"",coverAssetId:"",photos:[],folders:[]});
   expandedWork=w.id;
   editingGallery=w.id+'__'+(w.galleries.length-1);
-  showPortfolioPanel();
-  toast("Gallery created — upload or assign photos");
+  showPortfolioPanel(true);
+  saveAll();
+  toast("Collection created — add folders or photos");
 }
 function importLegacyGallery(seriesId){
   var idx=galPickerWorkIdx;
@@ -1887,12 +2086,14 @@ function importLegacyGallery(seriesId){
     title:s?s.title:'Imported Gallery',
     subtitle:s?s.subtitle||'':'',
     coverAssetId:coverAssetId,
-    photos:photos.slice()
+    photos:photos.slice(),
+    folders:[]
   });
   expandedWork=w.id;
   editingGallery=w.id+'__'+(w.galleries.length-1);
   showPortfolioPanel();
-  toast("Gallery imported with "+photos.length+" photo"+(photos.length!==1?"s":""));
+  saveAll();
+  toast("Collection imported with "+photos.length+" photo"+(photos.length!==1?"s":""));
 }
 function copyGalleryToWork(galId){
   var idx=galPickerWorkIdx;
@@ -1952,15 +2153,15 @@ function setGalleryCover(workIdx,galIdx,pid){
   var w=getPortfolioWorks()[workIdx];
   if(!w||!w.galleries||!w.galleries[galIdx])return;
   w.galleries[galIdx].coverAssetId=pid;
-  showPortfolioPanel();
-  toast("Gallery cover set");
+  showPortfolioPanel(true);
+  toast("Collection cover set");
 }
 
 function removeGalleryPhoto(workIdx,galIdx,photoIdx){
   var w=getPortfolioWorks()[workIdx];
   if(!w||!w.galleries||!w.galleries[galIdx])return;
   w.galleries[galIdx].photos.splice(photoIdx,1);
-  showPortfolioPanel();
+  showPortfolioPanel(true);
 }
 
 async function uploadToGallery(files,workIdx,galIdx){
@@ -1997,7 +2198,7 @@ async function uploadToGallery(files,workIdx,galIdx){
     }
   }
   if(uploaded>0){
-    setTimeout(function(){showPortfolioPanel();},1000);
+    setTimeout(function(){showPortfolioPanel(true);},1000);
     toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded");
   }
 }
@@ -2226,6 +2427,15 @@ function confirmPick(){
     if(w3&&w3.galleries&&w3.galleries[gIdx2]){
       if(!w3.galleries[gIdx2].photos)w3.galleries[gIdx2].photos=[];
       if(!w3.galleries[gIdx2].photos.includes(pkActive))w3.galleries[gIdx2].photos.push(pkActive);
+    }
+  }
+  if(pkCtx==="folder"){
+    var fparts=pkSlotId.replace('__folder__','').split('__');
+    var fwIdx=parseInt(fparts[0]);var fgIdx=parseInt(fparts[1]);var ffIdx=parseInt(fparts[2]);
+    var fw=getPortfolioWorks()[fwIdx];
+    if(fw&&fw.galleries&&fw.galleries[fgIdx]&&fw.galleries[fgIdx].folders&&fw.galleries[fgIdx].folders[ffIdx]){
+      if(!fw.galleries[fgIdx].folders[ffIdx].photos)fw.galleries[fgIdx].folders[ffIdx].photos=[];
+      if(!fw.galleries[fgIdx].folders[ffIdx].photos.includes(pkActive))fw.galleries[fgIdx].folders[ffIdx].photos.push(pkActive);
     }
   }
   if(pkCtx==="ogimage"){
@@ -2517,7 +2727,7 @@ function openAssignModal(){
   let html='';
   const works=getPortfolioWorks();
   if(works.length){
-    html+=`<div class="am-section"><span class="am-section-lbl">Gallery (under Portfolio Work)</span>`;
+    html+=`<div class="am-section"><span class="am-section-lbl">Collection (under Collection Set)</span>`;
     works.forEach(function(w,wi){
       var gals=w.galleries||[];
       if(gals.length){
@@ -2525,9 +2735,15 @@ function openAssignModal(){
           html+=`<button class="am-opt" onclick="imgAssignToGallery(${wi},${gi})" data-testid="am-gal-${wi}-${gi}">
             <span style="font-size:9px;color:var(--dim);width:20px">&#x25a3;</span> ${esc(w.title)} &rarr; ${esc(g.title||'Untitled')}
           </button>`;
+          var folders=g.folders||[];
+          folders.forEach(function(f,fi){
+            html+=`<button class="am-opt" onclick="imgAssignToFolder(${wi},${gi},${fi})" data-testid="am-folder-${wi}-${gi}-${fi}" style="padding-left:32px">
+              <span style="font-size:9px;color:var(--dim);width:20px">&#x25b9;</span> ${esc(g.title||'Untitled')} &rarr; ${esc(f.title||'Untitled Folder')}
+            </button>`;
+          });
         });
       } else {
-        html+=`<div style="padding:4px 12px;font-size:10px;color:var(--dim)">${esc(w.title)} — no galleries yet</div>`;
+        html+=`<div style="padding:4px 12px;font-size:10px;color:var(--dim)">${esc(w.title)} — no collections yet</div>`;
       }
     });
     html+=`</div>`;
@@ -2583,6 +2799,34 @@ function imgAssignToGallery(workIdx,galIdx){
   renderImgGrid();
   imgUpdateToolbar();
   toast(added+" image"+(added>1?"s":"")+" added to "+esc(g.title||"gallery")+" — saving...");
+  saveAll();
+}
+
+function imgAssignToFolder(workIdx,galIdx,folderIdx){
+  var works=getPortfolioWorks();
+  var w=works[workIdx];
+  if(!w||!w.galleries||!w.galleries[galIdx]||!w.galleries[galIdx].folders||!w.galleries[galIdx].folders[folderIdx])return;
+  var f=w.galleries[galIdx].folders[folderIdx];
+  if(!f.photos)f.photos=[];
+  var added=0;
+  imgSelected.forEach(function(cfId){
+    if(!f.photos.includes(cfId)){
+      f.photos.push(cfId);
+      added++;
+    }
+    if(!CF_PHOTOS[cfId]){
+      var img=imgAllImages.find(function(i){return i.id===cfId;});
+      CF_PHOTOS[cfId]={id:cfId,filename:img?.filename||cfId};
+      if(!STATE.cf)STATE.cf={assetMeta:{}};
+      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+      STATE.cf.assetMeta[cfId]=CF_PHOTOS[cfId];
+    }
+  });
+  closeAssignModal();
+  imgSelected=new Set();
+  renderImgGrid();
+  imgUpdateToolbar();
+  toast(added+" image"+(added>1?"s":"")+" added to folder "+esc(f.title||"folder")+" — saving...");
   saveAll();
 }
 
