@@ -10,14 +10,6 @@ mkdirSync(publicDir, { recursive: true });
 const staticDirs = ["assets", "pages", "admin"];
 const staticFiles = ["index.html"];
 
-const dataDir = path.join(rootDir, "data");
-const distDataDir = path.join(distDir, "data");
-mkdirSync(distDataDir, { recursive: true });
-const distConfig = path.join(distDataDir, "tia-config.json");
-if (existsSync(path.join(dataDir, "tia-config.json"))) {
-  cpSync(path.join(dataDir, "tia-config.json"), distConfig);
-}
-
 staticFiles.forEach(function(file) {
   const src = path.join(rootDir, file);
   if (existsSync(src)) {
@@ -35,20 +27,32 @@ staticDirs.forEach(function(dir) {
 const serverCode = `
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const multer = require("multer");
 const exifReader = require("exif-reader");
+const pg = require("pg");
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 app.use(express.json({ limit: "10mb" }));
 
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+
+async function ensureConfigTable() {
+  await pool.query(\`
+    CREATE TABLE IF NOT EXISTS site_config (
+      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      config JSONB NOT NULL DEFAULT '{}',
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  \`);
+}
+ensureConfigTable().catch(function(err) { console.log("[DB] Table init error:", err.message); });
+
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_IMAGES_TOKEN = process.env.CF_IMAGES_TOKEN;
 const CF_IMAGES_HASH = process.env.CF_IMAGES_HASH;
 var CF_HASH = CF_IMAGES_HASH;
-var CONFIG_PATH = path.join(__dirname, "data", "tia-config.json");
 
 function extractExif(buffer) {
   try {
@@ -221,26 +225,30 @@ app.post("/api/ai/enrich", async function(req, res) {
   }
 });
 
-app.get("/api/config", function(req, res) {
+app.get("/api/config", async function(req, res) {
   try {
-    if (fs.existsSync(CONFIG_PATH)) {
-      var data = fs.readFileSync(CONFIG_PATH, "utf-8");
-      res.type("application/json").send(data);
+    var result = await pool.query("SELECT config FROM site_config WHERE id = 1");
+    if (result.rows.length > 0) {
+      res.type("application/json").send(JSON.stringify(result.rows[0].config));
     } else {
       res.json({});
     }
   } catch (err) {
+    console.log("[Config] DB read error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/config", function(req, res) {
+app.post("/api/config", async function(req, res) {
   try {
-    var dir = path.dirname(CONFIG_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(req.body, null, 2));
+    await pool.query(
+      "INSERT INTO site_config (id, config, updated_at) VALUES (1, $1::jsonb, NOW()) ON CONFLICT (id) DO UPDATE SET config = EXCLUDED.config, updated_at = NOW()",
+      [JSON.stringify(req.body)]
+    );
+    console.log("[Config] Saved to DB");
     res.json({ success: true, timestamp: new Date().toISOString() });
   } catch (err) {
+    console.log("[Config] DB save error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

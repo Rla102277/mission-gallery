@@ -4,6 +4,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import multer from "multer";
 import exifReader from "exif-reader";
+import pg from "pg";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,19 @@ const app = express();
 const port = Number(process.env.PORT) || 5000;
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 app.use(express.json({ limit: "10mb" }));
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+
+async function ensureConfigTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS site_config (
+      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      config JSONB NOT NULL DEFAULT '{}',
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+}
+ensureConfigTable().catch(err => console.log("[DB] Table init error:", err.message));
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_IMAGES_TOKEN = process.env.CF_IMAGES_TOKEN;
@@ -176,34 +190,35 @@ app.get("/api/images/config", (_req, res) => {
   res.json({ hash: CF_IMAGES_HASH || "" });
 });
 
-const CONFIG_PATH = path.join(__dirname, "..", "data", "tia-config.json");
-
-app.get("/api/config", (_req, res) => {
+app.get("/api/config", async (_req, res) => {
   try {
-    if (fs.existsSync(CONFIG_PATH)) {
-      const data = fs.readFileSync(CONFIG_PATH, "utf-8");
-      res.type("application/json").send(data);
+    const result = await pool.query("SELECT config FROM site_config WHERE id = 1");
+    if (result.rows.length > 0) {
+      res.type("application/json").send(JSON.stringify(result.rows[0].config));
     } else {
       res.json({});
     }
   } catch (err: any) {
+    console.log(`[Config] DB read error: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/config", (req, res) => {
+app.post("/api/config", async (req, res) => {
   try {
-    const dir = path.dirname(CONFIG_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(req.body, null, 2));
+    await pool.query(
+      `INSERT INTO site_config (id, config, updated_at) VALUES (1, $1::jsonb, NOW())
+       ON CONFLICT (id) DO UPDATE SET config = EXCLUDED.config, updated_at = NOW()`,
+      [JSON.stringify(req.body)]
+    );
     const seriesCount = Object.keys(req.body.series || {}).length;
     const worksCount = (req.body.portfolioWorks || []).length;
     let photoCount = 0;
     if (req.body.photos) Object.values(req.body.photos).forEach((arr: any) => { if (Array.isArray(arr)) photoCount += arr.length; });
-    console.log(`[Config] Saved — ${seriesCount} series, ${worksCount} works, ${photoCount} photos`);
+    console.log(`[Config] Saved to DB — ${seriesCount} series, ${worksCount} works, ${photoCount} photos`);
     res.json({ success: true, timestamp: new Date().toISOString() });
   } catch (err: any) {
-    console.log(`[Config] Save error: ${err.message}`);
+    console.log(`[Config] DB save error: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
