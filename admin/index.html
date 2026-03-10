@@ -948,8 +948,8 @@ function showPagesPanel(keepEditor){
   if(!STATE.pages)STATE.pages={};
   ensurePageDefaults(activePage);
   const pg=STATE.pages[activePage]||{title:'',metaDescription:'',blocks:[]};
-  html+='<div class="page-meta"><div><span class="field-lbl">Page Title</span><input class="input" value="'+esc(pg.title||'')+'" oninput="updatePageMeta(\'title\',this.value)" data-testid="input-page-title" placeholder="e.g. About — The Infinite Arch"></div>';
-  html+='<div><span class="field-lbl">Meta Description</span><input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta"></div>';
+  html+='<div class="page-meta"><div><span class="field-lbl">Page Title</span>'+aiWrap('<input class="input" value="'+esc(pg.title||'')+'" oninput="updatePageMeta(\'title\',this.value)" data-testid="input-page-title" placeholder="e.g. About — The Infinite Arch">',aiBtn('page',0,'title'))+'</div>';
+  html+='<div><span class="field-lbl">Meta Description</span>'+aiWrap('<input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta">',aiBtn('page',0,'metaDescription'))+'</div>';
   html+='<div><span class="field-lbl">OG Image (Social Share)</span><div style="display:flex;align-items:center;gap:12px">';
   if(pg.ogImage){
     var ogThumb=TIA.photoUrl(pg.ogImage,'thumb');
@@ -1143,12 +1143,17 @@ function pickBlockImage(idx,field){
 function renderBlockEditor(b,idx){
   var d=b.data||{};
   var html='<div class="bl-editor" data-testid="block-editor-'+idx+'">';
+  var _noAiFields={ctaUrl:1,url:1,email:1,placeholder:1,buttonText:1,price:1};
   var f=function(label,field,val,type){
     type=type||'text';
-    html+='<div class="field"><span class="field-lbl">'+label+'</span>';
-    if(type==='textarea') html+='<textarea class="textarea" oninput="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="input-bl-'+field+'-'+idx+'">'+esc(val||'')+'</textarea>';
-    else html+='<input class="input" type="text" value="'+esc(val||'')+'" oninput="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="input-bl-'+field+'-'+idx+'">';
-    html+='</div>';
+    var inputHtml;
+    if(type==='textarea') inputHtml='<textarea class="textarea" oninput="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="input-bl-'+field+'-'+idx+'">'+esc(val||'')+'</textarea>';
+    else inputHtml='<input class="input" type="text" value="'+esc(val||'')+'" oninput="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="input-bl-'+field+'-'+idx+'">';
+    if(!_noAiFields[field]){
+      html+='<div class="field"><span class="field-lbl">'+label+'</span>'+aiWrap(inputHtml,aiBtn('block',idx,field))+'</div>';
+    } else {
+      html+='<div class="field"><span class="field-lbl">'+label+'</span>'+inputHtml+'</div>';
+    }
   };
   var sel=function(label,field,val,options){
     html+='<div class="field"><span class="field-lbl">'+label+'</span><select onchange="updateBlockData('+idx+',\''+field+'\',this.value)" data-testid="select-bl-'+field+'-'+idx+'">';
@@ -1687,14 +1692,15 @@ var editingFolder=null;
 
 function renderFolderEditor(workIdx,galIdx,folderIdx,f){
   var html='<div style="padding:8px 10px;border-top:1px solid var(--border);background:rgba(0,0,0,.15)" data-testid="folder-editor-'+workIdx+'-'+galIdx+'-'+folderIdx+'">';
+  var fEnc=workIdx*1000000+galIdx*1000+folderIdx;
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
-  html+='<div><span class="field-lbl">Title</span><input class="input" value="'+esc(f.title||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'title\',this.value)" data-testid="input-folder-title-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px"></div>';
-  html+='<div><span class="field-lbl">Subtitle</span><input class="input" value="'+esc(f.subtitle||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'subtitle\',this.value)" data-testid="input-folder-subtitle-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px"></div>';
+  html+='<div><span class="field-lbl">Title</span>'+aiWrap('<input class="input" value="'+esc(f.title||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'title\',this.value)" data-testid="input-folder-title-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px">',aiBtn('folder',fEnc,'title'))+'</div>';
+  html+='<div><span class="field-lbl">Subtitle</span>'+aiWrap('<input class="input" value="'+esc(f.subtitle||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'subtitle\',this.value)" data-testid="input-folder-subtitle-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px">',aiBtn('folder',fEnc,'subtitle'))+'</div>';
   html+='</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">';
-  html+='<div><span class="field-lbl">Type</span><input class="input" value="'+esc(f.type||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'type\',this.value)" data-testid="input-folder-type-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Triptych"></div>';
-  html+='<div><span class="field-lbl">Camera</span><input class="input" value="'+esc(f.camera||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'camera\',this.value)" data-testid="input-folder-camera-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. GFX 100S II"></div>';
-  html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(f.location||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'location\',this.value)" data-testid="input-folder-location-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Iceland"></div>';
+  html+='<div><span class="field-lbl">Type</span>'+aiWrap('<input class="input" value="'+esc(f.type||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'type\',this.value)" data-testid="input-folder-type-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Triptych">',aiBtn('folder',fEnc,'type'))+'</div>';
+  html+='<div><span class="field-lbl">Camera</span>'+aiWrap('<input class="input" value="'+esc(f.camera||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'camera\',this.value)" data-testid="input-folder-camera-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. GFX 100S II">',aiBtn('folder',fEnc,'camera'))+'</div>';
+  html+='<div><span class="field-lbl">Location</span>'+aiWrap('<input class="input" value="'+esc(f.location||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'location\',this.value)" data-testid="input-folder-location-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Iceland">',aiBtn('folder',fEnc,'location'))+'</div>';
   html+='</div>';
   html+='<div class="gallery-upload" style="padding:12px" onclick="document.getElementById(\'fuUpload_'+workIdx+'_'+galIdx+'_'+folderIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToFolder(event.dataTransfer.files,'+workIdx+','+galIdx+','+folderIdx+')">';
   html+='<div class="gallery-upload-ico" style="font-size:14px">&#x2191;</div>';
@@ -1889,6 +1895,7 @@ async function runAi(type,idx,field,mode){
   closeAllAiMenus();
   var w=type==='work'?getPortfolioWorks()[idx]:null;
   var context,current,actualField=field;
+  var gal=null,folder=null,wIdx,gIdx,fIdx;
   if(type==='series'){
     var parts=field.split('__');
     actualField=parts[0];
@@ -1897,13 +1904,35 @@ async function runAi(type,idx,field,mode){
     context={title:s.title||'',type:s.type||'',location:s.location||'',camera:s.camera||'',subtitle:s.subtitle||''};
     current=s[actualField]||'';
   } else if(type==='gal'){
-    var wIdx=Math.floor(idx/1000);
-    var gIdx=idx%1000;
+    wIdx=Math.floor(idx/1000);
+    gIdx=idx%1000;
     var works=getPortfolioWorks();
     w=works[wIdx];
-    var gal=(w&&w.galleries)?w.galleries[gIdx]:null;
+    gal=(w&&w.galleries)?w.galleries[gIdx]:null;
     context={title:w?w.title:'',type:w?w.type:'',location:gal?gal.location||w.location:'',camera:gal?gal.camera||w.camera:'',subtitle:gal?gal.subtitle:''};
     current=gal?gal[actualField]||'':'';
+  } else if(type==='folder'){
+    wIdx=Math.floor(idx/1000000);
+    gIdx=Math.floor((idx%1000000)/1000);
+    fIdx=idx%1000;
+    var works2=getPortfolioWorks();
+    w=works2[wIdx];
+    gal=(w&&w.galleries)?w.galleries[gIdx]:null;
+    folder=(gal&&gal.folders)?gal.folders[fIdx]:null;
+    if(!folder)return;
+    context={title:folder.title||'',type:folder.type||w?.type||'',location:folder.location||gal?.location||w?.location||'',camera:folder.camera||gal?.camera||w?.camera||'',subtitle:folder.subtitle||'',parentWork:w?.title||'',parentGallery:gal?.title||''};
+    current=folder[actualField]||'';
+  } else if(type==='block'){
+    var blocks=getPageBlocks(activePage);
+    var blk=blocks[idx];
+    if(!blk)return;
+    var bd=blk.data||{};
+    context={blockType:blk.type,page:activePage,title:bd.title||bd.heading||'',subtitle:bd.subtitle||'',eyebrow:bd.eyebrow||'',body:bd.body||''};
+    current=bd[actualField]||'';
+  } else if(type==='page'){
+    var pg=STATE.pages&&STATE.pages[activePage]?STATE.pages[activePage]:{};
+    context={page:activePage,title:pg.title||'',metaDescription:pg.metaDescription||''};
+    current=pg[actualField]||'';
   } else {
     if(!w)return;
     context={title:w.title||'',type:w.type||'',location:w.location||'',camera:w.camera||'',subtitle:w.subtitle||''};
@@ -1933,6 +1962,21 @@ async function runAi(type,idx,field,mode){
       if(STATE.series&&STATE.series[seriesId])STATE.series[seriesId][actualField]=data.text;
       var input=document.querySelector('[data-testid="input-series-'+actualField+'-'+seriesId+'"]');
       if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
+    } else if(type==='folder'&&folder){
+      folder[actualField]=data.text;
+      var input=document.querySelector('[data-testid="input-folder-'+actualField+'-'+wIdx+'-'+gIdx+'-'+fIdx+'"]');
+      if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
+    } else if(type==='block'){
+      if(!blk.data)blk.data={};
+      blk.data[actualField]=data.text;
+      var input=document.querySelector('[data-testid="input-bl-'+actualField+'-'+idx+'"]');
+      if(input){if(input.tagName==='TEXTAREA')input.value=data.text;else input.value=data.text;}
+    } else if(type==='page'){
+      if(!STATE.pages[activePage])STATE.pages[activePage]={};
+      STATE.pages[activePage][actualField]=data.text;
+      var testId=actualField==='title'?'input-page-title':'input-page-meta';
+      var input=document.querySelector('[data-testid="'+testId+'"]');
+      if(input){input.value=data.text;}
     }
     toast('AI: '+actualField+' updated');
   }catch(err){
