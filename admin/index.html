@@ -1476,7 +1476,7 @@ function getPortfolioWorks(){
 
 function showPortfolioPanel(keepEditing){
   if(!keepEditing)editingGallery=null;
-  setPanel("Portfolio","Collection Sets &amp; Collections","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Collection Set</button> <button class='btn' onclick='createNewGallery()' data-testid='btn-new-standalone-gallery'>+ Standalone Gallery</button>");
+  setPanel("Portfolio","Collection Sets &amp; Collections","<button class='btn pri' onclick='addPortfolioWork()' data-testid='btn-add-portfolio-work'>+ Add Collection Set</button>");
   var works=getPortfolioWorks();
   var html='';
   if(!works.length){
@@ -1515,27 +1515,6 @@ function showPortfolioPanel(keepEditing){
       }
       html+='</div></div>';
     });
-    html+='</div>';
-  }
-  var series=getSeries();
-  var standaloneGals=series.filter(function(s){return !isGalleryInWork(s.id);});
-  if(standaloneGals.length||Object.keys(STATE.series||{}).length){
-    html+='<div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border)">';
-    html+='<div class="sec-lbl"><span>Standalone Galleries</span></div>';
-    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">';
-    standaloneGals.forEach(function(s){
-      var cnt=(STATE.photos?.[s.id]||[]).length;
-      html+='<button class="sb-item '+(activeView===s.id?'active':'')+'" data-view="'+s.id+'" onclick="setView(\''+s.id+'\')" data-testid="btn-gallery-'+s.id+'"><span class="sb-name">'+esc(s.title)+'</span>'+(cnt?'<span class="sb-cnt has">'+cnt+'</span>':'')+'</button>';
-    });
-    html+='</div>';
-    if(activeView){
-      var sid=activeView;
-      var s=series.find(function(x){return x.id===sid;});
-      var photos=getSeriesPhotos(sid);
-      var cover=STATE.series?.[sid]?.coverAssetId||photos[0]?.assetId;
-      var isCustom=!TIA.DEFAULT_SERIES.find(function(d){return d.id===sid;});
-      html+=renderSeriesContent(sid,s,photos,cover,isCustom);
-    }
     html+='</div>';
   }
   document.getElementById("panelBody").innerHTML=html;
