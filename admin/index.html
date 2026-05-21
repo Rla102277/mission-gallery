@@ -343,9 +343,9 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
   <div class="auth-box">
     <span class="auth-logo">The Infinite Arch &middot; Admin</span>
     <h1 class="auth-h">Photo Manager</h1>
-    <div class="auth-field"><label>Access Code</label><input type="password" id="authPass" autocomplete="off" autofocus onkeydown="if(event.key==='Enter')doLogin()" placeholder="Enter access code"></div>
-    <button class="auth-btn" onclick="doLogin()">Enter</button>
-    <div class="auth-err" id="authErr">Incorrect code</div>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 18px 0;text-align:center;line-height:1.5">Sign in with your Replit account.<br>Only authorized admins may enter.</p>
+    <a class="auth-btn" href="/api/login" style="display:block;text-align:center;text-decoration:none" data-testid="link-login">Continue with Replit</a>
+    <div class="auth-err" id="authErr" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -567,33 +567,54 @@ const TIA = {
 };
 
 
-// AUTH
-// AUTH
-let authed = sessionStorage.getItem("tia_auth") === "1";
-var ADMIN_PIN = "tia2026";
+// AUTH (Replit Auth — admin allowlist enforced server-side)
+let authed = false;
+let currentUser = null;
 
-function doLogin() {
-  const p = document.getElementById("authPass").value;
-  const lp = p.toLowerCase();
-  if (lp === "tia2026" || lp === "tai2026") {
-    sessionStorage.setItem("tia_auth","1");
+function doLogout() { window.location.href = "/api/logout"; }
+
+async function checkAuth() {
+  try {
+    const r = await fetch("/api/auth/user", { credentials: "include" });
+    if (r.status === 401) {
+      showLoginScreen();
+      return;
+    }
+    const user = await r.json();
+    if (!user || !user.isAdmin) {
+      showLoginScreen(user && user.email ? `Account ${user.email} is not authorized for admin access.` : "Account not authorized.");
+      return;
+    }
+    currentUser = user;
     authed = true;
     document.getElementById("authScreen").style.display = "none";
     document.getElementById("app").classList.add("show");
     init();
-  } else {
-    document.getElementById("authErr").classList.add("show");
-    document.getElementById("authPass").value = "";
-    document.getElementById("authPass").focus();
+  } catch (e) {
+    showLoginScreen("Could not reach server. Please try again.");
   }
 }
 
-function doLogout() { sessionStorage.removeItem("tia_auth"); location.reload(); }
-
-if (authed) {
-  document.getElementById("authScreen").style.display = "none";
-  document.getElementById("app").classList.add("show");
+function showLoginScreen(errMsg) {
+  document.getElementById("authScreen").style.display = "flex";
+  document.getElementById("app").classList.remove("show");
+  const err = document.getElementById("authErr");
+  if (errMsg) {
+    err.textContent = errMsg + " ";
+    const logoutLink = document.createElement("a");
+    logoutLink.href = "/api/logout";
+    logoutLink.textContent = "Sign out & try a different account";
+    logoutLink.style.color = "var(--gold)";
+    logoutLink.style.textDecoration = "underline";
+    err.appendChild(logoutLink);
+    err.classList.add("show");
+  } else {
+    err.textContent = "";
+    err.classList.remove("show");
+  }
 }
+
+checkAuth();
 
 // STATE
 let STATE={};
@@ -1924,7 +1945,8 @@ async function runAi(type,idx,field,mode){
   try{
     var resp=await fetch('/api/ai/enrich',{
       method:'POST',
-      headers:{'Content-Type':'application/json','X-Admin-Pin':ADMIN_PIN},
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
       body:JSON.stringify({field:actualField,current:current,context:context,mode:mode})
     });
     var data=await resp.json();
