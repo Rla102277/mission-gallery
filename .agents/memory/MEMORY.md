@@ -1,0 +1,1 @@
+- [Production build bundling](build-cjs-bundling.md) — `script/build.cjs` must bundle the REAL `server/index.ts` via esbuild; it previously shipped a stale hand-written server copy that diverged from source.

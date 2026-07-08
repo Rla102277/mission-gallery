@@ -260,7 +260,10 @@ function registerRoutes() {
     }
   });
 
-  app.use(express.static(path.join(__dirname, "..")));
+  const publicDir = fs.existsSync(path.join(__dirname, "public"))
+    ? path.join(__dirname, "public")
+    : path.join(__dirname, "..");
+  app.use(express.static(publicDir));
 }
 
 (async () => {
