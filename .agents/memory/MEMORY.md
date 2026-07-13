@@ -2,3 +2,5 @@
 - [Local dev sync](local-dev-sync.md) — user pushes from desktop via GitHub replit-main; after pulls, install new deps before debugging; meta tags live in static HTML heads.
 - [Photo format duality](photo-format-duality.md) — config photos are mixed SmugMug objects + dead CF strings; always render via TIA._mapPhotoIds/photoUrl, never string methods.
 - [SmugMug API visibility](smugmug-visibility.md) — public API key only sees PUBLIC albums; check album privacy before suspecting code when albums are missing.
+- [Lightroom integration](lightroom-integration.md) — while(1){} strip on every lr.adobe.io response, HMAC state on OAuth, redirect URIs must be registered in Adobe console; never serve images live from Lightroom.
+- [Admin e2e testing](lightroom-integration.md) — when testing with Replit Auth override as rla1022@gmail.com, always reuse sub "admin-test-lr"; a new sub with the same email hits the users_email_key unique constraint.

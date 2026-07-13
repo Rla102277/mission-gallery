@@ -34,9 +34,15 @@
 
   function render(html){ el.innerHTML = html; }
 
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
   function showError(msg, detail){
-    render('<p class="status err" data-testid="text-lr-error">' + msg + '</p>' +
-      (detail ? '<p><code>' + detail + '</code></p>' : '') +
+    render('<p class="status err" data-testid="text-lr-error">' + esc(msg) + '</p>' +
+      (detail ? '<p><code>' + esc(detail) + '</code></p>' : '') +
       '<button class="btn" onclick="location.href=\'/test/lightroom\'" data-testid="button-lr-retry">Try Again</button>');
   }
 
@@ -50,13 +56,13 @@
     return res.json();
   }
 
-  async function exchangeCode(code){
+  async function exchangeCode(code, state){
     render('<p><span class="spin"></span>Completing connection…</p>');
     var res = await fetch('/api/adobe/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ code: code })
+      body: JSON.stringify({ code: code, state: state })
     });
     var data = await res.json().catch(function(){ return {}; });
     if (!res.ok) throw new Error((data && data.error) || 'Token exchange failed');
@@ -71,10 +77,13 @@
       '<p><span class="spin"></span>Verifying token…</p>');
     try {
       var token = await LightroomAuth.getValidAccessToken();
-      var res = await fetch('/api/adobe/test-token?token=' + encodeURIComponent(token), { credentials: 'include' });
+      var res = await fetch('/api/adobe/test-token', {
+        credentials: 'include',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
       var data = await res.json().catch(function(){ return {}; });
       var who = data && data.user && (data.user.email || data.user.name || '');
-      render('<p class="status ok" data-testid="text-lr-connected">&#10003; Lightroom connected' + (who ? ' as <strong>' + who + '</strong>' : '') + '</p>' +
+      render('<p class="status ok" data-testid="text-lr-connected">&#10003; Lightroom connected' + (who ? ' as <strong>' + esc(who) + '</strong>' : '') + '</p>' +
         '<p>You can close this tab and return to the admin panel.</p>' +
         '<a class="btn" href="/admin/" data-testid="link-back-admin">Back to Admin</a> ' +
         '<button class="btn secondary" onclick="LightroomAuth.clear();location.reload()" data-testid="button-lr-disconnect">Disconnect</button>');
@@ -86,12 +95,13 @@
   async function init(){
     var params = new URLSearchParams(window.location.search);
     var code = params.get('code');
+    var state = params.get('state');
     var oauthError = params.get('error');
     try {
       if (oauthError) {
         return showError('Adobe sign-in was cancelled or failed', oauthError + ': ' + (params.get('error_description') || ''));
       }
-      if (code) return await exchangeCode(code);
+      if (code) return await exchangeCode(code, state);
       if (LightroomAuth.isConnected()) return showConnected();
 
       var cfg = await getAppConfig();
@@ -99,10 +109,11 @@
         '?client_id=' + encodeURIComponent(cfg.clientId) +
         '&scope=' + encodeURIComponent(SCOPES) +
         '&response_type=code' +
+        '&state=' + encodeURIComponent(cfg.state || '') +
         '&redirect_uri=' + encodeURIComponent(cfg.redirectUri);
       render('<p>Link your Adobe Lightroom account so the admin panel can browse albums and push photos to the site.</p>' +
-        '<p><code>' + cfg.redirectUri + '</code><br><small>(must be registered in the Adobe developer console)</small></p>' +
-        '<a class="btn" href="' + authUrl + '" data-testid="button-lr-connect">Connect Lightroom</a>');
+        '<p><code>' + esc(cfg.redirectUri) + '</code><br><small>(must be registered in the Adobe developer console)</small></p>' +
+        '<a class="btn" href="' + esc(authUrl) + '" data-testid="button-lr-connect">Connect Lightroom</a>');
     } catch (e) {
       if (e.message === 'AUTH') {
         render('<p>You must be signed in as the site admin first.</p>' +
