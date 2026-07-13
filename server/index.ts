@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import fs from "fs";
@@ -18,14 +19,83 @@ app.use(express.json({ limit: "10mb" }));
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
+let configCache: Record<string, any> = {};
+
+async function queryWithTimeout<T>(queryFn: () => Promise<T>, timeoutMs: number = 3000): Promise<T | null> {
+  try {
+    return await Promise.race([
+      queryFn(),
+      new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error("Query timeout")), timeoutMs)
+      )
+    ]);
+  } catch (err) {
+    return null;
+  }
+}
+
+async function loadConfigFromDB(): Promise<Record<string, any> | null> {
+  const result = await queryWithTimeout(async () => {
+    const res = await pool.query("SELECT config FROM site_config WHERE id = 1");
+    return res.rows.length > 0 ? res.rows[0].config : null;
+  }, 3000);
+  return result;
+}
+
+function loadConfigFromFile(): Record<string, any> {
+  try {
+    const configPath = path.join(__dirname, "..", "data", "tia-config.json");
+    const content = fs.readFileSync(configPath, "utf-8");
+    return JSON.parse(content);
+  } catch (err) {
+    console.log("[Config] File fallback failed, using empty config");
+    return {};
+  }
+}
+
+async function initializeConfigCache() {
+  console.log("[Config] Initializing cache...");
+  const dbConfig = await loadConfigFromDB();
+  if (dbConfig) {
+    configCache = dbConfig;
+    console.log("[Config] Loaded from Postgres");
+  } else {
+    configCache = loadConfigFromFile();
+    console.log("[Config] Loaded from file fallback (DB unavailable or timeout)");
+  }
+}
+
+function refreshConfigFromDB() {
+  loadConfigFromDB().then(dbConfig => {
+    if (dbConfig) {
+      configCache = dbConfig;
+      console.log("[Config] Background refresh from Postgres succeeded");
+    }
+  }).catch(() => {
+    // Silently skip on DB errors
+  });
+}
+
+function writeConfigToFile(config: Record<string, any>) {
+  try {
+    const configPath = path.join(__dirname, "..", "data", "tia-config.json");
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log("[Config] Written to file fallback");
+  } catch (err) {
+    console.log("[Config] File write failed:", err);
+  }
+}
+
 async function ensureConfigTable() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS site_config (
-      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-      config JSONB NOT NULL DEFAULT '{}',
-      updated_at TIMESTAMP DEFAULT NOW()
-    )
-  `);
+  await queryWithTimeout(async () => {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS site_config (
+        id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+        config JSONB NOT NULL DEFAULT '{}',
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+  }, 5000);
 }
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
@@ -192,17 +262,8 @@ function registerRoutes() {
   });
 
   app.get("/api/config", async (_req, res) => {
-    try {
-      const result = await pool.query("SELECT config FROM site_config WHERE id = 1");
-      if (result.rows.length > 0) {
-        res.type("application/json").send(JSON.stringify(result.rows[0].config));
-      } else {
-        res.json({});
-      }
-    } catch (err: any) {
-      console.log(`[Config] DB read error: ${err.message}`);
-      res.status(500).json({ error: err.message });
-    }
+    refreshConfigFromDB();
+    res.type("application/json").send(JSON.stringify(configCache));
   });
 
   app.post("/api/config", isAuthenticated, requireAdmin, async (req, res) => {
@@ -212,6 +273,8 @@ function registerRoutes() {
          ON CONFLICT (id) DO UPDATE SET config = EXCLUDED.config, updated_at = NOW()`,
         [JSON.stringify(req.body)]
       );
+      configCache = req.body;
+      writeConfigToFile(req.body);
       const seriesCount = Object.keys(req.body.series || {}).length;
       const worksCount = (req.body.portfolioWorks || []).length;
       let photoCount = 0;
@@ -268,20 +331,25 @@ function registerRoutes() {
 
 (async () => {
   try {
+    await initializeConfigCache();
     await ensureConfigTable();
-    await ensureAuthTables();
-    await setupAuth(app);
-    registerAuthRoutes(app);
+    await queryWithTimeout(async () => await ensureAuthTables(), 5000);
+    if (process.env.REPL_ID) {
+      await queryWithTimeout(async () => await setupAuth(app), 5000);
+      registerAuthRoutes(app);
+    } else {
+      console.log("Local mode: Replit Auth disabled");
+    }
     registerRoutes();
     app.listen(port, "0.0.0.0", () => {
       console.log(`Static file server listening on port ${port}`);
       console.log(`[CF] Account: ${CF_ACCOUNT_ID ? "configured" : "MISSING"}`);
       console.log(`[CF] Token: ${CF_IMAGES_TOKEN ? "configured" : "MISSING"}`);
       console.log(`[CF] Hash: ${CF_IMAGES_HASH || "MISSING"}`);
-      console.log(`[Auth] Replit Auth enabled`);
+      console.log(`[Auth] Replit Auth ${process.env.REPL_ID ? "enabled" : "disabled"}`);
     });
   } catch (err: any) {
-    console.error("[Startup] Fatal error:", err.message);
+    console.error("[Startup] Fatal error:", err);
     process.exit(1);
   }
 })();
