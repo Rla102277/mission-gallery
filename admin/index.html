@@ -825,6 +825,7 @@ function removePhotoFromSeries(sid,pid){
   if(!STATE.photos[sid])return;
   STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==pid);
   showPortfolioPanel();
+  saveAll();
   toast("Photo removed from series");
 }
 
@@ -2562,7 +2563,8 @@ function confirmPick(){
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to gallery");
+    toast("Photo added — saving...");
+    saveAll();
     return;
   }
   
@@ -2589,7 +2591,8 @@ function confirmPick(){
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to gallery");
+    toast("Photo added to gallery — saving...");
+    saveAll();
     return;
   }
   
@@ -2616,7 +2619,8 @@ function confirmPick(){
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to folder");
+    toast("Photo added to folder — saving...");
+    saveAll();
     return;
   }
   
