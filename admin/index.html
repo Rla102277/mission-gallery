@@ -1118,13 +1118,7 @@ function updateBlockDetailItem(idx,itemIdx,val){
 }
 
 function pickBlockImage(idx,field){
-  pkSlotId='__block__'+idx+'__'+field;
-  pkCtx='block';
-  pkActive=null;
-  document.getElementById("pkTitle").textContent='Image for block';
-  document.getElementById("pkConfirm").disabled=true;
-  renderPkFilter();renderPkGrid(null);
-  document.getElementById("picker").classList.add("open");
+  openSmugMugPicker('block','__block__'+idx+'__'+field);
 }
 
 function renderBlockEditor(b,idx){
@@ -1584,6 +1578,13 @@ function renderGalleryEditor(w,workIdx,galIdx){
   html+='<div><span class="field-lbl">Camera</span><input class="input" value="'+esc(g.camera||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'camera\',this.value)" data-testid="input-gal-camera-'+workIdx+'-'+galIdx+'" placeholder="e.g. GFX 100S II"></div>';
   html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(g.location||'')+'" oninput="updateGallery('+workIdx+','+galIdx+',\'location\',this.value)" data-testid="input-gal-location-'+workIdx+'-'+galIdx+'" placeholder="e.g. Iceland"></div>';
   html+='</div>';
+  var coverThumb=g.coverAssetId?TIA.photoUrl(g.coverAssetId,'thumb'):'';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Cover Image</span>';
+  html+='<div style="display:flex;align-items:center;gap:10px">';
+  if(coverThumb) html+='<img src="'+coverThumb+'" style="width:60px;height:40px;object-fit:cover;border:1px solid var(--border)">';
+  html+='<button class="btn" onclick="openSmugMugPicker(\'galcover\',\''+workIdx+'__'+galIdx+'\')" data-testid="btn-gal-cover-'+workIdx+'-'+galIdx+'">'+(coverThumb?'Change':'Choose')+'</button>';
+  if(coverThumb) html+='<button class="btn red" onclick="updateGallery('+workIdx+','+galIdx+',\'coverAssetId\',\'\');showPortfolioPanel(true)">Remove</button>';
+  html+='</div></div>';
 
   html+='<div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px">';
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
@@ -1667,6 +1668,13 @@ function renderFolderEditor(workIdx,galIdx,folderIdx,f){
   html+='<div><span class="field-lbl">Camera</span>'+aiWrap('<input class="input" value="'+esc(f.camera||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'camera\',this.value)" data-testid="input-folder-camera-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. GFX 100S II">',aiBtn('folder',fEnc,'camera'))+'</div>';
   html+='<div><span class="field-lbl">Location</span>'+aiWrap('<input class="input" value="'+esc(f.location||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'location\',this.value)" data-testid="input-folder-location-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Iceland">',aiBtn('folder',fEnc,'location'))+'</div>';
   html+='</div>';
+  var fCoverThumb=f.coverAssetId?TIA.photoUrl(f.coverAssetId,'thumb'):'';
+  html+='<div style="margin-bottom:8px"><span class="field-lbl">Cover Image</span>';
+  html+='<div style="display:flex;align-items:center;gap:8px">';
+  if(fCoverThumb) html+='<img src="'+fCoverThumb+'" style="width:50px;height:35px;object-fit:cover;border:1px solid var(--border)">';
+  html+='<button class="btn" onclick="openSmugMugPicker(\'foldercover\',\''+workIdx+'__'+galIdx+'__'+folderIdx+'\')" data-testid="btn-folder-cover-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:10px">'+(fCoverThumb?'Change':'Choose')+'</button>';
+  if(fCoverThumb) html+='<button class="btn red" onclick="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'coverAssetId\',\'\');showPortfolioPanel(true)" style="font-size:10px">Remove</button>';
+  html+='</div></div>';
   html+='<div class="gallery-upload" style="padding:12px" onclick="openSmugMugPicker(\'folder\',\''+workIdx+'__'+galIdx+'__'+folderIdx+'\')">';
   html+='<div class="gallery-upload-ico" style="font-size:14px">&#x2191;</div>';
   html+='<div class="gallery-upload-lbl" style="font-size:9px">Click to add photos from SmugMug</div>';
@@ -1938,7 +1946,7 @@ function renderWorkEditor(w,idx){
   html+='</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
   html+='<div><span class="field-lbl">Location</span><input class="input" value="'+esc(w.location||'')+'" oninput="updateWork('+idx+',\'location\',this.value)" data-testid="input-work-location-'+idx+'"></div>';
-  html+='<div><span class="field-lbl">Cover</span><button class="btn" style="width:100%" onclick="openPicker(\''+w.id+'\',\'portfolio\',\'Cover for '+esc(w.title||'Work')+'\')" data-testid="btn-work-cover-'+idx+'">Choose Cover Image</button></div>';
+  html+='<div><span class="field-lbl">Cover</span><button class="btn" style="width:100%" onclick="openSmugMugPicker(\'portfolio\',\''+w.id+'\')" data-testid="btn-work-cover-'+idx+'">Choose Cover Image</button></div>';
   html+='</div>';
   html+='<div><span class="field-lbl">Description</span>'+aiWrap('<textarea class="input" rows="3" oninput="updateWork('+idx+',\'description\',this.value)" data-testid="input-work-desc-'+idx+'">'+esc(w.description||'')+'</textarea>',aiBtn('work',idx,'description'))+'</div>';
   var featId=w.featuredImageId||'';
@@ -1947,7 +1955,7 @@ function renderWorkEditor(w,idx){
   html+='<span class="field-lbl">Featured Image <span style="font-size:8px;opacity:.4;letter-spacing:1px;text-transform:none">(hero-style single image for this work)</span></span>';
   html+='<div style="display:flex;align-items:center;gap:12px;margin-top:6px">';
   if(featUrl) html+='<div style="width:120px;height:80px;overflow:hidden;border:1px solid var(--border)"><img src="'+featUrl+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>';
-  html+='<button class="btn" onclick="openPicker(\'__feat__'+idx+'\',\'workfeat\',\'Featured Image for '+esc(w.title||'Work')+'\')" data-testid="btn-work-feat-'+idx+'">'+(featUrl?'Change':'Choose')+'</button>';
+  html+='<button class="btn" onclick="openSmugMugPicker(\'workfeat\',\'__feat__'+idx+'\')" data-testid="btn-work-feat-'+idx+'">'+(featUrl?'Change':'Choose')+'</button>';
   if(featUrl) html+='<button class="btn red" onclick="updateWork('+idx+',\'featuredImageId\',\'\');showPortfolioPanel()" data-testid="btn-work-feat-remove-'+idx+'">Remove</button>';
   html+='</div></div>';
   html+='</div>';
@@ -2486,17 +2494,17 @@ function confirmPick(){
     return;
   }
   
-  if(pkCtx==="home"){STATE.home[pkSlotId]=pkActive;}
+  if(pkCtx==="home"){if(smugmugImage){STATE.home[pkSlotId]={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{STATE.home[pkSlotId]=pkActive;}}
   if(pkCtx==="portfolio"){
     var works=getPortfolioWorks();
     var w=works.find(function(w){return w.id===pkSlotId;});
-    if(w)w.coverAssetId=pkActive;
+    if(w){if(smugmugImage){w.coverAssetId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{w.coverAssetId=pkActive;}}
   }
   if(pkCtx==="block"){
     var parts=pkSlotId.replace('__block__','').split('__');
     var bIdx=parseInt(parts[0]);var bField=parts[1];
     var blocks=getPageBlocks(activePage);
-    if(blocks[bIdx])blocks[bIdx].data[bField]=pkActive;
+    if(blocks[bIdx]){if(smugmugImage){blocks[bIdx].data[bField]={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{blocks[bIdx].data[bField]=pkActive;}}
   }
   if(pkCtx==="blockphotos"){
     var bIdx2=parseInt(pkSlotId.replace('__blockphotos__',''));
@@ -2549,13 +2557,13 @@ function confirmPick(){
   if(pkCtx==="workfeat"){
     var fIdx=parseInt(pkSlotId.replace('__feat__',''));
     var wf=getPortfolioWorks()[fIdx];
-    if(wf)wf.featuredImageId=pkActive;
+    if(wf){if(smugmugImage){wf.featuredImageId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{wf.featuredImageId=pkActive;}}
   }
   if(pkCtx==="galcover"){
     var gparts=pkSlotId.replace('__galcover__','').split('__');
     var wIdx=parseInt(gparts[0]);var gIdx=parseInt(gparts[1]);
     var w2=getPortfolioWorks()[wIdx];
-    if(w2&&w2.galleries&&w2.galleries[gIdx])w2.galleries[gIdx].coverAssetId=pkActive;
+    if(w2&&w2.galleries&&w2.galleries[gIdx]){if(smugmugImage){w2.galleries[gIdx].coverAssetId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{w2.galleries[gIdx].coverAssetId=pkActive;}}
   }
   if(pkCtx==="galassign"){
     var aparts=pkSlotId.replace('__galassign__','').split('__');
@@ -2573,6 +2581,14 @@ function confirmPick(){
     if(fw&&fw.galleries&&fw.galleries[fgIdx]&&fw.galleries[fgIdx].folders&&fw.galleries[fgIdx].folders[ffIdx]){
       if(!fw.galleries[fgIdx].folders[ffIdx].photos)fw.galleries[fgIdx].folders[ffIdx].photos=[];
       if(!fw.galleries[fgIdx].folders[ffIdx].photos.includes(pkActive))fw.galleries[fgIdx].folders[ffIdx].photos.push(pkActive);
+    }
+  }
+  if(pkCtx==="foldercover"){
+    var fcparts=pkSlotId.replace("__foldercover__","").split("__");
+    var fcwIdx=parseInt(fcparts[0]);var fcgIdx=parseInt(fcparts[1]);var fcfIdx=parseInt(fcparts[2]);
+    var fcw=getPortfolioWorks()[fcwIdx];
+    if(fcw&&fcw.galleries&&fcw.galleries[fcgIdx]&&fcw.galleries[fcgIdx].folders&&fcw.galleries[fcgIdx].folders[fcfIdx]){
+      if(smugmugImage){fcw.galleries[fcgIdx].folders[fcfIdx].coverAssetId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{fcw.galleries[fcgIdx].folders[fcfIdx].coverAssetId=pkActive;}
     }
   }
   if(pkCtx==="ogimage"){
