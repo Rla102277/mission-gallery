@@ -121,7 +121,8 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 ## Admin Panel Features
 - **Portfolio tab**: Works with expandable gallery hierarchy — create/edit/reorder/delete works, add/edit/reorder/delete galleries, import default galleries into works, upload/assign photos to galleries, set gallery covers, inline editors with AI enrichment
 - **Images tab**: Browse all CF images, organize into folders, assign to galleries (under portfolio works), set as portfolio cover, mark as print, assign to legacy series, upload, delete, EXIF display on cards
-- **Pages tab**: Page builder — select page (Home/Portfolio/About/Prints/Hope Hike/Contact), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
+- **Pages tab**: Page builder — select page (Home/Portfolio/About/Prints/Hope Hike/Contact + custom pages), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
+- **Add Page**: "+ Add Page" button in the Pages tab — form with name, auto slug (validated: lowercase/hyphens, unique, reserved-slug blocklist), add-to-nav checkbox + optional position, starter template (blank or clone existing page). Creates `config.pages[slug]` + nav entry `{href:"/pages/{slug}.html", label, visible:true}` together, saved via POST /api/config. Custom pages get View Page + Delete Page (delete also removes the nav entry). Custom pages have NO physical HTML file — the server serves `/pages/{slug}.html` dynamically from config via a generic block-shell route registered after express.static (physical shells win)
 - **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor, Cloudflare connection status
 
 ## Portfolio & Gallery Hierarchy System (Lightroom-style)

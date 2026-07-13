@@ -920,6 +920,103 @@ const BLOCK_TYPES=[
 ];
 let activePage='home';
 let editingBlockIdx=null;
+let addingPage=false;
+const RESERVED_SLUGS=['home','portfolio','about','prints','hope-hike','contact','galleries','gallery','admin','api','assets','pages','work','test','index','lightroom-connect'];
+
+function isDefaultPage(slug){return PAGE_SLUGS.some(function(p){return p.slug===slug;});}
+
+function customPageSlugs(){
+  return Object.keys(STATE.pages||{}).filter(function(s){
+    return !isDefaultPage(s)&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s);
+  });
+}
+
+function pageLabel(slug){
+  var nav=(STATE.navigation||[]).find(function(n){return n.href==='/pages/'+slug+'.html';});
+  if(nav&&nav.label)return nav.label;
+  return slug.split('-').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' ');
+}
+
+function apSlugify(s){
+  return String(s||'').toLowerCase().trim().replace(/['\u2019]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+
+function openAddPage(){
+  addingPage=true;
+  showPagesPanel(true);
+  setTimeout(function(){var el=document.getElementById('apName');if(el)el.focus();},50);
+}
+
+function cancelAddPage(){
+  addingPage=false;
+  showPagesPanel(true);
+}
+
+function apAutoSlug(){
+  var slugEl=document.getElementById('apSlug');
+  if(slugEl&&!slugEl.dataset.touched)slugEl.value=apSlugify(document.getElementById('apName').value);
+}
+
+function renderAddPageForm(){
+  var tplOpts='<option value="blank">Blank page</option>';
+  PAGE_SLUGS.forEach(function(p){tplOpts+='<option value="'+p.slug+'">Clone: '+esc(p.label)+'</option>';});
+  customPageSlugs().forEach(function(s){tplOpts+='<option value="'+s+'">Clone: '+esc(pageLabel(s))+'</option>';});
+  return '<div class="card" style="margin-bottom:16px" data-testid="card-add-page"><span class="sec-lbl">New Page</span>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'
+    +'<div><span class="field-lbl">Page Name (shown in nav)</span><input class="input" id="apName" oninput="apAutoSlug()" placeholder="e.g. Exhibitions" data-testid="input-page-name"></div>'
+    +'<div><span class="field-lbl">Slug (URL)</span><input class="input" id="apSlug" oninput="this.dataset.touched=1" placeholder="e.g. exhibitions" data-testid="input-page-slug"></div>'
+    +'<div><span class="field-lbl">Starter Template</span><select class="input" id="apTemplate" data-testid="select-page-template">'+tplOpts+'</select></div>'
+    +'<div><span class="field-lbl">Navigation</span><div style="display:flex;align-items:center;gap:10px;margin-top:8px">'
+    +'<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="apNav" checked data-testid="check-add-to-nav"> Add to navigation</label>'
+    +'<input class="input" id="apNavPos" type="number" min="1" placeholder="Position (end)" style="width:130px" data-testid="input-nav-position"></div></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:14px">'
+    +'<button class="btn pri" onclick="createNewPage()" data-testid="btn-create-page">Create Page</button>'
+    +'<button class="btn" onclick="cancelAddPage()" data-testid="btn-cancel-add-page">Cancel</button>'
+    +'</div>'
+    +'<p style="font-size:11px;opacity:.5;margin:10px 0 0">The page will be served at /pages/&lt;slug&gt;.html — no HTML file needed.</p>'
+    +'</div>';
+}
+
+async function createNewPage(){
+  var name=(document.getElementById('apName').value||'').trim();
+  var slug=apSlugify(document.getElementById('apSlug').value||'');
+  if(!name){toast('Enter a page name',true);return;}
+  if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)){toast('Slug must use lowercase letters, numbers and hyphens',true);return;}
+  if(RESERVED_SLUGS.indexOf(slug)>=0){toast('"'+slug+'" is reserved — pick another slug',true);return;}
+  if(!STATE.pages)STATE.pages={};
+  if(STATE.pages[slug]){toast('A page with that slug already exists',true);return;}
+  var tpl=(document.getElementById('apTemplate')||{}).value||'blank';
+  var blocks=[];
+  if(tpl!=='blank'){
+    var src=(STATE.pages[tpl]&&STATE.pages[tpl].blocks)||(typeof BlockRenderer!=='undefined'&&BlockRenderer.PAGE_DEFAULTS&&BlockRenderer.PAGE_DEFAULTS[tpl])||[];
+    blocks=JSON.parse(JSON.stringify(src));
+  }
+  STATE.pages[slug]={title:'',metaDescription:'',blocks:blocks};
+  if(document.getElementById('apNav').checked){
+    var nav=getNavigation();
+    var entry={label:name,href:'/pages/'+slug+'.html',visible:true};
+    var pos=parseInt((document.getElementById('apNavPos')||{}).value,10);
+    if(!isNaN(pos)&&pos>=1&&pos<=nav.length)nav.splice(pos-1,0,entry);
+    else nav.push(entry);
+  }
+  addingPage=false;
+  activePage=slug;
+  editingBlockIdx=null;
+  await saveAll();
+  showPagesPanel();
+}
+
+async function deletePage(slug){
+  if(isDefaultPage(slug))return;
+  if(!confirm('Delete the "'+pageLabel(slug)+'" page? Its navigation link will be removed too.'))return;
+  delete STATE.pages[slug];
+  if(STATE.navigation)STATE.navigation=STATE.navigation.filter(function(n){return n.href!=='/pages/'+slug+'.html';});
+  activePage='home';
+  editingBlockIdx=null;
+  await saveAll();
+  showPagesPanel();
+}
 
 function getPageBlocks(slug){
   if(!STATE.pages)STATE.pages={};
@@ -943,10 +1040,21 @@ function showPagesPanel(keepEditor){
   PAGE_SLUGS.forEach(function(p){
     html+='<button class="page-sel-btn '+(activePage===p.slug?'active':'')+'" onclick="selectPage(\''+p.slug+'\')" data-testid="btn-page-'+p.slug+'">'+p.label+'</button>';
   });
+  customPageSlugs().forEach(function(s){
+    html+='<button class="page-sel-btn '+(activePage===s?'active':'')+'" onclick="selectPage(\''+s+'\')" data-testid="btn-page-'+s+'">'+esc(pageLabel(s))+'</button>';
+  });
+  html+='<button class="page-sel-btn" style="border-style:dashed" onclick="openAddPage()" data-testid="btn-add-page">+ Add Page</button>';
   html+='</div>';
+  if(addingPage)html+=renderAddPageForm();
   if(!STATE.pages)STATE.pages={};
   ensurePageDefaults(activePage);
   const pg=STATE.pages[activePage]||{title:'',metaDescription:'',blocks:[]};
+  if(!isDefaultPage(activePage)){
+    html+='<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">'
+      +'<a class="btn" href="/pages/'+activePage+'.html" target="_blank" data-testid="link-view-page">View Page &#8599;</a>'
+      +'<button class="btn red" onclick="deletePage(\''+activePage+'\')" data-testid="btn-delete-page">Delete Page</button>'
+      +'</div>';
+  }
   html+='<div class="page-meta"><div><span class="field-lbl">Page Title</span>'+aiWrap('<input class="input" value="'+esc(pg.title||'')+'" oninput="updatePageMeta(\'title\',this.value)" data-testid="input-page-title" placeholder="e.g. About — The Infinite Arch">',aiBtn('page',0,'title'))+'</div>';
   html+='<div><span class="field-lbl">Meta Description</span>'+aiWrap('<input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta">',aiBtn('page',0,'metaDescription'))+'</div>';
   html+='<div><span class="field-lbl">OG Image (Social Share)</span><div style="display:flex;align-items:center;gap:12px">';

@@ -243,6 +243,83 @@ function registerRoutes() {
     res.sendFile(path.join(publicDir, "pages", "lightroom-connect.html"));
   });
   app.use(express.static(publicDir));
+
+  // Pages created in the admin page builder have no physical HTML file.
+  // Static files above win for the built-in pages; anything else under
+  // /pages/{slug}.html is served as a generic block-driven thin shell when
+  // config.pages[slug] exists.
+  app.get("/pages/:page", async (req, res, next) => {
+    const m = /^([a-z0-9]+(?:-[a-z0-9]+)*)\.html$/.exec(String(req.params.page || ""));
+    if (!m) return next();
+    const slug = m[1];
+    if (!configCache?.pages?.[slug]) {
+      // May be freshly created on another instance — check the DB once.
+      try {
+        const dbConfig = await loadConfigFromDB();
+        if (dbConfig) configCache = dbConfig;
+      } catch {}
+      if (!configCache?.pages?.[slug]) return next();
+    }
+    res.type("html").send(dynamicPageShell(slug));
+  });
+}
+
+function dynamicPageShell(slug: string): string {
+  // slug is validated as [a-z0-9-]+ before this is called
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Infinite Arch</title>
+  <meta name="description" content="">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="The Infinite Arch">
+  <meta property="og:description" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <link rel="stylesheet" href="/assets/css/tia.css">
+  <link rel="stylesheet" href="/assets/css/blocks.css">
+</head>
+<body>
+<div class="page-content" id="pageBlocks" data-testid="page-content-${slug}"></div>
+<script src="/assets/js/tia-data.js"></script>
+<script src="/assets/js/block-renderer.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    var cfRes = await fetch('/api/images/config');
+    if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
+  } catch(e) {}
+  await TIA.load();
+  var state = TIA.getState();
+  var pageData = state.pages && state.pages['${slug}'];
+  var blocks = (pageData && pageData.blocks) || [];
+  document.getElementById('pageBlocks').innerHTML = BlockRenderer.render(blocks, state);
+  if (pageData && pageData.title) {
+    document.title = pageData.title;
+    var ogt = document.querySelector('meta[property="og:title"]');
+    if (ogt) ogt.content = pageData.title;
+  }
+  if (pageData && pageData.metaDescription) {
+    var md = document.querySelector('meta[name="description"]');
+    if (md) md.content = pageData.metaDescription;
+    var ogd = document.querySelector('meta[property="og:description"]');
+    if (ogd) ogd.content = pageData.metaDescription;
+  }
+  if (pageData && pageData.ogImage) {
+    var ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.content = TIA.photoUrl(pageData.ogImage, 'hero');
+  }
+  var ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.content = window.location.href;
+  BlockRenderer.initReveals();
+});
+</script>
+<script src="/assets/js/components.js"></script>
+<script src="/assets/js/tia.js"></script>
+</body>
+</html>`;
 }
 
 (async () => {

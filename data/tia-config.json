@@ -2,13 +2,61 @@
   "cf": {
     "hash": "W2O7t84FW9eAHociDpBWSg",
     "assetMeta": {
+      "lr-3b40567643e44909926a43c44a83d2c1": {
+        "id": "lr-3b40567643e44909926a43c44a83d2c1",
+        "filename": "Structural Interval.raf"
+      },
+      "lr-4f9e3ddacfd14f7fae487aab90a11625": {
+        "id": "lr-4f9e3ddacfd14f7fae487aab90a11625",
+        "filename": "Sentinel.jpg"
+      },
+      "lr-64c1eee1876e4f1d92ed18b65a83e697": {
+        "id": "lr-64c1eee1876e4f1d92ed18b65a83e697",
+        "filename": "e3ddacfd14f7fae487aab90a11625-Topaz-Gigapixel-2X.dng"
+      },
+      "lr-6854647d57f64f2baf0495fd7a5cceae": {
+        "id": "lr-6854647d57f64f2baf0495fd7a5cceae",
+        "filename": "TheIconicSentinel.jpeg"
+      },
+      "lr-79cf0cc79bb344ba8a3bbf776fe0096b": {
+        "id": "lr-79cf0cc79bb344ba8a3bbf776fe0096b",
+        "filename": "TheRedRoof1.HIF"
+      },
+      "lr-859a74b4197e42c28a833eb2963fa2ae": {
+        "id": "lr-859a74b4197e42c28a833eb2963fa2ae",
+        "filename": "TheSanctuaryChurch.RAF"
+      },
+      "lr-944ab9a178d04ccb98149136b9ef8498": {
+        "id": "lr-944ab9a178d04ccb98149136b9ef8498",
+        "filename": "TheRoadToLife_Walter_Mitty.jpeg"
+      },
+      "lr-9d593aa84ce6485ba4889986b9856276": {
+        "id": "lr-9d593aa84ce6485ba4889986b9856276",
+        "filename": "DSCF3031.RAF"
+      },
+      "lr-cd2aabf536ac4034aefe7ad90f5e5a1c": {
+        "id": "lr-cd2aabf536ac4034aefe7ad90f5e5a1c",
+        "filename": "TheSilentThreshold.RAF"
+      },
+      "061cdec0-079b-4eb5-ed7c-7ce72e14a500": {
+        "id": "061cdec0-079b-4eb5-ed7c-7ce72e14a500",
+        "filename": "DSCF3031.jpg"
+      },
       "081ed7a0-19d5-496f-ef91-6cf7147a8d00": {
         "id": "081ed7a0-19d5-496f-ef91-6cf7147a8d00",
         "filename": "TheSanctuaryChurch.jpg"
       },
+      "0aaf145f-8f30-45eb-2f74-010463118400": {
+        "id": "0aaf145f-8f30-45eb-2f74-010463118400",
+        "filename": "TheBirthOfABerg.jpg"
+      },
       "147747a1-045a-4675-6315-cb098b808200": {
         "id": "147747a1-045a-4675-6315-cb098b808200",
         "filename": "TheSilentThreshold.jpg"
+      },
+      "150a5aaf-d6d7-435e-f68f-f15867327100": {
+        "id": "150a5aaf-d6d7-435e-f68f-f15867327100",
+        "filename": "DSCF2756.jpg"
       },
       "1787f712-20e7-4fc0-d8f1-1bdf3af8ea00": {
         "id": "1787f712-20e7-4fc0-d8f1-1bdf3af8ea00",
@@ -18,6 +66,18 @@
         "id": "18ebfe0b-cb57-42e7-d656-2062edd24a00",
         "filename": "TheQuintessence_of_Life_The Moment.jpg"
       },
+      "1943be27-9d01-445f-8544-45cc9ad11a00": {
+        "id": "1943be27-9d01-445f-8544-45cc9ad11a00",
+        "filename": "TheIconicSentinel.jpg"
+      },
+      "1a67d9d6-c1ac-4407-ea70-339f96ee0d00": {
+        "id": "1a67d9d6-c1ac-4407-ea70-339f96ee0d00",
+        "filename": "TheBasaltCathedral2.jpg"
+      },
+      "2857af4d-a12a-47d1-8f03-51ade283cb00": {
+        "id": "2857af4d-a12a-47d1-8f03-51ade283cb00",
+        "filename": "TheWIld3.jpg"
+      },
       "2abca690-e8f5-4ea7-e6f5-91b858511100": {
         "id": "2abca690-e8f5-4ea7-e6f5-91b858511100",
         "filename": "The_Grandeur_Seljalandsfoss.jpg"
@@ -25,6 +85,18 @@
       "2d4c2ae7-fc8d-468b-dbe6-9f41862b2800": {
         "id": "2d4c2ae7-fc8d-468b-dbe6-9f41862b2800",
         "filename": "TheEmptySoul.jpg"
+      },
+      "3280c43e-adc9-4f55-730f-51a279bbe000": {
+        "id": "3280c43e-adc9-4f55-730f-51a279bbe000",
+        "filename": "TheEmergence.jpg"
+      },
+      "33491681-d79a-496c-8ff1-70dc3599ca00": {
+        "id": "33491681-d79a-496c-8ff1-70dc3599ca00",
+        "filename": "TheIceDiamond.jpg"
+      },
+      "336c718e-ab7e-45d4-a135-6c3c60f2ba00": {
+        "id": "336c718e-ab7e-45d4-a135-6c3c60f2ba00",
+        "filename": "GFXS4126.jpg"
       },
       "35709f79-7b3f-4672-6f6b-dc112dea2500": {
         "id": "35709f79-7b3f-4672-6f6b-dc112dea2500",
@@ -38,6 +110,10 @@
         "id": "38ad590f-88a8-4b86-905d-7db7a42ba100",
         "filename": "TheAzureVein.jpg"
       },
+      "3f4baa9e-97b9-4c27-dfa5-a253b92b1500": {
+        "id": "3f4baa9e-97b9-4c27-dfa5-a253b92b1500",
+        "filename": "TheSanctuaryChurch.jpg"
+      },
       "4136d14d-36e5-44c0-b338-904c8b56c900": {
         "id": "4136d14d-36e5-44c0-b338-904c8b56c900",
         "filename": "TheIceDiamond.jpg"
@@ -46,25 +122,73 @@
         "id": "42634935-6f83-4eee-559a-9f798ba62900",
         "filename": "TheSeaStacks.jpg"
       },
+      "46d239e8-16be-4bb4-cff0-146250174b00": {
+        "id": "46d239e8-16be-4bb4-cff0-146250174b00",
+        "filename": "IMG_0963.jpg"
+      },
+      "477c2dd0-146f-4d04-c051-44b3a8868800": {
+        "id": "477c2dd0-146f-4d04-c051-44b3a8868800",
+        "filename": "TheWild5.jpg"
+      },
+      "48cafff8-066d-4fe5-0669-64267c46c900": {
+        "id": "48cafff8-066d-4fe5-0669-64267c46c900",
+        "filename": "TheHeart.jpg"
+      },
       "4bc727d5-5b3d-401d-8771-76cc8fc10700": {
         "id": "4bc727d5-5b3d-401d-8771-76cc8fc10700",
         "filename": "TheBasaltMaw.jpg"
+      },
+      "4cbd4c58-9e4b-448b-f8a5-4cf438c91b00": {
+        "id": "4cbd4c58-9e4b-448b-f8a5-4cf438c91b00",
+        "filename": "DiamondOnABeach.jpg"
+      },
+      "4d32cb9e-99f0-470c-f714-746f8233b800": {
+        "id": "4d32cb9e-99f0-470c-f714-746f8233b800",
+        "filename": "TheChasm.jpg"
+      },
+      "4de330a9-fc82-4a1b-ea16-fe2f723cd300": {
+        "id": "4de330a9-fc82-4a1b-ea16-fe2f723cd300",
+        "filename": "WhereDragonsFly.jpg"
       },
       "52262239-7aac-4938-8b4e-cbc89d210500": {
         "id": "52262239-7aac-4938-8b4e-cbc89d210500",
         "filename": "TheAscent.jpg"
       },
+      "5aa1ba07-8a13-49fa-d58c-b39a58752c00": {
+        "id": "5aa1ba07-8a13-49fa-d58c-b39a58752c00",
+        "filename": "TheCrystalSkull.jpg"
+      },
+      "5aa38a2b-5112-471b-70c1-00d673752100": {
+        "id": "5aa38a2b-5112-471b-70c1-00d673752100",
+        "filename": "TheQuintessence_of_Life_The Moment.jpg"
+      },
       "5b1e9358-d0df-4662-7e36-994f26ade500": {
         "id": "5b1e9358-d0df-4662-7e36-994f26ade500",
         "filename": "TheApproach.jpg"
+      },
+      "5c8cc859-971f-4424-b3e2-fc83cd9e1200": {
+        "id": "5c8cc859-971f-4424-b3e2-fc83cd9e1200",
+        "filename": "TheAzureVein.jpg"
       },
       "66847d6e-071d-4c3c-a91b-fa53feb48200": {
         "id": "66847d6e-071d-4c3c-a91b-fa53feb48200",
         "filename": "TheHidden_GljÃºfrabÃºi.jpg"
       },
+      "70e9c487-75b1-4730-d70b-587c7ffd7b00": {
+        "id": "70e9c487-75b1-4730-d70b-587c7ffd7b00",
+        "filename": "TheBasaltGeometry.jpg"
+      },
       "723f307c-a3ae-4e0e-85f9-b6f0a882ad00": {
         "id": "723f307c-a3ae-4e0e-85f9-b6f0a882ad00",
         "filename": "TheRedRoof1.jpg"
+      },
+      "73832d05-096e-44e9-3d4b-e3825c0cd700": {
+        "id": "73832d05-096e-44e9-3d4b-e3825c0cd700",
+        "filename": "TheFirstLight.jpg"
+      },
+      "73a65d42-d3db-4e18-78f9-70f6fdeb8500": {
+        "id": "73a65d42-d3db-4e18-78f9-70f6fdeb8500",
+        "filename": "PurePower.jpg"
       },
       "7885cd48-1894-4ed3-d551-321c6df5fe00": {
         "id": "7885cd48-1894-4ed3-d551-321c6df5fe00",
@@ -73,6 +197,14 @@
       "7a811e32-b332-4a8b-a647-be4beaacdd00": {
         "id": "7a811e32-b332-4a8b-a647-be4beaacdd00",
         "filename": "TheTexture.jpg"
+      },
+      "7bd882fd-638e-4ed9-cfb4-93b9d0354600": {
+        "id": "7bd882fd-638e-4ed9-cfb4-93b9d0354600",
+        "filename": "EphemeralArch.jpg"
+      },
+      "7c5ef18f-2fcf-456d-c400-78d340d34c00": {
+        "id": "7c5ef18f-2fcf-456d-c400-78d340d34c00",
+        "filename": "TheCrashOnDiamonds.jpg"
       },
       "7cddccc6-5b4c-4397-76a1-07d48f19e600": {
         "id": "7cddccc6-5b4c-4397-76a1-07d48f19e600",
@@ -90,6 +222,10 @@
         "id": "7e61eccf-6921-46cf-3e31-ca176bced200",
         "filename": "EphemeralArch.jpg"
       },
+      "7f8d5ed0-4297-46aa-6a75-912795280f00": {
+        "id": "7f8d5ed0-4297-46aa-6a75-912795280f00",
+        "filename": "TheRedRoof1.jpg"
+      },
       "81d67b2b-83dd-41eb-e312-2b1c475f2700": {
         "id": "81d67b2b-83dd-41eb-e312-2b1c475f2700",
         "filename": "FloatingGIants.jpg"
@@ -97,6 +233,10 @@
       "84d8d6da-7060-40f1-48c3-18956631e600": {
         "id": "84d8d6da-7060-40f1-48c3-18956631e600",
         "filename": "TheWildIcleandicHorse.jpg"
+      },
+      "86ae443b-cafc-46e0-7e36-2245bf183800": {
+        "id": "86ae443b-cafc-46e0-7e36-2245bf183800",
+        "filename": "TheStaircase.jpg"
       },
       "86d3b556-5e0a-4f88-dc39-ad46fb873c00": {
         "id": "86d3b556-5e0a-4f88-dc39-ad46fb873c00",
@@ -110,9 +250,17 @@
         "id": "8f0e4bd9-b736-4a19-298f-58d7df8ad500",
         "filename": "TheWIld4.jpg"
       },
+      "8fd43213-a965-459b-0e09-79f3bad00800": {
+        "id": "8fd43213-a965-459b-0e09-79f3bad00800",
+        "filename": "DSCF2716.jpg"
+      },
       "914062aa-16a8-40ac-3638-cf0cface3600": {
         "id": "914062aa-16a8-40ac-3638-cf0cface3600",
         "filename": "TheEmergence-Edit.jpg"
+      },
+      "9245e00b-ba0c-48dd-6691-394b760a0800": {
+        "id": "9245e00b-ba0c-48dd-6691-394b760a0800",
+        "filename": "TheApproach-topaz.jpg"
       },
       "928fe159-74a2-47b0-0cdd-9fa8b0f37300": {
         "id": "928fe159-74a2-47b0-0cdd-9fa8b0f37300",
@@ -126,9 +274,25 @@
         "id": "95f870d4-31a9-49c8-8589-4d6ea1ee9200",
         "filename": "TheRoadToLife_Walter_Mitty.jpg"
       },
+      "a0982ae1-4595-4187-9801-16523cd53500": {
+        "id": "a0982ae1-4595-4187-9801-16523cd53500",
+        "filename": "TheBasaltMaw.jpg"
+      },
+      "a8e4833f-6030-4023-1e93-1b0f8094ec00": {
+        "id": "a8e4833f-6030-4023-1e93-1b0f8094ec00",
+        "filename": "TheHorizonOverRekyavik.jpg"
+      },
       "aa1e2b18-8716-4ce7-b120-3f365aa7cb00": {
         "id": "aa1e2b18-8716-4ce7-b120-3f365aa7cb00",
         "filename": "TheAscent.jpg"
+      },
+      "aa620978-a9f6-4eff-6eca-803ac9990a00": {
+        "id": "aa620978-a9f6-4eff-6eca-803ac9990a00",
+        "filename": "TheArch1.jpg"
+      },
+      "aa8a7263-5ff3-4cba-3e79-6f3ed3392800": {
+        "id": "aa8a7263-5ff3-4cba-3e79-6f3ed3392800",
+        "filename": "TheEmptySoul.jpg"
       },
       "ab5ed910-bcd9-442b-492d-81d5525e2800": {
         "id": "ab5ed910-bcd9-442b-492d-81d5525e2800",
@@ -138,13 +302,69 @@
         "id": "acb4cb09-23e5-4a6a-db08-e6ed8a7f9a00",
         "filename": "WhereDragonsFly.jpg"
       },
+      "b235bc28-f073-414f-b3dc-8f61f7bf1d00": {
+        "id": "b235bc28-f073-414f-b3dc-8f61f7bf1d00",
+        "filename": "TheSilentThreshold-2.jpg"
+      },
+      "b3775384-9812-4911-3356-4b9653ddaf00": {
+        "id": "b3775384-9812-4911-3356-4b9653ddaf00",
+        "filename": "TheFadingLight.jpg"
+      },
       "b42e7758-3a26-4a6e-3f33-65c7b6136400": {
         "id": "b42e7758-3a26-4a6e-3f33-65c7b6136400",
         "filename": "TheBirthOfABerg.jpg"
       },
+      "b61ea51c-9658-4c50-8ca3-e374541e8f00": {
+        "id": "b61ea51c-9658-4c50-8ca3-e374541e8f00",
+        "filename": "TheEmergence-Edit.jpg"
+      },
+      "b71ecadd-a353-4af2-d71d-b1b16aa70300": {
+        "id": "b71ecadd-a353-4af2-d71d-b1b16aa70300",
+        "filename": "TheHorizon.jpg"
+      },
+      "b8f2383a-0180-426b-ed44-ecdd0de74700": {
+        "id": "b8f2383a-0180-426b-ed44-ecdd0de74700",
+        "filename": "TheSeaStacks-Edit.jpg"
+      },
+      "bbf400dc-45aa-443f-3f41-e874e8136400": {
+        "id": "bbf400dc-45aa-443f-3f41-e874e8136400",
+        "filename": "DSCF3025.jpg"
+      },
+      "bbf78a76-ccdd-4e34-969d-2ad030a58c00": {
+        "id": "bbf78a76-ccdd-4e34-969d-2ad030a58c00",
+        "filename": "GroundedJewels.jpg"
+      },
+      "bdf632b2-f32c-4f76-1429-83b07a277e00": {
+        "id": "bdf632b2-f32c-4f76-1429-83b07a277e00",
+        "filename": "TheWildIcleandicHorse.jpg"
+      },
+      "bf781bce-2fc1-4211-cbfa-be1c3d465c00": {
+        "id": "bf781bce-2fc1-4211-cbfa-be1c3d465c00",
+        "filename": "FloatingGIants.jpg"
+      },
+      "c22414ad-40a2-46bf-1ccc-963ac3f4b100": {
+        "id": "c22414ad-40a2-46bf-1ccc-963ac3f4b100",
+        "filename": "BasaltCathedral.jpg"
+      },
+      "c3257cf3-712b-40ea-2dea-8f9f8ce32500": {
+        "id": "c3257cf3-712b-40ea-2dea-8f9f8ce32500",
+        "filename": "TheApproach.jpg"
+      },
+      "ca24d3ec-2d83-4bde-cc49-d5c9105ad200": {
+        "id": "ca24d3ec-2d83-4bde-cc49-d5c9105ad200",
+        "filename": "The_Grandeur_Seljalandsfoss.jpg"
+      },
+      "cadb7fc6-2892-4a80-6936-e380d3170900": {
+        "id": "cadb7fc6-2892-4a80-6936-e380d3170900",
+        "filename": "TheDepth.jpg"
+      },
       "cb3b4efb-e029-4243-c82e-4ae57d823600": {
         "id": "cb3b4efb-e029-4243-c82e-4ae57d823600",
         "filename": "TheFirstLight.jpg"
+      },
+      "cee9a4d6-f75c-4cb6-3549-3437c0ddc700": {
+        "id": "cee9a4d6-f75c-4cb6-3549-3437c0ddc700",
+        "filename": "TheAscent.jpg"
       },
       "cf786493-77cd-48cf-aa19-2804d79fed00": {
         "id": "cf786493-77cd-48cf-aa19-2804d79fed00",
@@ -162,17 +382,45 @@
         "id": "d6571716-3f0b-4a11-8398-56c87bc56100",
         "filename": "TheArch1.jpg"
       },
+      "d6ba64fd-5148-4527-7397-53b84adabc00": {
+        "id": "d6ba64fd-5148-4527-7397-53b84adabc00",
+        "filename": "TheRelic.jpg"
+      },
+      "d6bf393f-945c-4b89-a68c-0b150a5a1300": {
+        "id": "d6bf393f-945c-4b89-a68c-0b150a5a1300",
+        "filename": "TheFlow.jpg"
+      },
+      "d7058441-8604-4f6d-7d22-90258ebacc00": {
+        "id": "d7058441-8604-4f6d-7d22-90258ebacc00",
+        "filename": "TheSurge.jpg"
+      },
+      "e12d97a0-c815-4a2a-fa78-9577ca25a100": {
+        "id": "e12d97a0-c815-4a2a-fa78-9577ca25a100",
+        "filename": "TheHidden_GljuÌfrabuÌi.jpg"
+      },
       "e599128b-fd5f-42a6-2f81-d692de6ab400": {
         "id": "e599128b-fd5f-42a6-2f81-d692de6ab400",
         "filename": "TheEmergence.jpg"
+      },
+      "e670fe7b-1001-4d74-98ec-1f7b181cfc00": {
+        "id": "e670fe7b-1001-4d74-98ec-1f7b181cfc00",
+        "filename": "TheAscentB&W.jpg"
       },
       "e67e895f-a413-4748-39f1-c0d19b094400": {
         "id": "e67e895f-a413-4748-39f1-c0d19b094400",
         "filename": "DSCF2726.jpg"
       },
+      "e817dea5-e328-4c37-f447-4af0b823b800": {
+        "id": "e817dea5-e328-4c37-f447-4af0b823b800",
+        "filename": "TheSilentThreshold.jpg"
+      },
       "e90e120b-4ca3-409e-e5f0-f57f641b8f00": {
         "id": "e90e120b-4ca3-409e-e5f0-f57f641b8f00",
         "filename": "TheHorizon.jpg"
+      },
+      "ee0336b5-8709-4796-833e-3de85dce1800": {
+        "id": "ee0336b5-8709-4796-833e-3de85dce1800",
+        "filename": "TheRoadToLife_Walter_Mitty.jpg"
       },
       "f140854b-e02c-4c4e-4700-83989d680c00": {
         "id": "f140854b-e02c-4c4e-4700-83989d680c00",
@@ -185,6 +433,10 @@
       "f9b2dc84-63d9-4142-ab18-618fc1700500": {
         "id": "f9b2dc84-63d9-4142-ab18-618fc1700500",
         "filename": "TheSilentThreshold-2.jpg"
+      },
+      "fa3882eb-ba11-4150-54d6-7ac156701500": {
+        "id": "fa3882eb-ba11-4150-54d6-7ac156701500",
+        "filename": "TheTexture.jpg"
       },
       "faf4ee33-e4c1-4d1b-8534-88eceb288f00": {
         "id": "faf4ee33-e4c1-4d1b-8534-88eceb288f00",
@@ -549,16 +801,16 @@
       ],
       "description": "Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act — arriving somewhere to wait for the light, the weather, the moment that justifies the journey.",
       "coverAssetId": {
-        "imageKey": "DHZZ7dn",
-        "filename": "Ghost Structure.jpg",
-        "caption": "",
         "sizes": {
           "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
           "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
           "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
           "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
         },
-        "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn"
+        "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+        "caption": "",
+        "filename": "Ghost Structure.jpg",
+        "imageKey": "DHZZ7dn"
       }
     },
     {
