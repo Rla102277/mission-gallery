@@ -470,6 +470,12 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 const TIA = {
   STORE_KEY:  'tia_admin',
 
+  cfUrl(imageId, variant) {
+    const hash = TIA.getState().cf?.hash;
+    if (!hash || !imageId) return '';
+    return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
+  },
+
   photoUrl(photo, size) {
     if (!photo) return '';
     if (typeof photo === 'string') return photo; // legacy support
@@ -2432,7 +2438,8 @@ function testCfConnection(){
 
 // PICKER
 let pkSlotId=null,pkCtx=null,pkActive=null;
-let pkSource="smugmug";
+let pkSource="library";
+let pkScopeSel="all";
 let pkObjCache={};
 let smugmugAlbums=null;
 let smugmugCurrentAlbum=null;
@@ -2444,6 +2451,8 @@ async function openSmugMugPicker(ctx,targetId){
   pkSlotId=targetId;pkCtx=ctx;pkActive=null;
   pkMulti=(ctx==='series'||ctx==='gallery'||ctx==='folder');
   pkSelected=[];pkObjCache={};
+  pkSource="library";
+  pkScopeSel=pkDefaultScope(ctx,targetId);
   smugmugCurrentAlbum=null;smugmugImages=null;
   document.getElementById("pkTitle").textContent=pkMulti?"Select Photos":"Select Photo";
   var btn=document.getElementById("pkConfirm");
@@ -2471,8 +2480,43 @@ function pkSetSource(src){
   pkRenderSource();
 }
 
-// Every photo already on the site (galleries, folders, legacy series, CF library) as picker-ready objects
-function libraryPhotos(){
+// Scope helpers: 'all' | 'w{i}' | 'w{i}g{j}' | 'w{i}g{j}f{k}'
+function pkParseScope(sel){
+  var m=typeof sel==='string'&&sel.match(/^w(\d+)(?:g(\d+))?(?:f(\d+))?$/);
+  if(!m)return null;
+  return{w:+m[1],g:m[2]!==undefined?+m[2]:null,f:m[3]!==undefined?+m[3]:null};
+}
+
+// Where was the picker opened from? Map ctx+target to a default library scope.
+function pkDefaultScope(ctx,targetId){
+  try{
+    var works=STATE.portfolioWorks||[],parts,wi;
+    if(ctx==='portfolio'){
+      wi=works.findIndex(function(w){return w.id===targetId;});
+      return wi>=0?('w'+wi):'all';
+    }
+    if(ctx==='workfeat'){
+      parts=String(targetId).match(/^__feat__(\d+)$/);
+      return parts?('w'+parts[1]):'all';
+    }
+    if(ctx==='galcover'){
+      parts=String(targetId).match(/^(?:__galcover__)?(\d+)__(\d+)$/);
+      return parts?('w'+parts[1]+'g'+parts[2]):'all';
+    }
+    if(ctx==='gallery'){
+      parts=String(targetId).match(/^(\d+)__(\d+)$/);
+      return parts?('w'+parts[1]):'all';
+    }
+    if(ctx==='foldercover'||ctx==='folder'){
+      parts=String(targetId).match(/^(\d+)__(\d+)__(\d+)$/);
+      return parts?('w'+parts[1]+'g'+parts[2]):'all';
+    }
+  }catch(e){}
+  return 'all';
+}
+
+// Photos already on the site as picker-ready objects, optionally scoped to a work/collection/folder
+function libraryPhotos(scopeSel){
   var seen=new Set(),out=[];
   function add(p){
     if(!p)return;
@@ -2493,26 +2537,78 @@ function libraryPhotos(){
     if(p.assetId)o.assetId=p.assetId;
     out.push(o);
   }
-  (STATE.portfolioWorks||[]).forEach(function(w){
-    (w.galleries||[]).forEach(function(g){
+  function addGallery(g,fOnly){
+    if(!g)return;
+    if(fOnly===null||fOnly===undefined){
       (g.photos||[]).forEach(add);
       (g.folders||[]).forEach(function(f){(f.photos||[]).forEach(add);});
-    });
-  });
+    }else{
+      var f=(g.folders||[])[fOnly];
+      if(f)(f.photos||[]).forEach(add);
+    }
+  }
+  var works=STATE.portfolioWorks||[];
+  var sc=pkParseScope(scopeSel);
+  if(sc){
+    var w=works[sc.w];
+    if(w){
+      if(sc.g===null){(w.galleries||[]).forEach(function(g){addGallery(g,null);});}
+      else addGallery((w.galleries||[])[sc.g],sc.f);
+    }
+    return out;
+  }
+  works.forEach(function(w){(w.galleries||[]).forEach(function(g){addGallery(g,null);});});
   Object.values(STATE.photos||{}).forEach(function(arr){(arr||[]).forEach(add);});
   Object.keys((STATE.cf&&STATE.cf.assetMeta)||{}).forEach(add);
   return out;
 }
 
+function pkScopeOptions(){
+  var html='<option value="all"'+(pkScopeSel==='all'?' selected':'')+'>All Site Photos</option>';
+  (STATE.portfolioWorks||[]).forEach(function(w,i){
+    var wv='w'+i;
+    html+='<option value="'+wv+'"'+(pkScopeSel===wv?' selected':'')+'>'+esc(w.title||'Untitled Set')+'</option>';
+    (w.galleries||[]).forEach(function(g,j){
+      var gv=wv+'g'+j;
+      html+='<option value="'+gv+'"'+(pkScopeSel===gv?' selected':'')+'>&nbsp;&nbsp;— '+esc(g.title||'Collection')+'</option>';
+      (g.folders||[]).forEach(function(f,k){
+        var fv=gv+'f'+k;
+        html+='<option value="'+fv+'"'+(pkScopeSel===fv?' selected':'')+'>&nbsp;&nbsp;&nbsp;&nbsp;· '+esc(f.title||'Folder')+'</option>';
+      });
+    });
+  });
+  return '<select onchange="pkSetScope(this.value)" data-testid="select-pk-scope" style="font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 8px;background:transparent;border:1px solid var(--rule,rgba(13,13,13,.2));color:inherit;max-width:260px">'+html+'</select>';
+}
+
+function pkSetScope(sel){
+  pkScopeSel=(sel==='all'||pkParseScope(sel))?sel:'all';
+  pkShowLibrary();
+}
+
 function pkShowLibrary(){
-  document.getElementById("pkFilter").innerHTML=pkSourceBar();
-  smugmugCurrentAlbum=null;
-  smugmugImages=libraryPhotos();
-  if(!smugmugImages.length){
-    document.getElementById("pkGrid").innerHTML="<div class='empty' style='grid-column:1/-1'><p>No photos on the site yet — push from Lightroom or add from SmugMug first.</p></div>";
-    return;
+  var grid=document.getElementById("pkGrid");
+  try{
+    smugmugCurrentAlbum=null;
+    // If the default scope has no photos, widen it (folder → collection → set → all)
+    smugmugImages=libraryPhotos(pkScopeSel);
+    while(!smugmugImages.length&&pkScopeSel!=='all'){
+      var sc=pkParseScope(pkScopeSel);
+      if(!sc)pkScopeSel='all';
+      else if(sc.f!==null)pkScopeSel='w'+sc.w+'g'+sc.g;
+      else if(sc.g!==null)pkScopeSel='w'+sc.w;
+      else pkScopeSel='all';
+      smugmugImages=libraryPhotos(pkScopeSel);
+    }
+    document.getElementById("pkFilter").innerHTML=pkSourceBar()+pkScopeOptions();
+    if(!smugmugImages.length){
+      grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No photos on the site yet — push from Lightroom or add from SmugMug first.</p></div>";
+      return;
+    }
+    renderSmugMugImages();
+  }catch(err){
+    document.getElementById("pkFilter").innerHTML=pkSourceBar();
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p style='color:var(--red)'>Library failed to load: "+esc(err.message)+"</p></div>";
   }
-  renderSmugMugImages();
 }
 
 async function loadSmugMugAlbums(){
@@ -2622,6 +2718,8 @@ function selectSmugMugImage(imageKey,el){
 async function openPicker(slotId,ctx,label){
   pkSlotId=slotId;pkCtx=ctx;pkActive=null;
   pkMulti=false;pkSelected=[];pkObjCache={};
+  pkSource="library";
+  pkScopeSel=pkDefaultScope(ctx,slotId);
   smugmugCurrentAlbum=null;smugmugImages=null;
   document.getElementById("pkTitle").textContent=label;
   var btn=document.getElementById("pkConfirm");
