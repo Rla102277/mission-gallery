@@ -99,6 +99,17 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `GET /api/config` — Read site configuration JSON
 - `POST /api/config` — Write site configuration JSON
 - `POST /api/ai/enrich` — AI text enrichment via Anthropic Claude (PIN-authenticated, X-Admin-Pin header required)
+- `POST /api/adobe/token`, `/api/adobe/refresh-token`, `GET /api/adobe/client-id`, `GET /api/adobe/test-token` — Adobe Lightroom OAuth (admin-guarded)
+- `GET /api/lightroom/cdn-status` — Reports whether Cloudflare Images env vars are configured (admin-guarded)
+- `POST /api/lightroom/push` — Pull 2048px Lightroom rendition → upload to Cloudflare Images (id `lr-{assetId}`) → write photo object into config destinations (requires X-Lightroom-Token header; admin-guarded)
+- `POST /api/lightroom/resync` — Regenerate + re-upload a pushed asset, refresh its URLs everywhere in config with `?v=` cache-bust (admin-guarded)
+
+## Lightroom Integration
+- **Connect**: `/test/lightroom` connect page; tokens in browser localStorage, auto-refreshed; server holds client secret only
+- **Browse**: Admin → Images tab → Lightroom source toggle — albums → asset grid (authorized blob thumbnails), multi-select
+- **Push**: "Push N to..." or "Push Entire Album to..." → multi-destination checkboxes (collections + folders) → sequential per-asset push with progress; config written server-side, admin reloads state after
+- **Resync**: select already-pushed assets → Resync button re-pulls fresh renditions and cache-busts all config references
+- **Rule**: never serve images live from Lightroom — public pages serve only imagedelivery.net URLs from config
 
 ## AI Text Enrichment
 - **Integration**: Replit AI Integrations for Anthropic (no API key needed, billed to Replit credits)

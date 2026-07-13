@@ -1,5 +1,4 @@
 import type { Express, Request, Response, NextFunction } from "express";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const LR_BASE = "https://lr.adobe.io";
 const RENDITION_SIZE = "2048";
@@ -11,26 +10,12 @@ export interface ConfigStore {
   saveConfig: (config: Record<string, any>) => Promise<void>;
 }
 
-function r2Config() {
-  const endpoint = process.env.R2_ENDPOINT;
-  const bucket = process.env.R2_BUCKET;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL;
-  if (!endpoint || !bucket || !accessKeyId || !secretAccessKey || !publicBaseUrl) return null;
-  return { endpoint, bucket, accessKeyId, secretAccessKey, publicBaseUrl: publicBaseUrl.replace(/\/$/, "") };
-}
-
-let s3: S3Client | null = null;
-function getS3(cfg: NonNullable<ReturnType<typeof r2Config>>): S3Client {
-  if (!s3) {
-    s3 = new S3Client({
-      region: "auto",
-      endpoint: cfg.endpoint,
-      credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
-    });
-  }
-  return s3;
+function cfConfig() {
+  const accountId = process.env.CF_ACCOUNT_ID;
+  const token = process.env.CF_IMAGES_TOKEN;
+  const hash = process.env.CF_IMAGES_HASH;
+  if (!accountId || !token || !hash) return null;
+  return { accountId, token, hash };
 }
 
 function lrHeaders(req: Request): Record<string, string> | null {
@@ -87,30 +72,60 @@ async function fetchRendition(catalogId: string, assetId: string, headers: Recor
   }
 }
 
-async function uploadToCdn(assetId: string, bytes: Buffer): Promise<string> {
-  const cfg = r2Config();
-  if (!cfg) throw new Error("CDN is not configured (R2_* environment variables missing)");
-  const key = `lr/${assetId}.jpg`;
-  await getS3(cfg).send(
-    new PutObjectCommand({
-      Bucket: cfg.bucket,
-      Key: key,
-      Body: bytes,
-      ContentType: "image/jpeg",
-      CacheControl: "public, max-age=31536000",
-    })
-  );
-  return `${cfg.publicBaseUrl}/${key}`;
+// Upload to Cloudflare Images with deterministic id lr-{assetId}. On conflict
+// (already uploaded / resync), delete the existing image and re-upload.
+async function uploadToCdn(assetId: string, bytes: Buffer, filename: string): Promise<string> {
+  const cfg = cfConfig();
+  if (!cfg) throw new Error("Cloudflare Images is not configured (CF_ACCOUNT_ID / CF_IMAGES_TOKEN / CF_IMAGES_HASH missing)");
+  const imageId = `lr-${assetId}`;
+  const apiBase = `https://api.cloudflare.com/client/v4/accounts/${cfg.accountId}/images/v1`;
+
+  const doUpload = async () => {
+    const form = new FormData();
+    form.append("file", new Blob([new Uint8Array(bytes)], { type: "image/jpeg" }), filename || `${imageId}.jpg`);
+    form.append("id", imageId);
+    const res = await fetch(apiBase, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${cfg.token}` },
+      body: form,
+    });
+    const json: any = await res.json().catch(() => ({}));
+    return { status: res.status, json };
+  };
+
+  let { status, json } = await doUpload();
+  if (!json.success && (status === 409 || (json.errors || []).some((e: any) => e.code === 5409))) {
+    // Image id already exists — delete and re-upload (resync path)
+    const del = await fetch(`${apiBase}/${imageId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${cfg.token}` },
+    });
+    if (!del.ok) throw new Error(`Cloudflare Images delete before re-upload failed (HTTP ${del.status})`);
+    ({ status, json } = await doUpload());
+  }
+  if (!json.success) {
+    const msg = (json.errors || []).map((e: any) => e.message).join("; ") || `HTTP ${status}`;
+    throw new Error(`Cloudflare Images upload failed: ${msg}`);
+  }
+  return imageId;
 }
 
-function makePhotoObject(assetId: string, cdnUrl: string, filename: string, caption: string) {
+function cdnUrls(imageId: string, version?: number) {
+  const cfg = cfConfig()!;
+  const v = version ? `?v=${version}` : "";
+  const u = (variant: string) => `https://imagedelivery.net/${cfg.hash}/${imageId}/${variant}${v}`;
+  // Map site size slots to the account's existing variants
+  return { medium: u("thumb"), large: u("cover"), xlarge: u("hero"), x2large: u("full") };
+}
+
+function makePhotoObject(assetId: string, imageId: string, filename: string, caption: string) {
   return {
-    imageKey: assetId,
+    imageKey: imageId,
     source: "lightroom",
     assetId,
-    filename: filename || `${assetId}.jpg`,
+    filename: filename || `${imageId}.jpg`,
     caption: caption || "",
-    sizes: { medium: cdnUrl, large: cdnUrl, xlarge: cdnUrl, x2large: cdnUrl },
+    sizes: cdnUrls(imageId),
   };
 }
 
@@ -155,25 +170,41 @@ function addToDestinations(
   return { added, skipped, errors };
 }
 
-// Update every config occurrence of the asset with a fresh CDN URL. Returns count.
-function updateAssetUrls(config: Record<string, any>, assetId: string, cdnUrl: string): number {
+// Update every config occurrence of the asset with fresh CDN URLs. Returns count.
+// Handles both object photo refs and legacy string refs (assetId or lr-{assetId})
+// on cover/featured fields by upgrading strings to full photo objects.
+function updateAssetUrls(config: Record<string, any>, assetId: string, imageId: string, version: number): number {
   let count = 0;
+  const sizes = cdnUrls(imageId, version);
   const freshen = (p: any) => {
     if (!isSameAsset(p, assetId)) return;
-    p.sizes = { medium: cdnUrl, large: cdnUrl, xlarge: cdnUrl, x2large: cdnUrl };
+    p.sizes = { ...sizes };
     count++;
+  };
+  const isStringRef = (v: any) => typeof v === "string" && (v === assetId || v === imageId);
+  const freshenField = (owner: any, key: string) => {
+    if (!owner) return;
+    const v = owner[key];
+    if (isStringRef(v)) {
+      const photo = makePhotoObject(assetId, imageId, "", "");
+      photo.sizes = { ...sizes };
+      owner[key] = photo;
+      count++;
+    } else {
+      freshen(v);
+    }
   };
   for (const work of config.portfolioWorks || []) {
     if (!work) continue;
-    freshen(work.coverAssetId);
-    freshen(work.featuredImageId);
+    freshenField(work, "coverAssetId");
+    freshenField(work, "featuredImageId");
     for (const gallery of work.galleries || []) {
       if (!gallery) continue;
-      freshen(gallery.coverAssetId);
+      freshenField(gallery, "coverAssetId");
       (gallery.photos || []).forEach(freshen);
       for (const folder of gallery.folders || []) {
         if (!folder) continue;
-        freshen(folder.coverAssetId);
+        freshenField(folder, "coverAssetId");
         (folder.photos || []).forEach(freshen);
       }
     }
@@ -188,7 +219,7 @@ export function registerLightroomRoutes(
 ) {
   // Reports whether the CDN env vars are configured (no secrets returned)
   app.get("/api/lightroom/cdn-status", ...guards, (_req, res) => {
-    res.json({ configured: !!r2Config() });
+    res.json({ configured: !!cfConfig() });
   });
 
   // Push one asset: pull 2048 rendition → upload to CDN → write CDN URL into destinations
@@ -208,8 +239,8 @@ export function registerLightroomRoutes(
       const caption = typeof req.body?.caption === "string" ? req.body.caption.slice(0, 500) : "";
 
       const bytes = await fetchRendition(catalogId, assetId, headers);
-      const cdnUrl = await uploadToCdn(assetId, bytes);
-      const photo = makePhotoObject(assetId, cdnUrl, filename, caption);
+      const imageId = await uploadToCdn(assetId, bytes, filename);
+      const photo = makePhotoObject(assetId, imageId, filename, caption);
 
       const config = store.getConfig();
       const result = addToDestinations(config, photo, destinations);
@@ -236,8 +267,8 @@ export function registerLightroomRoutes(
       if (result.added.length || coverSet) {
         await store.saveConfig(config);
       }
-      console.log(`[Lightroom] Pushed ${assetId} → ${cdnUrl} (added: ${result.added.length}, skipped: ${result.skipped.length})`);
-      res.json({ success: true, assetId, cdnUrl, ...result, coverSet });
+      console.log(`[Lightroom] Pushed ${assetId} → ${imageId} (added: ${result.added.length}, skipped: ${result.skipped.length})`);
+      res.json({ success: true, assetId, imageId, cdnUrl: photo.sizes.x2large, ...result, coverSet });
     } catch (err: any) {
       console.log("[Lightroom] Push error:", err.message);
       res.status(500).json({ error: err.message || "Push failed" });
@@ -261,14 +292,14 @@ export function registerLightroomRoutes(
       }).catch(() => null);
 
       const bytes = await fetchRendition(catalogId, assetId, headers);
-      const baseUrl = await uploadToCdn(assetId, bytes);
-      const cdnUrl = `${baseUrl}?v=${Date.now()}`; // cache-bust re-edited image
+      const imageId = await uploadToCdn(assetId, bytes, "");
+      const version = Date.now(); // cache-bust re-edited image
 
       const config = store.getConfig();
-      const updated = updateAssetUrls(config, assetId, cdnUrl);
+      const updated = updateAssetUrls(config, assetId, imageId, version);
       if (updated > 0) await store.saveConfig(config);
       console.log(`[Lightroom] Resynced ${assetId} — ${updated} config reference(s) updated`);
-      res.json({ success: true, assetId, cdnUrl, updated });
+      res.json({ success: true, assetId, imageId, updated });
     } catch (err: any) {
       console.log("[Lightroom] Resync error:", err.message);
       res.status(500).json({ error: err.message || "Resync failed" });
