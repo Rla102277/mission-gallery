@@ -1001,10 +1001,17 @@ function countAllPhotos(obj) {
   return c;
 }
 
+function escGal(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function mapPhotos(photos) {
   return TIA._mapPhotoIds(photos || []).map(function(p) {
     var fname = p.filename || String(p.assetId || '').substring(0, 12);
-    p.title = fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '');
+    p.title = p.metaTitle || fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '');
+    p.alt = p.alt || p.title;
     return p;
   });
 }
@@ -1205,8 +1212,8 @@ function renderGalleryView(workId, galId) {
             '<div class="gal-photo-grid" data-testid="unsorted-photo-grid">' +
               currentPhotos.map(function(p, i) {
                 return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
-                  '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
-                  '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
+                  '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + escGal(p.alt || p.title) + '" loading="lazy" />' +
+                  '<div class="gal-photo-hover"><span class="gal-photo-title">' + escGal(p.title) + '</span></div>' +
                   '<span class="gal-photo-expand">&#x26F6;</span></div>';
               }).join('') +
             '</div>' +
@@ -1220,8 +1227,8 @@ function renderGalleryView(workId, galId) {
     if (currentPhotos.length > 0) {
       photosHtml = currentPhotos.map(function(p, i) {
         return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
-          '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
-          '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
+          '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + escGal(p.alt || p.title) + '" loading="lazy" />' +
+          '<div class="gal-photo-hover"><span class="gal-photo-title">' + escGal(p.title) + '</span></div>' +
           '<span class="gal-photo-expand">&#x26F6;</span></div>';
       }).join('');
     } else {
@@ -1285,8 +1292,8 @@ function renderFolderView(workId, galId, folderId) {
   if (currentPhotos.length > 0) {
     photosHtml = currentPhotos.map(function(p, i) {
       return '<div class="gal-photo-cell" onclick="openLightbox(' + i + ')" data-testid="photo-cell-' + i + '">' +
-        '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + p.title + '" loading="lazy" />' +
-        '<div class="gal-photo-hover"><span class="gal-photo-title">' + p.title + '</span></div>' +
+        '<img class="gal-photo-img" src="' + p.thumb + '" alt="' + escGal(p.alt || p.title) + '" loading="lazy" />' +
+        '<div class="gal-photo-hover"><span class="gal-photo-title">' + escGal(p.title) + '</span></div>' +
         '<span class="gal-photo-expand">&#x26F6;</span></div>';
     }).join('');
   } else {
@@ -1329,7 +1336,7 @@ function renderLb() {
   document.getElementById('lbCounter').textContent = (lbIndex + 1) + ' / ' + currentPhotos.length;
   document.getElementById('lbTitle').textContent = p.title;
   document.getElementById('lbDetails').textContent = '';
-  document.getElementById('lbImgWrap').innerHTML = '<img class="lb-img" src="' + (p.full || p.thumb) + '" alt="' + p.title + '">';
+  document.getElementById('lbImgWrap').innerHTML = '<img class="lb-img" src="' + (p.full || p.thumb) + '" alt="' + escGal(p.alt || p.title) + '">';
   
   // Show Buy/Print button if photo has webUri (SmugMug)
   var buyBtn = document.getElementById('lbBuy');

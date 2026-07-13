@@ -1,0 +1,84 @@
+# Image Metadata Editor — Spec (for Cascade)
+
+A central admin hub to edit the METADATA (information) about images already on the
+site — NOT pixels. Single-image editing and bulk editing. This is where title, alt
+text, story-page fields, and sale fields all live and get maintained. It ties together
+the Story Page and Mark-for-Sale features and gives alt text / SEO a home for the first
+time.
+
+## Scope
+- Metadata only. NO cropping, rotating, or pixel editing (Randy edits pixels in
+  Lightroom/Photoshop; browser pixel editing is explicitly out of scope).
+- Works on images already in config (pushed from Lightroom to Cloudflare Images).
+- Single-image edit (select one → full panel) AND bulk edit (select many → apply
+  shared fields).
+
+## The image identity
+Images live in config in gallery/folder photos[] and cover fields, keyed by their
+stable id (imageKey / Cloudflare Images id). The editor operates on that per-image
+object. Because the same image can appear in multiple galleries (multi-destination
+push), edits to shared metadata must update EVERY place that image appears, matched by
+its stable id — same pattern Resync already uses.
+
+## Fields the editor manages (per image object)
+Display / caption:
+- title            (display title)
+- caption          (short caption)
+- altText          (accessibility + Google Images SEO) — NEW, currently has no home
+- location, camera, year
+
+Story page (from STORY_PAGE_SPEC):
+- hasStoryPage (toggle)
+- storyTitle, storyBody, slug  (slug auto from title, unique, editable)
+
+Sale (from MARK_FOR_SALE_WIZARD_SPEC — the editor exposes/edits these; the wizard is
+the guided creation flow, this is the direct editor):
+- saleType (open/limited/none), editionSize, editionsSold (read-only here — changed
+  only by back-half sales), printSizes[], printMasterRef (link status; "Mark for Sale"
+  button launches the wizard for attaching the R2 master)
+
+Read-only info shown for context:
+- filename, Cloudflare Images id, image dimensions/aspect
+- which galleries/folders this image currently appears in (list)
+
+## Single-image editor
+- Entry points: an "Edit metadata" action on an image anywhere it appears (gallery
+  grid, Lightroom-pushed set, search results), and a dedicated "Images" management list.
+- Opens a panel/modal with the fields above, grouped (Display · Story · Sale · Info).
+- Thumbnail preview (from CDN) for reference — display only.
+- Save → writes the per-image object in ALL locations it appears (match by id) via the
+  EXISTING POST /api/config path (cache + snapshot). Show a "updated in N places" note.
+
+## Bulk editor
+- Select multiple images (checkboxes in the images list / gallery view).
+- "Edit N images" → panel with a SUBSET of fields that make sense to set in bulk:
+  location, camera, year, saleType, and (add/replace) printSizes template.
+- Each bulk field has an explicit "apply / leave unchanged" state so blank fields
+  don't wipe existing values. Only checked fields are written.
+- Bulk does NOT set per-image-unique fields (title, altText, storyBody, slug) — those
+  are single-image only (a shared alt text would be wrong/harmful for SEO).
+- Apply → update each selected image (and all its appearances) via POST /api/config,
+  with a progress/confirmation ("Updated 12 images").
+
+## Search / find
+- A simple filter in the images list: by filename, title, gallery, saleType, or
+  "missing altText" / "missing storyBody" so Randy can find gaps to fill.
+
+## Guardrails
+- Metadata only — no pixel operations.
+- editionsSold is READ-ONLY in the editor (only back-half sales change it) to prevent
+  accidental edition tampering.
+- Shared-metadata edits propagate to every appearance of the image (match by id).
+- Persist ONLY via POST /api/config (keeps DB-pause cache/snapshot resilience).
+- Bulk edits never overwrite a field unless that field is explicitly set to apply.
+- Admin-gated (isAuthenticated + requireAdmin).
+- Do NOT change auth, the config cache, Lightroom push/resync, or Replit deploy.
+
+## Verify
+1. Single: open an image's metadata editor, set title + altText + a storyBody, save;
+   confirm it persists and updates the image everywhere it appears.
+2. Multi-appearance: edit an image that's in 2 galleries; confirm both update.
+3. Bulk: select 5 images, set location="Iceland" with apply checked, leave others
+   unchanged; confirm only location changed on all 5.
+4. Filter: "missing altText" returns images without alt text.
+5. Reload after fresh cache seed → edits persist (snapshot works).

@@ -126,6 +126,14 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor, Cloudflare connection status
 - **Story Pages**: Images tab cards have a "Story Page" button → modal (enable toggle, storyTitle with auto-slug, editable slug with uniqueness check, storyBody, location/camera/year). Fields stored per-image on `config.cf.assetMeta[imageId]` (hasStoryPage, slug, storyTitle, storyBody, location, camera, year). Server serves `/work/{slug}` server-rendered (SEO: title/meta/og:image/JSON-LD VisualArtwork) for images with hasStoryPage=true; designed "Not on view" 404 otherwise. Reads sale fields (saleType/editionSize/editionsSold/printSizes/printMasterRef) if present — edition status display + inquiry-only buy (mailto prefilled; Stripe = TODO back-half, never mutates editionsSold). Lightboxes show "View Story →" via `TIA.storyFor/storyUrl`. `/sitemap.xml` lists core + custom pages + /work/ slugs
 
+## Image Metadata Editor
+- **Entry**: "Edit Metadata" button on every card in the Images tab (both library and Lightroom grids) opens a single grouped modal (replaces old Story Page modal; `openStoryEditor` aliases `openMetaEditor`)
+- **Groups**: Display (title, caption, altText, location, camera, year) · Story Page (enable, storyTitle, slug, storyBody — same validation/collision rules as before) · Sale (saleType none/open/limited, editionSize, editionsSold READ-ONLY, printSizes as "Label | Price" lines, printMasterRef read-only status) · header shows filename, CF id, and all gallery/folder appearances
+- **Canonical store**: `config.cf.assetMeta[imageId]`; on save, shared display fields (title/caption/altText) are propagated onto every embedded photo object in portfolioWorks galleries/folders matched by imageKey/assetId (`metaPropagate`), toast reports "Updated in N places". editionsSold/printMasterRef are never written from this UI
+- **Bulk edit**: select 2+ images in library mode → "Edit N Images" toolbar button → modal with per-field Apply checkboxes (location, camera, year, saleType, printSizes with add/replace mode); unchecked fields are never touched
+- **Filter bar** (library mode only, above grid): text search (filename/title/gallery) + dropdown (All / Missing alt text / Missing story / Marked for sale), shows "X of Y shown"; Select All respects the active filter; SALE badge on cards with saleType set
+- **Public wiring**: `TIA._mapPhotoIds` merges assetMeta title/caption/altText (as metaTitle/caption/alt); galleries.html uses metaTitle for display titles and altText for alt attributes, escaped via `escGal()`
+
 ## Portfolio & Gallery Hierarchy System (Lightroom-style)
 Galleries page supports 4-level Lightroom-style hierarchy via URL params:
 - **Collection Sets grid** (default): 2×2 tile grid from portfolioWorks

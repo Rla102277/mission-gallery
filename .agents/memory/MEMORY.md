@@ -10,3 +10,4 @@
 - OAuth redirect URIs are derived from the request host (works on custom domains); every domain used must be registered in the Adobe developer console or the connect flow fails.
 - [Admin Images tab renderers](admin-images-tab-renderers.md) — Images tab has TWO card renderers (library default vs CF grid); per-card UI must be added to both.
 - [Config cache staleness](config-cache-staleness.md) — direct SQL edits to site_config aren't seen by the running server until restart; lookups only reload on cache miss.
+- [E2E dev-config cleanup](e2e-dev-config-cleanup.md) — e2e tests write into the shared dev config; scrub test values via direct SQL (POST /api/config is auth-gated) then restart to clear the cache.

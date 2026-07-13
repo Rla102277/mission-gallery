@@ -16,7 +16,8 @@
       },
       "lr-6854647d57f64f2baf0495fd7a5cceae": {
         "id": "lr-6854647d57f64f2baf0495fd7a5cceae",
-        "filename": "TheIconicSentinel.jpeg"
+        "filename": "TheIconicSentinel.jpeg",
+        "location": "Test Location Bulk"
       },
       "lr-79cf0cc79bb344ba8a3bbf776fe0096b": {
         "id": "lr-79cf0cc79bb344ba8a3bbf776fe0096b",
@@ -32,10 +33,20 @@
         "year": "2025",
         "camera": "GFX 100S II",
         "filename": "TheRoadToLife_Walter_Mitty.jpeg",
-        "location": "Iceland",
+        "location": "Test Location Bulk",
         "storyBody": "The ridge held its breath that morning. I waited three hours for the cloud to break.\n\n  When it did, the light lasted forty seconds. This frame is what the waiting was for.",
         "storyTitle": "Where Dragons Fly",
-        "hasStoryPage": false
+        "hasStoryPage": false,
+        "title": "Test Meta Title E2E",
+        "caption": "Test caption",
+        "altText": "Test alt text for accessibility",
+        "saleType": "open",
+        "printSizes": [
+          {
+            "label": "16x20",
+            "price": "450"
+          }
+        ]
       },
       "lr-9d593aa84ce6485ba4889986b9856276": {
         "id": "lr-9d593aa84ce6485ba4889986b9856276",

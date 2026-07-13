@@ -3088,6 +3088,7 @@ async function cdnShowLibraryInTab(){
       grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in the CDN yet</div>";
       return;
     }
+    metaEnsureFilterBar();
     renderSmugMugImagesInTab();
   }catch(err){
     grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
@@ -3147,16 +3148,48 @@ function smugUsageMap(){
   return map;
 }
 
+function metaEnsureFilterBar(){
+  const grid=document.getElementById("imgGrid");
+  if(!grid)return;
+  let bar=document.getElementById("metaFilterBar");
+  if(!bar){
+    grid.insertAdjacentHTML("beforebegin",`<div id="metaFilterBar" style="display:flex;gap:8px;margin:0 0 10px;align-items:center;flex-wrap:wrap">
+      <input class="input" id="mfText" placeholder="Filter: filename, title, gallery..." style="max-width:260px" oninput="mfUpdate()" data-testid="input-meta-filter">
+      <select class="input" id="mfMode" style="max-width:180px" onchange="mfUpdate()" data-testid="select-meta-filter">
+        <option value="all">All images</option>
+        <option value="missing-alt">Missing alt text</option>
+        <option value="missing-story">Missing story</option>
+        <option value="sale">Marked for sale</option>
+      </select>
+      <span id="mfCount" style="font-size:9px;opacity:.45;letter-spacing:1px" data-testid="text-meta-filter-count"></span>
+    </div>`);
+    bar=document.getElementById("metaFilterBar");
+    document.getElementById("mfText").value=metaFilterText||"";
+    document.getElementById("mfMode").value=metaFilterMode||"all";
+  }
+  bar.style.display=imgSource==="library"?"flex":"none";
+}
+
 function renderSmugMugImagesInTab(){
   const grid=document.getElementById("imgGrid");
+  const bar=document.getElementById("metaFilterBar");
+  if(bar)bar.style.display=imgSource==="library"?"flex":"none";
   if(!smugmugImages||!smugmugImages.length){
     grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in this album</div>";
     const tb0=document.querySelector(".img-toolbar-left");
     if(tb0)tb0.innerHTML=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()">← Back to Albums</button>`;
     return;
   }
+  const list=imgSource==="library"?metaFilterList(smugmugImages):smugmugImages;
+  const mfCount=document.getElementById("mfCount");
+  if(mfCount)mfCount.textContent=imgSource==="library"&&list.length!==smugmugImages.length?list.length+" of "+smugmugImages.length+" shown":"";
+  if(!list.length){
+    grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images match the filter</div>";
+    smugRenderToolbar();
+    return;
+  }
   const usage=smugUsageMap();
-  grid.innerHTML=smugmugImages.map(img=>{
+  grid.innerHTML=list.map(img=>{
     const key=smugSafeKey(img.imageKey);
     if(!key)return "";
     const sel=smugSelected.has(img.imageKey);
@@ -3164,13 +3197,14 @@ function renderSmugMugImagesInTab(){
     let badges=used.map(u=>`<span class="img-card-badge">${esc(u)}</span>`).join("");
     const storyM=STATE.cf?.assetMeta?.[img.imageKey]||STATE.cf?.assetMeta?.[img.id];
     if(storyM?.hasStoryPage)badges+=`<span class="img-card-badge" style="background:var(--gold,#b5922a);color:#0d0d0d">STORY</span>`;
+    if(storyM?.saleType&&storyM.saleType!=="none")badges+=`<span class="img-card-badge" style="background:rgba(90,110,158,.85)">SALE</span>`;
     const src=smugSafeUrl(img.sizes&&img.sizes.medium);
     return `<div class="img-card ${sel?"selected":""} ${used.length?"in-series":""}" onclick="smugToggle('${key}')" data-testid="img-card-${key}">
       ${src?`<img src="${esc(src)}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
       <div class="img-card-check">&#x2713;</div>
       ${badges?`<div class="img-card-badges">${badges}</div>`:""}
       <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div>
-        <button class="btn" style="margin-top:4px;font-size:9px;padding:3px 7px" onclick="event.stopPropagation();openStoryEditor('${key}')" data-testid="btn-story-${key}">${storyM?.hasStoryPage?"Edit Story":"Story Page"}</button>
+        <button class="btn" style="margin-top:4px;font-size:9px;padding:3px 7px" onclick="event.stopPropagation();openMetaEditor('${key}')" data-testid="btn-meta-${key}">Edit Metadata</button>
       </div>
     </div>`;
   }).join("");
@@ -3199,6 +3233,7 @@ function smugRenderToolbar(){
   html+=`<span class="img-sel-count">${n?n+" selected":""}</span>`;
   if(n)html+=`<button class="btn gold" onclick="smugOpenAssign('add')" data-testid="btn-smug-assign">Add to...</button>`;
   if(n===1)html+=`<button class="btn" onclick="smugOpenAssign('cover')" data-testid="btn-smug-cover">Set as Cover of...</button>`;
+  if(n>=2&&imgSource==="library")html+=`<button class="btn" onclick="openBulkEditor()" data-testid="btn-bulk-edit">Edit ${n} Images</button>`;
   toolbar.innerHTML=html;
 }
 
@@ -3208,7 +3243,8 @@ function smugToggle(key){
 }
 
 function smugSelectAll(){
-  smugSelected=new Set((smugmugImages||[]).map(i=>i.imageKey));
+  const list=imgSource==="library"?metaFilterList(smugmugImages||[]):(smugmugImages||[]);
+  smugSelected=new Set(list.map(i=>i.imageKey));
   renderSmugMugImagesInTab();
 }
 
@@ -3724,12 +3760,13 @@ function renderImgGrid(){
       if(exif.iso)parts.push("ISO "+exif.iso);
       if(parts.length)exifHtml=`<div class="img-card-exif">${parts.join(" &middot; ")}</div>`;
     }
+    if(meta?.saleType&&meta.saleType!=="none")badges+=`<span class="img-card-badge" style="background:rgba(90,110,158,.85)">SALE</span>`;
     return`<div class="img-card ${sel?"selected":""} ${inSeries?"in-series":""}" onclick="imgToggle('${img.id}')" data-testid="img-card-${img.id}">
       ${thumb?`<img src="${thumb}" loading="lazy" alt="">`:""}
       <div class="img-card-check">&#x2713;</div>
       ${badges?`<div class="img-card-badges">${badges}</div>`:""}
       <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div>${exifHtml}
-        <button class="btn" style="margin-top:6px;font-size:9px;padding:4px 8px" onclick="event.stopPropagation();openStoryEditor('${img.id}')" data-testid="btn-story-${img.id}">${meta?.hasStoryPage?"Edit Story":"Story Page"}</button>
+        <button class="btn" style="margin-top:6px;font-size:9px;padding:4px 8px" onclick="event.stopPropagation();openMetaEditor('${img.id}')" data-testid="btn-meta-${img.id}">Edit Metadata</button>
       </div>
     </div>`;
   }).join("");
@@ -3754,8 +3791,80 @@ function imgUpdateToolbar(){
   if(delBtn)delBtn.disabled=n===0;
 }
 
-// ── Single-image story pages ──────────────────────────────
+// ── Image metadata editor (single + bulk; story fields live here) ──
 let storyEditingId=null;
+let metaFilterText="",metaFilterMode="all";
+
+function metaPhotoIs(p,id){
+  if(typeof p==="string")return p===id;
+  return !!p&&(p.imageKey===id||p.assetId===id||p.id===id);
+}
+
+// Every gallery/folder this image appears in (matched by stable id)
+function metaAppearances(id){
+  const out=[];
+  (STATE.portfolioWorks||[]).forEach(function(w){
+    (w.galleries||[]).forEach(function(g){
+      if((g.photos||[]).some(p=>metaPhotoIs(p,id)))out.push((w.title||"Work")+" / "+(g.title||"Collection"));
+      (g.folders||[]).forEach(function(f){
+        if((f.photos||[]).some(p=>metaPhotoIs(p,id)))out.push((w.title||"Work")+" / "+(g.title||"Collection")+" / "+(f.title||"Folder"));
+      });
+    });
+  });
+  return out;
+}
+
+// Push shared display fields onto every embedded photo object (same id-match
+// pattern Resync uses). Returns how many embedded copies were updated.
+function metaPropagate(id){
+  const m=STATE.cf?.assetMeta?.[id];
+  if(!m)return 0;
+  let n=0;
+  function upd(p){
+    if(!p||typeof p!=="object"||!metaPhotoIs(p,id))return;
+    ["title","caption","altText"].forEach(function(k){
+      if(m[k]){p[k]=m[k];}else{delete p[k];}
+    });
+    n++;
+  }
+  (STATE.portfolioWorks||[]).forEach(function(w){
+    (w.galleries||[]).forEach(function(g){
+      (g.photos||[]).forEach(upd);
+      (g.folders||[]).forEach(function(f){(f.photos||[]).forEach(upd);});
+    });
+  });
+  return n;
+}
+
+function metaRerenderGrid(){
+  if(imgSource==="library"&&typeof renderSmugMugImagesInTab==="function"&&smugmugImages)renderSmugMugImagesInTab();
+  else if(typeof renderImgGrid==="function")renderImgGrid();
+}
+
+function metaFilterList(list){
+  const t=(metaFilterText||"").trim().toLowerCase();
+  const mode=metaFilterMode||"all";
+  if(!t&&mode==="all")return list;
+  const usage=smugUsageMap();
+  return list.filter(function(img){
+    const id=img.imageKey;
+    const m=STATE.cf?.assetMeta?.[id]||{};
+    if(mode==="missing-alt"&&(m.altText||"").trim())return false;
+    if(mode==="missing-story"&&(m.storyBody||"").trim())return false;
+    if(mode==="sale"&&(!m.saleType||m.saleType==="none"))return false;
+    if(t){
+      const hay=[img.filename||"",m.title||"",m.saleType||""].concat(usage[id]||[]).join(" ").toLowerCase();
+      if(hay.indexOf(t)===-1)return false;
+    }
+    return true;
+  });
+}
+
+function mfUpdate(){
+  metaFilterText=document.getElementById("mfText")?.value||"";
+  metaFilterMode=document.getElementById("mfMode")?.value||"all";
+  renderSmugMugImagesInTab();
+}
 
 function storyMeta(id){
   if(!STATE.cf)STATE.cf={assetMeta:{}};
@@ -3764,37 +3873,84 @@ function storyMeta(id){
   return STATE.cf.assetMeta[id];
 }
 
-function openStoryEditor(id){
+function openStoryEditor(id){openMetaEditor(id);}
+
+function metaGroupLbl(t){return `<div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;opacity:.45;margin:16px 0 8px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px">${t}</div>`;}
+
+function printSizesToText(arr){
+  return (Array.isArray(arr)?arr:[]).map(function(s){
+    const label=s&&(s.label||s.size)||"";
+    const price=s&&s.price!=null&&s.price!==""?" | "+s.price:"";
+    return label+price;
+  }).filter(Boolean).join("\n");
+}
+function parsePrintSizes(text){
+  return String(text||"").split("\n").map(function(line){
+    const parts=line.split("|");
+    const label=(parts[0]||"").trim();
+    if(!label)return null;
+    const price=(parts[1]||"").trim();
+    return price?{label,price}:{label};
+  }).filter(Boolean);
+}
+
+function openMetaEditor(id){
   storyEditingId=id;
   const m=storyMeta(id);
   const hash=TIA.CF_HASH||STATE.cf?.hash||"";
   const thumb=hash?`https://imagedelivery.net/${hash}/${id}/thumb`:"";
-  document.getElementById("amTitle").textContent="Story Page";
+  const apps=metaAppearances(id);
+  const sold=Number(m.editionsSold)||0;
+  document.getElementById("amTitle").textContent="Image Metadata";
   let html=`<div class="am-section">
-    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:6px">
       ${thumb?`<img src="${thumb}" style="width:90px;height:90px;object-fit:cover;flex-shrink:0" alt="">`:""}
-      <div style="flex:1">
-        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:6px">
-          <input type="checkbox" id="stHas" ${m.hasStoryPage?"checked":""} data-testid="check-story-page"> Story Page enabled
-        </label>
-        <p style="font-size:10px;opacity:.5;margin:0">A dedicated /work/&lt;slug&gt; page for this image. Reserved for select work.</p>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;word-break:break-all">${esc(m.filename||id)}</div>
+        <div style="font-size:9px;opacity:.4;word-break:break-all;margin-top:3px">${esc(id)}</div>
+        <div style="font-size:9px;opacity:.55;margin-top:6px" data-testid="text-meta-appearances">${apps.length?"Appears in: "+apps.map(esc).join(" &middot; "):"Not placed in any gallery yet"}</div>
       </div>
     </div>
-    <span class="field-lbl">Story Title (literary title)</span>
-    <input class="input" id="stTitle" value="${esc(m.storyTitle||"")}" oninput="stAutoSlug()" placeholder="e.g. Where Dragons Fly" data-testid="input-story-title">
-    <span class="field-lbl" style="margin-top:10px">Slug (URL: /work/&lt;slug&gt;)</span>
-    <input class="input" id="stSlug" value="${esc(m.slug||"")}" oninput="this.dataset.touched=1" placeholder="e.g. where-dragons-fly" data-testid="input-story-slug">
-    <span class="field-lbl" style="margin-top:10px">Story (2\u20134 short paragraphs; blank line between paragraphs)</span>
-    <textarea class="input" id="stBody" rows="7" style="resize:vertical" data-testid="input-story-body">${esc(m.storyBody||"")}</textarea>
+    ${metaGroupLbl("Display")}
+    <span class="field-lbl">Title (display title)</span>
+    <input class="input" id="mdTitle" value="${esc(m.title||"")}" data-testid="input-meta-title">
+    <span class="field-lbl" style="margin-top:10px">Caption (short)</span>
+    <input class="input" id="mdCaption" value="${esc(m.caption||"")}" data-testid="input-meta-caption">
+    <span class="field-lbl" style="margin-top:10px">Alt Text (accessibility + Google Images SEO)</span>
+    <input class="input" id="mdAlt" value="${esc(m.altText||"")}" placeholder="Describe what's in the photo" data-testid="input-meta-alt">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
       <div><span class="field-lbl">Location</span><input class="input" id="stLocation" value="${esc(m.location||"")}" data-testid="input-story-location"></div>
       <div><span class="field-lbl">Camera</span><input class="input" id="stCamera" value="${esc(m.camera||"")}" data-testid="input-story-camera"></div>
       <div><span class="field-lbl">Year</span><input class="input" id="stYear" value="${esc(m.year||"")}" data-testid="input-story-year"></div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
-      <button class="btn pri" onclick="saveStory()" data-testid="btn-save-story">Save Story</button>
-      ${m.hasStoryPage&&m.slug?`<a class="btn" href="/work/${esc(m.slug)}" target="_blank" data-testid="link-view-story">View Page &#8599;</a>`:""}
-      <button class="btn" onclick="closeAssignModal()" data-testid="btn-cancel-story">Cancel</button>
+    ${metaGroupLbl("Story Page")}
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:8px">
+      <input type="checkbox" id="stHas" ${m.hasStoryPage?"checked":""} data-testid="check-story-page"> Story Page enabled (/work/&lt;slug&gt;)
+    </label>
+    <span class="field-lbl">Story Title (literary title)</span>
+    <input class="input" id="stTitle" value="${esc(m.storyTitle||"")}" oninput="stAutoSlug()" placeholder="e.g. Where Dragons Fly" data-testid="input-story-title">
+    <span class="field-lbl" style="margin-top:10px">Slug</span>
+    <input class="input" id="stSlug" value="${esc(m.slug||"")}" oninput="this.dataset.touched=1" placeholder="e.g. where-dragons-fly" data-testid="input-story-slug">
+    <span class="field-lbl" style="margin-top:10px">Story (2\u20134 short paragraphs; blank line between paragraphs)</span>
+    <textarea class="input" id="stBody" rows="6" style="resize:vertical" data-testid="input-story-body">${esc(m.storyBody||"")}</textarea>
+    ${metaGroupLbl("Sale")}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div><span class="field-lbl">Sale Type</span>
+        <select class="input" id="slType" data-testid="select-sale-type">
+          <option value="none" ${(!m.saleType||m.saleType==="none")?"selected":""}>Not for sale</option>
+          <option value="open" ${m.saleType==="open"?"selected":""}>Open edition</option>
+          <option value="limited" ${m.saleType==="limited"?"selected":""}>Limited edition</option>
+        </select></div>
+      <div><span class="field-lbl">Edition Size</span><input class="input" id="slEdition" type="number" min="1" value="${esc(m.editionSize||"")}" data-testid="input-edition-size"></div>
+      <div><span class="field-lbl">Editions Sold (read-only)</span><input class="input" value="${sold}" disabled style="opacity:.5" data-testid="text-editions-sold"></div>
+    </div>
+    <span class="field-lbl" style="margin-top:10px">Print Sizes (one per line: Label | Price)</span>
+    <textarea class="input" id="slPrints" rows="3" style="resize:vertical" placeholder="16&times;20 | 450&#10;24&times;30 | 850" data-testid="input-print-sizes">${esc(printSizesToText(m.printSizes))}</textarea>
+    <div style="font-size:9px;opacity:.5;margin-top:8px" data-testid="text-master-status">Print master: ${m.printMasterRef?"linked":"not linked (attach via the Mark for Sale wizard \u2014 coming with the sales back-half)"}</div>
+    <div style="display:flex;gap:10px;margin-top:18px;align-items:center">
+      <button class="btn pri" onclick="saveMeta()" data-testid="btn-save-meta">Save Metadata</button>
+      ${m.hasStoryPage&&m.slug?`<a class="btn" href="/work/${esc(m.slug)}" target="_blank" data-testid="link-view-story">View Story &#8599;</a>`:""}
+      <button class="btn" onclick="closeAssignModal()" data-testid="btn-cancel-meta">Cancel</button>
     </div>
   </div>`;
   document.getElementById("amBody").innerHTML=html;
@@ -3807,31 +3963,121 @@ function stAutoSlug(){
   if(slugEl&&!slugEl.dataset.touched)slugEl.value=apSlugify(document.getElementById("stTitle").value);
 }
 
-async function saveStory(){
+async function saveMeta(){
   const id=storyEditingId;
   if(!id)return;
   const has=document.getElementById("stHas").checked;
-  const title=(document.getElementById("stTitle").value||"").trim();
+  const stTitle=(document.getElementById("stTitle").value||"").trim();
   const slug=apSlugify(document.getElementById("stSlug").value||"");
   if(has){
-    if(!title){toast("Enter a story title",true);return;}
+    if(!stTitle){toast("Enter a story title",true);return;}
     if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)){toast("Slug must use lowercase letters, numbers and hyphens",true);return;}
     const collision=Object.keys(STATE.cf.assetMeta||{}).find(aid=>aid!==id&&STATE.cf.assetMeta[aid]?.hasStoryPage&&STATE.cf.assetMeta[aid]?.slug===slug);
     if(collision){toast('Slug "'+slug+'" is already used by another image',true);return;}
   }
+  const saleType=document.getElementById("slType").value;
+  const editionSize=parseInt(document.getElementById("slEdition").value,10);
+  if(saleType==="limited"&&(!editionSize||editionSize<1)){toast("Limited editions need an edition size",true);return;}
   const m=storyMeta(id);
-  m.hasStoryPage=has;
-  m.slug=slug;
-  m.storyTitle=title;
-  m.storyBody=document.getElementById("stBody").value||"";
+  m.title=(document.getElementById("mdTitle").value||"").trim();
+  m.caption=(document.getElementById("mdCaption").value||"").trim();
+  m.altText=(document.getElementById("mdAlt").value||"").trim();
   m.location=(document.getElementById("stLocation").value||"").trim();
   m.camera=(document.getElementById("stCamera").value||"").trim();
   m.year=(document.getElementById("stYear").value||"").trim();
+  m.hasStoryPage=has;
+  m.slug=slug;
+  m.storyTitle=stTitle;
+  m.storyBody=document.getElementById("stBody").value||"";
+  m.saleType=saleType;
+  if(editionSize>0)m.editionSize=editionSize;else delete m.editionSize;
+  m.printSizes=parsePrintSizes(document.getElementById("slPrints").value);
+  // editionsSold and printMasterRef are intentionally never written here
   CF_PHOTOS[id]=m;
+  const copies=metaPropagate(id);
   closeAssignModal();
   await saveAll();
-  if(imgSource==="library"&&typeof renderSmugMugImagesInTab==="function"&&smugmugImages)renderSmugMugImagesInTab();
-  else renderImgGrid();
+  metaRerenderGrid();
+  toast("Updated in "+(copies+1)+" place"+(copies===0?"":"s"));
+}
+
+// legacy name kept for any stale handlers
+async function saveStory(){return saveMeta();}
+
+// ── Bulk metadata editor ──────────────────────────────────
+let bulkIds=[];
+
+function openBulkEditor(){
+  bulkIds=imgSource==="library"?Array.from(smugSelected):Array.from(imgSelected);
+  if(bulkIds.length<2){toast("Select at least 2 images",true);return;}
+  document.getElementById("amTitle").textContent="Bulk Edit "+bulkIds.length+" Images";
+  function row(chkId,label,inner){
+    return `<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:10px;min-width:90px;padding-top:8px;cursor:pointer">
+        <input type="checkbox" id="${chkId}" data-testid="check-${chkId}"> Apply
+      </label>
+      <div style="flex:1"><span class="field-lbl">${label}</span>${inner}</div>
+    </div>`;
+  }
+  let html=`<div class="am-section">
+    <p style="font-size:10px;opacity:.55;margin:0 0 14px">Only fields with \u201cApply\u201d checked are written. Unchecked fields are left unchanged on every image \u2014 blanks never wipe values. Titles, alt text, stories and slugs are per-image only (edit those one at a time).</p>
+    ${row("bkLocApply","Location",`<input class="input" id="bkLoc" data-testid="input-bulk-location">`)}
+    ${row("bkCamApply","Camera",`<input class="input" id="bkCam" data-testid="input-bulk-camera">`)}
+    ${row("bkYearApply","Year",`<input class="input" id="bkYear" data-testid="input-bulk-year">`)}
+    ${row("bkSaleApply","Sale Type",`<select class="input" id="bkSale" data-testid="select-bulk-sale">
+      <option value="none">Not for sale</option><option value="open">Open edition</option><option value="limited">Limited edition</option>
+    </select>`)}
+    ${row("bkPrintsApply","Print Sizes template (one per line: Label | Price)",`
+      <select class="input" id="bkPrintsMode" style="margin-bottom:6px" data-testid="select-bulk-prints-mode">
+        <option value="replace">Replace existing sizes</option>
+        <option value="add">Add to existing sizes</option>
+      </select>
+      <textarea class="input" id="bkPrints" rows="3" style="resize:vertical" data-testid="input-bulk-prints"></textarea>`)}
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn pri" onclick="applyBulkEdit()" data-testid="btn-apply-bulk">Apply to ${bulkIds.length} Images</button>
+      <button class="btn" onclick="closeAssignModal()" data-testid="btn-cancel-bulk">Cancel</button>
+    </div>
+  </div>`;
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+}
+
+async function applyBulkEdit(){
+  const apply={
+    location:document.getElementById("bkLocApply").checked,
+    camera:document.getElementById("bkCamApply").checked,
+    year:document.getElementById("bkYearApply").checked,
+    saleType:document.getElementById("bkSaleApply").checked,
+    prints:document.getElementById("bkPrintsApply").checked
+  };
+  if(!apply.location&&!apply.camera&&!apply.year&&!apply.saleType&&!apply.prints){toast("Check \u201cApply\u201d on at least one field",true);return;}
+  const vals={
+    location:(document.getElementById("bkLoc").value||"").trim(),
+    camera:(document.getElementById("bkCam").value||"").trim(),
+    year:(document.getElementById("bkYear").value||"").trim(),
+    saleType:document.getElementById("bkSale").value,
+    printsMode:document.getElementById("bkPrintsMode").value,
+    prints:parsePrintSizes(document.getElementById("bkPrints").value)
+  };
+  bulkIds.forEach(function(id){
+    const m=storyMeta(id);
+    if(apply.location)m.location=vals.location;
+    if(apply.camera)m.camera=vals.camera;
+    if(apply.year)m.year=vals.year;
+    if(apply.saleType)m.saleType=vals.saleType;
+    if(apply.prints){
+      m.printSizes=vals.printsMode==="add"
+        ?(Array.isArray(m.printSizes)?m.printSizes:[]).concat(vals.prints)
+        :vals.prints.slice();
+    }
+    // editionsSold / printMasterRef never touched in bulk
+    CF_PHOTOS[id]=m;
+    metaPropagate(id);
+  });
+  closeAssignModal();
+  await saveAll();
+  metaRerenderGrid();
+  toast("Updated "+bulkIds.length+" images");
 }
 
 function imgCreateFolder(){
