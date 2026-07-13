@@ -8,6 +8,11 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "rla1022@gmail.com")
   .filter(Boolean);
 
 export const requireAdmin: RequestHandler = (req, res, next) => {
+  // Local bypass: skip admin check when REPL_ID is not set (local development)
+  if (!process.env.REPL_ID) {
+    return next();
+  }
+
   const claims = (req.user as any)?.claims;
   const email = (claims?.email || "").toLowerCase();
   if (!email || !ADMIN_EMAILS.includes(email)) {

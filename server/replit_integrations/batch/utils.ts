@@ -1,6 +1,13 @@
 import pLimit from "p-limit";
 import pRetry from "p-retry";
 
+class AbortError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AbortError";
+  }
+}
+
 /**
  * Batch Processing Utilities for Anthropic
  *
@@ -94,8 +101,8 @@ export async function batchProcess<T, R>(
             if (isRateLimitError(error)) {
               throw error;
             }
-            throw new pRetry.AbortError(
-              error instanceof Error ? error : new Error(String(error))
+            throw new AbortError(
+              error instanceof Error ? error.message : String(error)
             );
           }
         },
@@ -135,8 +142,8 @@ export async function batchProcessWithSSE<T, R>(
         factor: 2,
         onFailedAttempt: (error) => {
           if (!isRateLimitError(error)) {
-            throw new pRetry.AbortError(
-              error instanceof Error ? error : new Error(String(error))
+            throw new AbortError(
+              error instanceof Error ? error.message : String(error)
             );
           }
         },

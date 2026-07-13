@@ -133,6 +133,11 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // Local bypass: skip auth when REPL_ID is not set (local development)
+  if (!process.env.REPL_ID) {
+    return next();
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {

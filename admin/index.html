@@ -432,31 +432,29 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v7
+// TIA-DATA.JS  v8
 //
-// Photo source: Cloudflare Images
+// Photo source: SmugMug
 // Config store: Server-side JSON (/api/config)
 // ═══════════════════════════════════════════════════════════════
 
 const TIA = {
   STORE_KEY:  'tia_admin',
-  CF_HASH:    null,
 
-  cfUrl(imageId, variant) {
-    const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
-    if (!hash || !imageId) return '';
-    return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
+  photoUrl(photo, size) {
+    if (!photo) return '';
+    if (typeof photo === 'string') return photo; // legacy support
+    const sizes = photo.sizes || {};
+    if (size === 'thumb') return sizes.medium || sizes.large || photo.webUri;
+    if (size === 'cover') return sizes.large || sizes.xlarge || photo.webUri;
+    if (size === 'hero') return sizes.xlarge || sizes.x2large || photo.webUri;
+    return sizes.x2large || sizes.xlarge || photo.webUri;
   },
 
-  photoUrl(id, size) {
-    const variant = size === 'thumb' ? 'thumb' : size === 'cover' ? 'cover' : size === 'hero' ? 'hero' : 'full';
-    return TIA.cfUrl(id, variant);
-  },
-
-  thumb(assetId)  { return TIA.photoUrl(assetId, 'thumb');  },
-  cover(assetId)  { return TIA.photoUrl(assetId, 'cover'); },
-  hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
-  full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
+  thumb(photo)  { return TIA.photoUrl(photo, 'thumb');  },
+  cover(photo)  { return TIA.photoUrl(photo, 'cover'); },
+  hero(photo)   { return TIA.photoUrl(photo, 'hero'); },
+  full(photo)   { return TIA.photoUrl(photo, 'full');   },
 
   DEFAULT_SERIES: [
     { id:'s1', num:'01', title:'Solitude & Scale',          subtitle:'The Secret Lagoon',                  type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Fjallsárlón Glacier Lagoon'          },
@@ -522,14 +520,29 @@ const TIA = {
 
   getPhotos(seriesId) {
     const state = TIA.getState();
-    return (state.photos?.[seriesId] || []).map(aid => ({
-      assetId:  aid,
-      thumb:    TIA.thumb(aid),
-      full:     TIA.full(aid),
-      cover:    TIA.cover(aid),
-      hero:     TIA.hero(aid),
-      filename: state.cf?.assetMeta?.[aid]?.filename || aid.split('/').pop() || aid,
-    }));
+    return (state.photos?.[seriesId] || []).map(photo => {
+      if (typeof photo === 'string') {
+        // legacy support for old string-based IDs
+        return {
+          assetId: photo,
+          thumb: photo,
+          full: photo,
+          cover: photo,
+          hero: photo,
+          filename: photo.split('/').pop() || photo,
+        };
+      }
+      return {
+        assetId: photo.imageKey,
+        thumb: TIA.thumb(photo),
+        full: TIA.full(photo),
+        cover: TIA.cover(photo),
+        hero: TIA.hero(photo),
+        filename: photo.filename || photo.imageKey,
+        webUri: photo.webUri,
+        sizes: photo.sizes,
+      };
+    });
   },
 
   getCoverUrl(seriesId, size = 'cover') {
@@ -795,47 +808,6 @@ function removePhotoFromSeries(sid,pid){
   toast("Photo removed from series");
 }
 
-async function handleUploadFiles(files,sid){
-  if(!sid)return toast("No series selected",true);
-  const progress=document.getElementById("uploadProgress");
-  if(!STATE.photos[sid])STATE.photos[sid]=[];
-  let uploaded=0;
-  const total=Array.from(files).filter(f=>f.type.startsWith("image/")).length;
-  if(!total)return toast("No image files selected",true);
-  if(progress)progress.innerHTML=`<div class="upload-item"><span class="upload-item-name">Uploading ${total} file${total>1?"s":""}...</span><span class="upload-item-status busy">0 / ${total}</span></div><div class="upload-bar"><div class="upload-bar-fill" id="uploadBarFill"></div></div>`;
-  for(const file of files){
-    if(!file.type.startsWith("image/"))continue;
-    try{
-      const fd=new FormData();
-      fd.append("file",file);
-      const res=await fetch("/api/images/upload",{method:"POST",body:fd});
-      if(!res.ok){const errData=await res.json().catch(()=>({}));throw new Error(errData.error||"Upload failed: "+res.status);}
-      const data=await res.json();
-      const cfId=data.id;
-      const meta={id:cfId,filename:data.filename||file.name};
-      if(data.exif&&Object.keys(data.exif).length>0)meta.exif=data.exif;
-      if(!STATE.cf)STATE.cf={assetMeta:{}};
-      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
-      STATE.cf.assetMeta[cfId]=meta;
-      CF_PHOTOS[cfId]=meta;
-      if(!STATE.photos[sid].includes(cfId))STATE.photos[sid].push(cfId);
-      uploaded++;
-      const bar=document.getElementById("uploadBarFill");
-      if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";
-      const statusEl=progress?.querySelector(".upload-item-status");
-      if(statusEl){statusEl.textContent=uploaded+" / "+total;if(uploaded===total)statusEl.className="upload-item-status ok";}
-      const nameEl=progress?.querySelector(".upload-item-name");
-      if(nameEl)nameEl.textContent=file.name;
-    }catch(err){
-      if(progress)progress.innerHTML+=`<div class="upload-item"><span class="upload-item-name">${esc(file.name)}</span><span class="upload-item-status err">${esc(err.message)}</span></div>`;
-    }
-  }
-  if(uploaded>0){
-    setTimeout(()=>showPortfolioPanel(),1500);
-    toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded - Save & Publish to go live");
-  }
-}
-
 // SERIES VIEW
 function formatExposure(t){if(!t)return"";if(t>=1)return t+"s";const d=Math.round(1/t);return"1/"+d;}
 function exifTags(aid){
@@ -865,31 +837,25 @@ function renderSeriesContent(sid,s,photos,cover,isCustom){
     <div style="grid-column:span 2"><span class="field-lbl">Description</span>
       ${aiWrap(`<textarea class="textarea" oninput="updateSeries('${sid}','description',this.value)" data-testid="input-series-desc-${sid}">${esc(s?.description||"")}</textarea>`,aiBtn('series',0,'description__'+sid))}</div></div>`;
   html+=`<div class="gallery-upload" id="galleryUpload"
-    onclick="document.getElementById('galleryUploadInput').click()"
-    ondragover="event.preventDefault();this.classList.add('drag')"
-    ondragleave="this.classList.remove('drag')"
-    ondrop="event.preventDefault();this.classList.remove('drag');handleUploadFiles(event.dataTransfer.files,'${sid}')">
+    onclick="openSmugMugPicker('series','${sid}')">
     <div class="gallery-upload-ico">&#x2191;</div>
-    <div class="gallery-upload-lbl">Drop photos here or click to browse</div>
-    <div class="gallery-upload-sub">JPG, PNG, WebP &mdash; up to 20MB each &mdash; EXIF data will be read automatically</div>
-  </div>
-  <input type="file" id="galleryUploadInput" multiple accept="image/*" style="display:none" onchange="handleUploadFiles(this.files,'${sid}')">
-  <div id="uploadProgress"></div>`;
+    <div class="gallery-upload-lbl">Click to add photos from SmugMug</div>
+    <div class="gallery-upload-sub">Select an album, then choose photos to add to this gallery</div>
+  </div>`;
   if(!photos.length){
-    html+="<div class='empty'><p>No photos yet &mdash; drop files above to add photos</p></div>";
+    html+="<div class='empty'><p>No photos yet &mdash; click above to add photos from SmugMug</p></div>";
   }else{
     html+=`<div class="sec-lbl"><span>${photos.length} photo${photos.length!==1?"s":""} &mdash; click to set cover or remove</span></div><div class="pg">`;
     photos.forEach(p=>{
       const isCover=p.assetId===cover;
-      const exif=exifTags(p.assetId);
       html+=`<div class="pc ${isCover?"cover":""}">
-        ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
+        ${p.thumb?`<img src="${p.thumb}" loading="lazy" alt="">`:``}
         ${isCover?`<div class="pc-badge cover">Cover</div>`:""}
         <div class="pc-ov">
           <button class="pc-btn" onclick="setCover('${sid}','${p.assetId}')">Cover</button>
           <button class="pc-btn" onclick="removePhoto('${sid}','${p.assetId}')">Remove</button>
         </div>
-        <div class="pc-info"><div class="pc-name">${esc(p.filename)}</div>${exif?`<div class="pc-exif">${exif}</div>`:""}</div></div>`;
+        <div class="pc-info"><div class="pc-name">${esc(p.filename)}</div></div></div>`;
     });
     html+="</div>";
   }
@@ -901,7 +867,7 @@ function showSeriesView(sid){
 }
 function updateSeries(sid,field,val){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid][field]=val;}
 function setCover(sid,assetId){if(!STATE.series[sid])STATE.series[sid]={};STATE.series[sid].coverAssetId=assetId;saveAll();showGalleriesPanel();toast("Cover set");}
-function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==assetId);showGalleriesPanel();}
+function removePhoto(sid,assetId){if(!STATE.photos[sid])return;STATE.photos[sid]=STATE.photos[sid].filter(p=>(typeof p==='string'?p:p.imageKey)!==assetId);showGalleriesPanel();}
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -1657,32 +1623,31 @@ function renderGalleryEditor(w,workIdx,galIdx){
   html+='</div>';
 
   html+='<div class="sec-lbl" style="margin-bottom:6px"><span>'+(folders.length?'Unsorted Photos (Collection Root)':'Photos')+'</span></div>';
-  html+='<div class="gallery-upload" onclick="document.getElementById(\'geUpload_'+workIdx+'_'+galIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToGallery(event.dataTransfer.files,'+workIdx+','+galIdx+')">';
+  html+='<div class="gallery-upload" onclick="openSmugMugPicker(\'gallery\',\''+workIdx+'__'+galIdx+'\')">';
   html+='<div class="gallery-upload-ico">&#x2191;</div>';
-  html+='<div class="gallery-upload-lbl">Drop photos or click to upload</div>';
+  html+='<div class="gallery-upload-lbl">Click to add photos from SmugMug</div>';
   html+='</div>';
-  html+='<input type="file" id="geUpload_'+workIdx+'_'+galIdx+'" multiple accept="image/*" style="display:none" onchange="uploadToGallery(this.files,'+workIdx+','+galIdx+')">';
   html+='<div style="display:flex;gap:6px;margin:8px 0"><button class="btn" onclick="assignPhotosToGallery('+workIdx+','+galIdx+')" data-testid="btn-assign-photos-'+workIdx+'-'+galIdx+'">Add from Library</button></div>';
-  html+='<div id="geUploadProgress_'+workIdx+'_'+galIdx+'"></div>';
   var photos=g.photos||[];
   if(photos.length){
     html+='<div class="sec-lbl" style="margin-top:10px"><span>'+photos.length+' photo'+(photos.length!==1?'s':'')+'</span></div>';
     html+='<div class="ge-photos">';
     photos.forEach(function(pid,pi){
+      var photoId=typeof pid==='string'?pid:pid.imageKey;
       var t=TIA.photoUrl(pid,'thumb');
-      var isCover=pid===g.coverAssetId;
+      var isCover=photoId===g.coverAssetId;
       html+='<div class="ge-photo'+(isCover?' cover':'')+'">';
       if(t) html+='<img src="'+t+'" loading="lazy" alt="">';
       if(isCover) html+='<div class="pc-badge cover" style="position:absolute;top:3px;left:3px">Cover</div>';
       html+='<div class="ge-photo-ov">';
-      html+='<button class="ge-photo-btn" onclick="setGalleryCover('+workIdx+','+galIdx+',\''+pid+'\')">Cover</button>';
+      html+='<button class="ge-photo-btn" onclick="setGalleryCover('+workIdx+','+galIdx+',\''+photoId+'\')">Cover</button>';
       if(folders.length) html+='<button class="ge-photo-btn" onclick="movePhotoToFolder('+workIdx+','+galIdx+','+pi+')" data-testid="btn-move-to-folder-'+pi+'">&#x2192; Folder</button>';
       html+='<button class="ge-photo-btn" onclick="removeGalleryPhoto('+workIdx+','+galIdx+','+pi+')">&#x2715;</button>';
       html+='</div></div>';
     });
     html+='</div>';
   } else {
-    html+='<div style="padding:16px;text-align:center;opacity:.2;font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-top:8px">No photos — upload or assign above</div>';
+    html+='<div style="padding:16px;text-align:center;opacity:.2;font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-top:8px">No photos — add from SmugMug above</div>';
   }
   html+='</div>';
   return html;
@@ -1702,24 +1667,23 @@ function renderFolderEditor(workIdx,galIdx,folderIdx,f){
   html+='<div><span class="field-lbl">Camera</span>'+aiWrap('<input class="input" value="'+esc(f.camera||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'camera\',this.value)" data-testid="input-folder-camera-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. GFX 100S II">',aiBtn('folder',fEnc,'camera'))+'</div>';
   html+='<div><span class="field-lbl">Location</span>'+aiWrap('<input class="input" value="'+esc(f.location||'')+'" oninput="updateFolder('+workIdx+','+galIdx+','+folderIdx+',\'location\',this.value)" data-testid="input-folder-location-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:11px" placeholder="e.g. Iceland">',aiBtn('folder',fEnc,'location'))+'</div>';
   html+='</div>';
-  html+='<div class="gallery-upload" style="padding:12px" onclick="document.getElementById(\'fuUpload_'+workIdx+'_'+galIdx+'_'+folderIdx+'\').click()" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="event.preventDefault();this.classList.remove(\'drag\');uploadToFolder(event.dataTransfer.files,'+workIdx+','+galIdx+','+folderIdx+')">';
+  html+='<div class="gallery-upload" style="padding:12px" onclick="openSmugMugPicker(\'folder\',\''+workIdx+'__'+galIdx+'__'+folderIdx+'\')">';
   html+='<div class="gallery-upload-ico" style="font-size:14px">&#x2191;</div>';
-  html+='<div class="gallery-upload-lbl" style="font-size:9px">Drop photos or click</div>';
+  html+='<div class="gallery-upload-lbl" style="font-size:9px">Click to add photos from SmugMug</div>';
   html+='</div>';
-  html+='<input type="file" id="fuUpload_'+workIdx+'_'+galIdx+'_'+folderIdx+'" multiple accept="image/*" style="display:none" onchange="uploadToFolder(this.files,'+workIdx+','+galIdx+','+folderIdx+')">';
   html+='<div style="display:flex;gap:6px;margin:6px 0"><button class="btn" onclick="assignPhotosToFolder('+workIdx+','+galIdx+','+folderIdx+')" data-testid="btn-assign-folder-photos-'+workIdx+'-'+galIdx+'-'+folderIdx+'" style="font-size:10px">Add from Library</button></div>';
-  html+='<div id="fuUploadProgress_'+workIdx+'_'+galIdx+'_'+folderIdx+'"></div>';
   var photos=f.photos||[];
   if(photos.length){
     html+='<div class="ge-photos" style="margin-top:6px">';
     photos.forEach(function(pid,pi){
+      var photoId=typeof pid==='string'?pid:pid.imageKey;
       var t=TIA.photoUrl(pid,'thumb');
-      var isCover=pid===f.coverAssetId;
+      var isCover=photoId===f.coverAssetId;
       html+='<div class="ge-photo'+(isCover?' cover':'')+'">';
       if(t) html+='<img src="'+t+'" loading="lazy" alt="">';
       if(isCover) html+='<div class="pc-badge cover" style="position:absolute;top:3px;left:3px">Cover</div>';
       html+='<div class="ge-photo-ov">';
-      html+='<button class="ge-photo-btn" onclick="setFolderCover('+workIdx+','+galIdx+','+folderIdx+',\''+pid+'\')">Cover</button>';
+      html+='<button class="ge-photo-btn" onclick="setFolderCover('+workIdx+','+galIdx+','+folderIdx+',\''+photoId+'\')">Cover</button>';
       html+='<button class="ge-photo-btn" onclick="removeFolderPhoto('+workIdx+','+galIdx+','+folderIdx+','+pi+')">&#x2715;</button>';
       html+='</div></div>';
     });
@@ -1811,34 +1775,6 @@ function movePhotoToFolder(workIdx,galIdx,photoIdx){
   showPortfolioPanel(true);
   saveAll();
   toast('Photo moved to '+esc(folders[fi].title||'folder'));
-}
-
-async function uploadToFolder(files,workIdx,galIdx,folderIdx){
-  if(!files||!files.length)return;
-  var w=getPortfolioWorks()[workIdx];
-  if(!w||!w.galleries[galIdx]||!w.galleries[galIdx].folders||!w.galleries[galIdx].folders[folderIdx])return;
-  var prog=document.getElementById('fuUploadProgress_'+workIdx+'_'+galIdx+'_'+folderIdx);
-  var total=files.length,done=0;
-  if(prog)prog.innerHTML='<div style="font-size:10px;opacity:.5">Uploading 0/'+total+'...</div>';
-  for(var i=0;i<files.length;i++){
-    var fd=new FormData();fd.append('file',files[i]);
-    try{
-      var res=await fetch('/api/images/upload',{method:'POST',body:fd});
-      if(res.ok){
-        var data=await res.json();
-        if(data.id){
-          w.galleries[galIdx].folders[folderIdx].photos.push(data.id);
-          if(STATE.cf){if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};STATE.cf.assetMeta[data.id]={id:data.id,filename:data.filename||files[i].name};}
-        }
-      }
-    }catch(e){}
-    done++;
-    if(prog)prog.innerHTML='<div style="font-size:10px;opacity:.5">Uploading '+done+'/'+total+'...</div>';
-  }
-  if(prog)prog.innerHTML='';
-  saveAll();
-  showPortfolioPanel(true);
-  toast(done+' photo'+(done!==1?'s':'')+' uploaded to folder');
 }
 
 function assignPhotosToFolder(workIdx,galIdx,folderIdx){
@@ -2222,45 +2158,6 @@ function removeGalleryPhoto(workIdx,galIdx,photoIdx){
   showPortfolioPanel(true);
 }
 
-async function uploadToGallery(files,workIdx,galIdx){
-  var w=getPortfolioWorks()[workIdx];
-  if(!w||!w.galleries||!w.galleries[galIdx])return;
-  var g=w.galleries[galIdx];
-  if(!g.photos)g.photos=[];
-  var progress=document.getElementById("geUploadProgress_"+workIdx+"_"+galIdx);
-  var total=Array.from(files).filter(function(f){return f.type.startsWith("image/");}).length;
-  if(!total)return toast("No image files",true);
-  var uploaded=0;
-  if(progress)progress.innerHTML='<div class="upload-item"><span class="upload-item-name">Uploading '+total+' file'+(total>1?'s':'')+'...</span><span class="upload-item-status busy">0 / '+total+'</span></div><div class="upload-bar"><div class="upload-bar-fill" id="geBar_'+workIdx+'_'+galIdx+'"></div></div>';
-  for(var fi=0;fi<files.length;fi++){
-    var file=files[fi];
-    if(!file.type.startsWith("image/"))continue;
-    try{
-      var fd=new FormData();fd.append("file",file);
-      var res=await fetch("/api/images/upload",{method:"POST",body:fd});
-      if(!res.ok)throw new Error("Upload failed");
-      var data=await res.json();
-      var cfId=data.id;
-      var meta={id:cfId,filename:data.filename||file.name};
-      if(data.exif&&Object.keys(data.exif).length>0)meta.exif=data.exif;
-      if(!STATE.cf)STATE.cf={assetMeta:{}};
-      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
-      STATE.cf.assetMeta[cfId]=meta;
-      CF_PHOTOS[cfId]=meta;
-      if(!g.photos.includes(cfId))g.photos.push(cfId);
-      uploaded++;
-      var bar=document.getElementById("geBar_"+workIdx+"_"+galIdx);
-      if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";
-    }catch(err){
-      if(progress)progress.innerHTML+='<div class="upload-item"><span class="upload-item-name">'+esc(file.name)+'</span><span class="upload-item-status err">'+esc(err.message)+'</span></div>';
-    }
-  }
-  if(uploaded>0){
-    setTimeout(function(){showPortfolioPanel(true);},1000);
-    toast(uploaded+" photo"+(uploaded>1?"s":"")+" uploaded");
-  }
-}
-
 function assignPhotosToGallery(workIdx,galIdx){
   pkSlotId='__galassign__'+workIdx+'__'+galIdx;
   pkCtx='galassign';
@@ -2388,6 +2285,87 @@ function testCfConnection(){
 
 // PICKER
 let pkSlotId=null,pkCtx=null,pkActive=null;
+let smugmugAlbums=null;
+let smugmugCurrentAlbum=null;
+let smugmugImages=null;
+
+async function openSmugMugPicker(ctx,targetId){
+  pkSlotId=targetId;pkCtx=ctx;pkActive=null;
+  smugmugCurrentAlbum=null;smugmugImages=null;
+  document.getElementById("pkTitle").textContent="Select Photo from SmugMug";
+  document.getElementById("pkConfirm").disabled=true;
+  document.getElementById("picker").classList.add("open");
+  await loadSmugMugAlbums();
+  renderSmugMugAlbums();
+}
+
+async function loadSmugMugAlbums(){
+  if(smugmugAlbums)return;
+  const grid=document.getElementById("pkGrid");
+  grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>Loading albums...</p></div>";
+  try{
+    const res=await fetch("/api/smugmug/albums");
+    if(!res.ok)throw new Error("Failed to load albums");
+    smugmugAlbums=await res.json();
+  }catch(err){
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p style='color:var(--red)'>"+esc(err.message)+"</p></div>";
+  }
+}
+
+function renderSmugMugAlbums(){
+  const grid=document.getElementById("pkGrid");
+  const filter=document.getElementById("pkFilter");
+  filter.innerHTML="";
+  if(!smugmugAlbums||!smugmugAlbums.length){
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No albums found</p></div>";
+    return;
+  }
+  grid.innerHTML=smugmugAlbums.map(album=>`
+    <div class="pk-cell" onclick="selectSmugMugAlbum('${album.albumKey}')">
+      <div style="padding:20px;text-align:center">
+        <div style="font-size:24px;opacity:.3;margin-bottom:8px">&#x1f5bc;</div>
+        <div class="pk-cell-lbl">${esc(album.title)}</div>
+        <div style="font-size:8px;opacity:.4;margin-top:4px">${album.imageCount} photos</div>
+      </div>
+    </div>`).join("");
+}
+
+async function selectSmugMugAlbum(albumKey){
+  smugmugCurrentAlbum=albumKey;
+  const grid=document.getElementById("pkGrid");
+  grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>Loading images...</p></div>";
+  const filter=document.getElementById("pkFilter");
+  filter.innerHTML=`<button class="pk-f" onclick="renderSmugMugAlbums()">← Back to Albums</button>`;
+  try{
+    const res=await fetch("/api/smugmug/albums/"+encodeURIComponent(albumKey)+"/images");
+    if(!res.ok)throw new Error("Failed to load images");
+    smugmugImages=await res.json();
+    renderSmugMugImages();
+  }catch(err){
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p style='color:var(--red)'>"+esc(err.message)+"</p></div>";
+  }
+}
+
+function renderSmugMugImages(){
+  const grid=document.getElementById("pkGrid");
+  if(!smugmugImages||!smugmugImages.length){
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No images in this album</p></div>";
+    return;
+  }
+  grid.innerHTML=smugmugImages.map(img=>`
+    <div class="pk-cell ${pkActive===img.imageKey?"active":""}" onclick="selectSmugMugImage('${img.imageKey}',this)">
+      ${img.sizes?.medium?`<img src="${img.sizes.medium}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
+      <div class="pk-cell-lbl">${esc(img.filename||img.imageKey)}</div>
+    </div>`).join("");
+}
+
+function selectSmugMugImage(imageKey,el){
+  pkActive=imageKey;
+  document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("pkConfirm").disabled=false;
+}
+
 async function openPicker(slotId,ctx,label){
   pkSlotId=slotId;pkCtx=ctx;pkActive=null;
   document.getElementById("pkTitle").textContent=label;
@@ -2424,6 +2402,90 @@ function selectInPicker(assetId,el){
 }
 function confirmPick(){
   if(!pkActive||!pkSlotId)return;
+  
+  // Find the full SmugMug image object if we're using SmugMug picker
+  let smugmugImage=null;
+  if(smugmugImages){
+    smugmugImage=smugmugImages.find(img=>img.imageKey===pkActive);
+  }
+  
+  if(pkCtx==="series"){
+    if(!STATE.photos[pkSlotId])STATE.photos[pkSlotId]=[];
+    if(smugmugImage){
+      // Store full SmugMug image object
+      if(!STATE.photos[pkSlotId].some(p=>p.imageKey===pkActive)){
+        STATE.photos[pkSlotId].push({
+          imageKey: smugmugImage.imageKey,
+          filename: smugmugImage.filename,
+          webUri: smugmugImage.webUri,
+          caption: smugmugImage.caption,
+          sizes: smugmugImage.sizes
+        });
+      }
+    }else{
+      // Legacy support for string IDs
+      if(!STATE.photos[pkSlotId].includes(pkActive))STATE.photos[pkSlotId].push(pkActive);
+    }
+    closePicker();
+    if(activeTab==="portfolio") showPortfolioPanel();
+    toast("Photo added to gallery");
+    return;
+  }
+  
+  if(pkCtx==="gallery"){
+    var gparts=pkSlotId.split('__');
+    var wIdx=parseInt(gparts[0]);var gIdx=parseInt(gparts[1]);
+    var works=getPortfolioWorks();
+    if(works[wIdx]&&works[wIdx].galleries&&works[wIdx].galleries[gIdx]){
+      var gallery=works[wIdx].galleries[gIdx];
+      if(!gallery.photos)gallery.photos=[];
+      if(smugmugImage){
+        if(!gallery.photos.some(p=>p.imageKey===pkActive)){
+          gallery.photos.push({
+            imageKey: smugmugImage.imageKey,
+            filename: smugmugImage.filename,
+            webUri: smugmugImage.webUri,
+            caption: smugmugImage.caption,
+            sizes: smugmugImage.sizes
+          });
+        }
+      }else{
+        if(!gallery.photos.includes(pkActive))gallery.photos.push(pkActive);
+      }
+    }
+    closePicker();
+    if(activeTab==="portfolio") showPortfolioPanel();
+    toast("Photo added to gallery");
+    return;
+  }
+  
+  if(pkCtx==="folder"){
+    var fparts=pkSlotId.split('__');
+    var wIdx=parseInt(fparts[0]);var gIdx=parseInt(fparts[1]);var folderIdx=parseInt(fparts[2]);
+    var works=getPortfolioWorks();
+    if(works[wIdx]&&works[wIdx].galleries&&works[wIdx].galleries[gIdx]&&works[wIdx].galleries[gIdx].folders){
+      var folder=works[wIdx].galleries[gIdx].folders[folderIdx];
+      if(!folder.photos)folder.photos=[];
+      if(smugmugImage){
+        if(!folder.photos.some(p=>p.imageKey===pkActive)){
+          folder.photos.push({
+            imageKey: smugmugImage.imageKey,
+            filename: smugmugImage.filename,
+            webUri: smugmugImage.webUri,
+            caption: smugmugImage.caption,
+            sizes: smugmugImage.sizes
+          });
+        }
+      }else{
+        if(!folder.photos.includes(pkActive))folder.photos.push(pkActive);
+      }
+    }
+    closePicker();
+    if(activeTab==="portfolio") showPortfolioPanel();
+    toast("Photo added to folder");
+    return;
+  }
+  
   if(pkCtx==="home"){STATE.home[pkSlotId]=pkActive;}
   if(pkCtx==="portfolio"){
     var works=getPortfolioWorks();
@@ -2441,7 +2503,18 @@ function confirmPick(){
     var blocks2=getPageBlocks(activePage);
     if(blocks2[bIdx2]){
       if(!blocks2[bIdx2].data.photos)blocks2[bIdx2].data.photos=[];
-      if(!blocks2[bIdx2].data.photos.includes(pkActive))blocks2[bIdx2].data.photos.push(pkActive);
+      if(smugmugImage){
+        var photoObj={
+          imageKey: smugmugImage.imageKey,
+          filename: smugmugImage.filename,
+          webUri: smugmugImage.webUri,
+          caption: smugmugImage.caption,
+          sizes: smugmugImage.sizes
+        };
+        if(!blocks2[bIdx2].data.photos.some(p=>p.imageKey===pkActive))blocks2[bIdx2].data.photos.push(photoObj);
+      }else{
+        if(!blocks2[bIdx2].data.photos.includes(pkActive))blocks2[bIdx2].data.photos.push(pkActive);
+      }
     }
   }
   if(pkCtx==="curated"){
@@ -2449,7 +2522,13 @@ function confirmPick(){
     var cBlocks=getPageBlocks(activePage);
     if(cBlocks[cIdx]){
       if(!cBlocks[cIdx].data.photos)cBlocks[cIdx].data.photos=[];
-      var photoObj={assetId:pkActive,caption:''};
+      var photoObj=smugmugImage?{
+        imageKey: smugmugImage.imageKey,
+        filename: smugmugImage.filename,
+        webUri: smugmugImage.webUri,
+        caption: smugmugImage.caption,
+        sizes: smugmugImage.sizes
+      }:{assetId:pkActive,caption:''};
       var cWorks=getPortfolioWorks();
       for(var wi=0;wi<cWorks.length;wi++){
         var cw=cWorks[wi];
@@ -2457,7 +2536,7 @@ function confirmPick(){
         var gals=cw.galleries||[];
         var found=false;
         for(var gi=0;gi<gals.length;gi++){
-          if((gals[gi].photos||[]).indexOf(pkActive)!==-1){
+          if((gals[gi].photos||[]).some(p=>(typeof p==='string'?p:p.imageKey)===pkActive)){
             photoObj.workId=cw.id;photoObj.galleryId=gals[gi].id;found=true;break;
           }
         }
@@ -2973,48 +3052,6 @@ async function imgDeleteSelected(){
   renderImgGrid();
   imgUpdateToolbar();
   toast(deleted+" image"+(deleted>1?"s":"")+" deleted");
-}
-
-async function imgUploadFiles(files){
-  const progress=document.getElementById("imgUploadProgress");
-  let uploaded=0;
-  const total=Array.from(files).filter(f=>f.type.startsWith("image/")).length;
-  if(!total)return toast("No image files selected",true);
-  if(progress)progress.innerHTML=`<div class="upload-item"><span class="upload-item-name">Uploading ${total} file${total>1?"s":""}...</span><span class="upload-item-status busy">0 / ${total}</span></div><div class="upload-bar"><div class="upload-bar-fill" id="imgUploadBarFill"></div></div>`;
-  for(const file of files){
-    if(!file.type.startsWith("image/"))continue;
-    try{
-      const fd=new FormData();
-      fd.append("file",file);
-      const res=await fetch("/api/images/upload",{method:"POST",body:fd});
-      if(!res.ok){const errData=await res.json().catch(()=>({}));throw new Error(errData.error||"Upload failed");}
-      const data=await res.json();
-      const cfId=data.id;
-      const meta={id:cfId,filename:data.filename||file.name};
-      if(data.exif&&Object.keys(data.exif).length>0)meta.exif=data.exif;
-      if(!STATE.cf)STATE.cf={assetMeta:{}};
-      if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
-      STATE.cf.assetMeta[cfId]=meta;
-      CF_PHOTOS[cfId]=meta;
-      imgAllImages.push({id:cfId,filename:data.filename||file.name,uploaded:new Date().toISOString(),variants:data.variants||[]});
-      if(imgActiveFolder&&imgActiveFolder!=="__unassigned"&&STATE.imgFolders?.[imgActiveFolder]){
-        if(!STATE.imgFolders[imgActiveFolder].images)STATE.imgFolders[imgActiveFolder].images=[];
-        STATE.imgFolders[imgActiveFolder].images.push(cfId);
-      }
-      uploaded++;
-      const bar=document.getElementById("imgUploadBarFill");
-      if(bar)bar.style.width=Math.round((uploaded/total)*100)+"%";
-      const statusEl=progress?.querySelector(".upload-item-status");
-      if(statusEl){statusEl.textContent=uploaded+" / "+total;if(uploaded===total)statusEl.className="upload-item-status ok";}
-    }catch(err){
-      if(progress)progress.innerHTML+=`<div class="upload-item"><span class="upload-item-name">${esc(file.name)}</span><span class="upload-item-status err">${esc(err.message)}</span></div>`;
-    }
-  }
-  if(uploaded>0){
-    renderImgFolders();
-    renderImgGrid();
-    toast(uploaded+" image"+(uploaded>1?"s":"")+" uploaded");
-  }
 }
 
 // HELPERS

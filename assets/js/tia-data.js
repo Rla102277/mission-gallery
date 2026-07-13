@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-// TIA-DATA.JS  v8
+// TIA-DATA.JS  v9
 //
-// Photo source: Cloudflare Images
+// Photo source: SmugMug (with legacy Cloudflare fallback)
 // Config store: Server-side JSON (/api/config)
 //
 // Config schema:
@@ -17,8 +17,8 @@
 //   portfolioWorks: [  (Collection Sets)
 //     { id, title, subtitle, type, description, camera, location, format, coverAssetId,
 //       galleries: [  (Collections)
-//         { id, title, subtitle, coverAssetId, photos: [cfImageId, ...],
-//           folders: [ { id, title, coverAssetId, photos: [cfImageId, ...] } ]
+//         { id, title, subtitle, coverAssetId, photos: [smugmugPhotoObject|legacyId, ...],
+//           folders: [ { id, title, coverAssetId, photos: [smugmugPhotoObject|legacyId, ...] } ]
 //         }
 //       ]
 //     }
@@ -26,12 +26,15 @@
 //   siteSettings: { siteName, tagline, footerQuote, footerAttr, email },
 //   navigation:   [ { label, href, visible } ],
 //   series:       { s1: { title, subtitle, description, coverAssetId } },
-//   photos:       { s1: [ id, id, ... ] },
-//   home:         { hero_bg: id },
-//   cf:           { hash, assetMeta: { cfImageId: { id, filename } } },
+//   photos:       { s1: [ smugmugPhotoObject|legacyId, ... ] },
+//   home:         { hero_bg: smugmugPhotoObject|legacyId },
+//   smugmug:      { nickname },
+//   cf:           { hash, assetMeta: { cfImageId: { id, filename } } }, // legacy
 //   imgFolders:   { fid: { name, images: [] } },
 //   contentBlocks:[ { id, heading, eyebrow, body, page, position, style } ]
 // }
+//
+// SmugMug photo object: { imageKey, filename, webUri, caption, thumb, sizes: { medium, large, xlarge, x2large } }
 // ═══════════════════════════════════════════════════════════════
 
 const TIA = {
@@ -44,7 +47,17 @@ const TIA = {
     return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
   },
 
-  photoUrl(id, size) {
+  photoUrl(photo, size) {
+    // Handle SmugMug photo objects
+    if (photo && typeof photo === 'object' && photo.sizes) {
+      const sizes = photo.sizes;
+      if (size === 'thumb') return sizes.medium || sizes.large || photo.webUri;
+      if (size === 'cover') return sizes.large || sizes.xlarge || photo.webUri;
+      if (size === 'hero') return sizes.xlarge || sizes.x2large || photo.webUri;
+      return sizes.x2large || sizes.xlarge || photo.webUri;
+    }
+    // Legacy: string IDs use Cloudflare
+    const id = typeof photo === 'string' ? photo : photo?.imageKey || photo?.assetId;
     const variant = size === 'thumb' ? 'thumb' : size === 'cover' ? 'cover' : size === 'hero' ? 'hero' : 'full';
     return TIA.cfUrl(id, variant);
   },
@@ -53,6 +66,15 @@ const TIA = {
   cover(assetId)  { return TIA.photoUrl(assetId, 'cover'); },
   hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
+
+  // Get the SmugMug webUri for Buy/Print buttons (opens SmugMug page)
+  buyUrl(photo) {
+    if (photo && typeof photo === 'object' && photo.webUri) {
+      return photo.webUri;
+    }
+    // Legacy: no webUri for Cloudflare images
+    return null;
+  },
 
   DEFAULT_PORTFOLIO_WORKS: [
     {id:'pw-daydream',title:'Beyond the Daydream',subtitle:'The places that couldn\u2019t be scrolled past',type:'Expeditions',description:'Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act \u2014 arriving somewhere to wait for the light, the weather, the moment that justifies the journey.',camera:'GFX 100S II',location:'Iceland \u00b7 Guadalupe Peak \u00b7 and beyond',format:'Digital',coverAssetId:'',galleries:[]},
@@ -184,7 +206,21 @@ const TIA = {
 
   _mapPhotoIds(ids) {
     var state = TIA.getState();
-    return ids.map(function(aid) {
+    return ids.map(function(photo) {
+      // Handle SmugMug photo objects
+      if (photo && typeof photo === 'object' && photo.sizes) {
+        return {
+          assetId: photo.imageKey,
+          thumb: photo.sizes.large || photo.sizes.medium || photo.webUri,
+          full: photo.sizes.x2large || photo.sizes.xlarge || photo.webUri,
+          cover: photo.sizes.large || photo.sizes.xlarge || photo.webUri,
+          hero: photo.sizes.xlarge || photo.sizes.x2large || photo.webUri,
+          filename: photo.filename || photo.imageKey,
+          webUri: photo.webUri
+        };
+      }
+      // Legacy: string IDs use Cloudflare
+      const aid = typeof photo === 'string' ? photo : photo?.imageKey || photo?.assetId;
       return {
         assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
         cover: TIA.cover(aid), hero: TIA.hero(aid),
