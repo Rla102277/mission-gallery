@@ -415,12 +415,12 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 <div id="csvModal">
   <div class="am-box">
     <div class="am-head">
-      <div class="am-title">Bulk Add Folders from CSV</div>
+      <div class="am-title" id="csvModalTitle">Bulk Add Folders from CSV</div>
       <button class="am-close" onclick="closeCsvModal()" data-testid="btn-csv-close">&times;</button>
     </div>
     <div class="am-body">
       <div class="csv-hint">
-        One folder per line. Columns: <code>title, subtitle, type, camera, location</code> — only <code>title</code> is required.
+        One <span id="csvItemWord">folder</span> per line. Columns: <code>title, subtitle, type, camera, location</code> — only <code>title</code> is required.
         A header row is optional (auto-detected). Quotes are supported for values containing commas.
       </div>
       <input type="file" id="csvFile" accept=".csv,text/csv,text/plain" onchange="csvFileChosen(event)" style="margin-bottom:10px;font-size:11px" data-testid="input-csv-file">
@@ -1538,7 +1538,10 @@ function toggleWork(workId){
 }
 
 function renderWorkGalleries(w,workIdx){
-  var html='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'" style="margin-bottom:10px">+ Add Collection</button>';
+  var html='<div style="display:flex;gap:6px;margin-bottom:10px">';
+  html+='<button class="btn" onclick="openCsvGalleryModal('+workIdx+')" data-testid="btn-bulk-galleries-'+workIdx+'">&#8613; Bulk Add (CSV)</button>';
+  html+='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'">+ Add Collection</button>';
+  html+='</div>';
   var galleries=w.galleries||[];
   if(!galleries.length){
     html+='<div style="padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase">No collections yet</div>';
@@ -1731,12 +1734,21 @@ function toggleFolderEditor(workIdx,galIdx,folderIdx){
 }
 
 var csvTarget=null;
-function openCsvFolderModal(workIdx,galIdx){
-  csvTarget={workIdx:workIdx,galIdx:galIdx};
+function openCsvModal(){
+  document.getElementById('csvModalTitle').textContent='Bulk Add '+(csvTarget.mode==='gallery'?'Collections':'Folders')+' from CSV';
+  document.getElementById('csvItemWord').textContent=csvTarget.mode==='gallery'?'collection':'folder';
   document.getElementById('csvText').value='';
   document.getElementById('csvFile').value='';
   document.getElementById('csvPreview').innerHTML='';
   document.getElementById('csvModal').classList.add('open');
+}
+function openCsvFolderModal(workIdx,galIdx){
+  csvTarget={mode:'folder',workIdx:workIdx,galIdx:galIdx};
+  openCsvModal();
+}
+function openCsvGalleryModal(workIdx){
+  csvTarget={mode:'gallery',workIdx:workIdx};
+  openCsvModal();
 }
 function closeCsvModal(){document.getElementById('csvModal').classList.remove('open');csvTarget=null;}
 function csvFileChosen(e){
@@ -1774,11 +1786,13 @@ function parseCsvFolders(text){
     cols=first.map(function(c){return c.replace(/[^a-z]/g,'');});
     start=1;
   }
+  var isGal=csvTarget&&csvTarget.mode==='gallery';
   var folders=[];
   for(var i=start;i<lines.length;i++){
     var vals=parseCsvLine(lines[i]);
     if(!vals[0])continue;
-    var f={id:'fld-'+Date.now()+'-'+i,coverAssetId:'',photos:[]};
+    var f={id:(isGal?'gal-':'fld-')+Date.now()+'-'+i,coverAssetId:'',photos:[]};
+    if(isGal)f.folders=[];
     cols.forEach(function(c,ci){
       if(['title','subtitle','type','camera','location','description'].indexOf(c)>=0&&vals[ci])f[c]=vals[ci];
     });
@@ -1790,30 +1804,42 @@ function updateCsvPreview(){
   var folders=parseCsvFolders(document.getElementById('csvText').value);
   var el=document.getElementById('csvPreview');
   if(!folders.length){el.innerHTML='';return;}
-  el.innerHTML='<strong>'+folders.length+' folder'+(folders.length===1?'':'s')+' will be created:</strong><br>'+
+  var word=(csvTarget&&csvTarget.mode==='gallery')?'collection':'folder';
+  el.innerHTML='<strong>'+folders.length+' '+word+(folders.length===1?'':'s')+' will be created:</strong><br>'+
     folders.map(function(f){return '&bull; '+esc(f.title)+(f.subtitle?' <span style="opacity:.5">— '+esc(f.subtitle)+'</span>':'');}).join('<br>');
 }
 function applyCsvFolders(){
   if(!csvTarget)return;
-  var folders=parseCsvFolders(document.getElementById('csvText').value);
-  if(!folders.length)return toast('No valid rows found — each line needs at least a title',true);
+  var isGal=csvTarget.mode==='gallery';
+  var items=parseCsvFolders(document.getElementById('csvText').value);
+  if(!items.length)return toast('No valid rows found — each line needs at least a title',true);
   var w=getPortfolioWorks()[csvTarget.workIdx];
-  if(!w||!w.galleries[csvTarget.galIdx])return closeCsvModal();
-  var g=w.galleries[csvTarget.galIdx];
-  if(!g.folders)g.folders=[];
+  if(!w)return closeCsvModal();
+  var list;
+  if(isGal){
+    if(!w.galleries)w.galleries=[];
+    list=w.galleries;
+  } else {
+    if(!w.galleries[csvTarget.galIdx])return closeCsvModal();
+    var g=w.galleries[csvTarget.galIdx];
+    if(!g.folders)g.folders=[];
+    list=g.folders;
+  }
   var existing={};
-  g.folders.forEach(function(f){existing[(f.title||'').toLowerCase()]=true;});
+  list.forEach(function(f){existing[(f.title||'').toLowerCase()]=true;});
   var added=0,skipped=0;
-  folders.forEach(function(f){
+  items.forEach(function(f){
     if(existing[f.title.toLowerCase()]){skipped++;return;}
     existing[f.title.toLowerCase()]=true;
-    g.folders.push(f);
+    list.push(f);
     added++;
   });
+  if(isGal)expandedWork=w.id;
+  var word=isGal?'collection':'folder';
   closeCsvModal();
   showPortfolioPanel(true);
   saveAll();
-  toast(added+' folder'+(added===1?'':'s')+' created'+(skipped?' ('+skipped+' skipped — already exist)':''));
+  toast(added+' '+word+(added===1?'':'s')+' created'+(skipped?' ('+skipped+' skipped — already exist)':''));
 }
 
 function addFolderToGallery(workIdx,galIdx){
