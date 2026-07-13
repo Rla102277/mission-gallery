@@ -2235,12 +2235,6 @@ function showSettingsPanel(){
   html+='</div>';
 
   html+='<div class="settings-grid">';
-  html+='<div class="card" data-testid="card-cf-connection"><span class="sec-lbl">Cloudflare Images</span>';
-  html+='<div style="margin-bottom:12px"><span class="field-lbl">Delivery Hash</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-hash">'+esc(maskedHash)+'</div></div>';
-  html+='<div style="margin-bottom:12px"><span class="field-lbl">Total Images</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-cf-image-count">'+totalImages+'</div></div>';
-  html+='<div style="margin-bottom:12px"><span class="field-lbl">Status</span><div id="cfStatus" style="font-size:10px;letter-spacing:3px;text-transform:uppercase;padding:6px 0" data-testid="text-cf-status">';
-  html+=cfHash?'<span style="color:var(--green)">Connected</span>':'<span style="color:var(--red)">Not Connected</span>';
-  html+='</div></div><button class="btn pri" onclick="testCfConnection()" data-testid="btn-test-connection">Test Connection</button></div>';
   html+='<div class="card" data-testid="card-config-storage"><span class="sec-lbl">Config Storage</span>';
   html+='<div style="margin-bottom:12px"><span class="field-lbl">Storage</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default">Server-side JSON</div></div>';
   html+='<div style="margin-bottom:12px"><span class="field-lbl">Last Save</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-last-save">'+esc(lastSave)+'</div></div>';
@@ -2376,15 +2370,12 @@ function selectSmugMugImage(imageKey,el){
 
 async function openPicker(slotId,ctx,label){
   pkSlotId=slotId;pkCtx=ctx;pkActive=null;
+  smugmugCurrentAlbum=null;smugmugImages=null;
   document.getElementById("pkTitle").textContent=label;
   document.getElementById("pkConfirm").disabled=true;
   document.getElementById("picker").classList.add("open");
-  var grid=document.getElementById("pkGrid");
-  if(!imgAllImages.length&&!imgLoading){
-    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>Loading images...</p></div>";
-    await imgRefresh();
-  }
-  renderPkFilter();renderPkGrid(null);
+  await loadSmugMugAlbums();
+  renderSmugMugAlbums();
 }
 function closePicker(){document.getElementById("picker").classList.remove("open");}
 function renderPkFilter(){
@@ -2595,7 +2586,7 @@ function confirmPick(){
     var ogPage=pkSlotId.replace('__ogimage__','');
     if(!STATE.pages)STATE.pages={};
     if(!STATE.pages[ogPage])STATE.pages[ogPage]={title:'',metaDescription:'',blocks:[]};
-    STATE.pages[ogPage].ogImage=pkActive;
+    if(smugmugImage){STATE.pages[ogPage].ogImage={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{STATE.pages[ogPage].ogImage=pkActive;}
   }
   closePicker();
   if(activeTab==="pages") showPagesPanel(true);
@@ -2629,37 +2620,67 @@ function getImgSeriesForImage(cfId){
 }
 
 async function showImagesPanel(){
-  setPanel("Images","All Cloudflare Images","<button class='btn pri' onclick='imgRefresh()' data-testid='btn-refresh-images'>Refresh</button>");
+  setPanel("Images","SmugMug Albums","");
   imgSelected=new Set();
   document.getElementById("panelBody").innerHTML=`<div class="img-layout">
-    <div class="img-folders" id="imgFolders"></div>
     <div class="img-main">
       <div class="img-toolbar">
         <div class="img-toolbar-left">
-          <span class="img-sel-count" id="imgSelCount">0 selected</span>
-          <button class="btn" id="imgAssignBtn" onclick="openAssignModal()" disabled data-testid="btn-assign-selected">Assign to Series</button>
-          <button class="btn" id="imgMoveBtn" onclick="openMoveToFolder()" disabled>Move to Folder</button>
-          <button class="btn red" id="imgDelBtn" onclick="imgDeleteSelected()" disabled data-testid="btn-delete-selected">Delete</button>
+          <span class="img-sel-count" id="imgSelCount">Browse SmugMug albums and images</span>
         </div>
       </div>
       <div class="img-content" id="imgContent">
-        <div class="img-upload-zone" id="imgUploadZone"
-          onclick="document.getElementById('imgUploadInput').click()"
-          ondragover="event.preventDefault();this.classList.add('drag')"
-          ondragleave="this.classList.remove('drag')"
-          ondrop="event.preventDefault();this.classList.remove('drag');imgUploadFiles(event.dataTransfer.files)">
-          <div style="font-size:20px;opacity:.12;margin-bottom:4px">&#x2191;</div>
-          <div style="font-size:9px;letter-spacing:4px;text-transform:uppercase;opacity:.3">Drop photos here or click to upload</div>
-        </div>
-        <input type="file" id="imgUploadInput" multiple accept="image/*" style="display:none" onchange="imgUploadFiles(this.files)">
-        <div id="imgUploadProgress"></div>
         <div id="imgGrid" class="img-grid"></div>
       </div>
     </div>
   </div>`;
-  renderImgFolders();
-  if(!imgAllImages.length&&!imgLoading)await imgRefresh();
-  else renderImgGrid();
+  await loadSmugMugAlbums();
+  renderSmugMugAlbumsInTab();
+}
+
+function renderSmugMugAlbumsInTab(){
+  const grid=document.getElementById("imgGrid");
+  if(!smugmugAlbums||!smugmugAlbums.length){
+    grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No albums found</div>";
+    return;
+  }
+  grid.innerHTML=smugmugAlbums.map(album=>`
+    <div class="img-card" onclick="selectSmugMugAlbumInTab('${album.albumKey}')">
+      <div style="padding:20px;text-align:center">
+        <div style="font-size:24px;opacity:.3;margin-bottom:8px">&#x1f5bc;</div>
+        <div class="img-card-name">${esc(album.title)}</div>
+        <div style="font-size:8px;opacity:.4;margin-top:4px">${album.imageCount} photos</div>
+      </div>
+    </div>`).join("");
+}
+
+async function selectSmugMugAlbumInTab(albumKey){
+  smugmugCurrentAlbum=albumKey;
+  const grid=document.getElementById("imgGrid");
+  grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading images...</div>";
+  try{
+    const res=await fetch("/api/smugmug/albums/"+encodeURIComponent(albumKey)+"/images");
+    if(!res.ok)throw new Error("Failed to load images");
+    smugmugImages=await res.json();
+    renderSmugMugImagesInTab();
+  }catch(err){
+    grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
+  }
+}
+
+function renderSmugMugImagesInTab(){
+  const grid=document.getElementById("imgGrid");
+  if(!smugmugImages||!smugmugImages.length){
+    grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in this album</div>";
+    return;
+  }
+  grid.innerHTML=smugmugImages.map(img=>`
+    <div class="img-card">
+      ${img.sizes?.medium?`<img src="${img.sizes.medium}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div></div>
+    </div>`).join("");
+  const toolbar=document.querySelector(".img-toolbar-left");
+  if(toolbar)toolbar.innerHTML=`<button class="btn" onclick="renderSmugMugAlbumsInTab()">← Back to Albums</button>`;
 }
 
 function renderImgFolders(){
