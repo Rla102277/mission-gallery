@@ -2033,6 +2033,8 @@ function updateWork(idx,field,val){
   if(w) w[field]=val;
 }
 var _aiMenuOpen=null;
+// Metadata-editor fields that support AI enrichment → their modal input ids
+var META_AI_INPUTS={title:'mdTitle',caption:'mdCaption',altText:'mdAlt',storyTitle:'stTitle',storyBody:'stBody'};
 function aiFieldId(type,idx,field){return 'ai-'+type+'-'+idx+'-'+field;}
 function aiBtn(type,idx,field){
   var id=aiFieldId(type,idx,field);
@@ -2096,6 +2098,24 @@ async function runAi(type,idx,field,mode){
     var pg=STATE.pages&&STATE.pages[activePage]?STATE.pages[activePage]:{};
     context={page:activePage,title:pg.title||'',metaDescription:pg.metaDescription||''};
     current=pg[actualField]||'';
+  } else if(type==='meta'){
+    var mid=storyEditingId;
+    if(!mid||!META_AI_INPUTS[actualField])return;
+    var mm=STATE.cf?.assetMeta?.[mid]||{};
+    var getV=function(elId){var el=document.getElementById(elId);return el?el.value:'';};
+    context={
+      entity:'photo',
+      image:mm.filename||mid,
+      appearsIn:metaAppearances(mid).join('; '),
+      title:getV('mdTitle'),
+      caption:getV('mdCaption'),
+      location:getV('stLocation'),
+      camera:getV('stCamera'),
+      year:getV('stYear'),
+      storyTitle:getV('stTitle'),
+      storyExcerpt:(getV('stBody')||'').slice(0,400)
+    };
+    current=getV(META_AI_INPUTS[actualField]||'');
   } else {
     if(!w)return;
     context={title:w.title||'',type:w.type||'',location:w.location||'',camera:w.camera||'',subtitle:w.subtitle||''};
@@ -2141,6 +2161,9 @@ async function runAi(type,idx,field,mode){
       var testId=actualField==='title'?'input-page-title':'input-page-meta';
       var input=document.querySelector('[data-testid="'+testId+'"]');
       if(input){input.value=data.text;}
+    } else if(type==='meta'){
+      var mEl=document.getElementById(META_AI_INPUTS[actualField]);
+      if(mEl){mEl.value=data.text;if(actualField==='storyTitle')stAutoSlug();}
     }
     toast('AI: '+actualField+' updated');
   }catch(err){
@@ -3913,11 +3936,11 @@ function openMetaEditor(id){
     </div>
     ${metaGroupLbl("Display")}
     <span class="field-lbl">Title (display title)</span>
-    <input class="input" id="mdTitle" value="${esc(m.title||"")}" data-testid="input-meta-title">
+    ${aiWrap(`<input class="input" id="mdTitle" value="${esc(m.title||"")}" data-testid="input-meta-title">`,aiBtn('meta',0,'title'))}
     <span class="field-lbl" style="margin-top:10px">Caption (short)</span>
-    <input class="input" id="mdCaption" value="${esc(m.caption||"")}" data-testid="input-meta-caption">
+    ${aiWrap(`<input class="input" id="mdCaption" value="${esc(m.caption||"")}" data-testid="input-meta-caption">`,aiBtn('meta',0,'caption'))}
     <span class="field-lbl" style="margin-top:10px">Alt Text (accessibility + Google Images SEO)</span>
-    <input class="input" id="mdAlt" value="${esc(m.altText||"")}" placeholder="Describe what's in the photo" data-testid="input-meta-alt">
+    ${aiWrap(`<input class="input" id="mdAlt" value="${esc(m.altText||"")}" placeholder="Describe what's in the photo" data-testid="input-meta-alt">`,aiBtn('meta',0,'altText'))}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
       <div><span class="field-lbl">Location</span><input class="input" id="stLocation" value="${esc(m.location||"")}" data-testid="input-story-location"></div>
       <div><span class="field-lbl">Camera</span><input class="input" id="stCamera" value="${esc(m.camera||"")}" data-testid="input-story-camera"></div>
@@ -3928,11 +3951,11 @@ function openMetaEditor(id){
       <input type="checkbox" id="stHas" ${m.hasStoryPage?"checked":""} data-testid="check-story-page"> Story Page enabled (/work/&lt;slug&gt;)
     </label>
     <span class="field-lbl">Story Title (literary title)</span>
-    <input class="input" id="stTitle" value="${esc(m.storyTitle||"")}" oninput="stAutoSlug()" placeholder="e.g. Where Dragons Fly" data-testid="input-story-title">
+    ${aiWrap(`<input class="input" id="stTitle" value="${esc(m.storyTitle||"")}" oninput="stAutoSlug()" placeholder="e.g. Where Dragons Fly" data-testid="input-story-title">`,aiBtn('meta',0,'storyTitle'))}
     <span class="field-lbl" style="margin-top:10px">Slug</span>
     <input class="input" id="stSlug" value="${esc(m.slug||"")}" oninput="this.dataset.touched=1" placeholder="e.g. where-dragons-fly" data-testid="input-story-slug">
     <span class="field-lbl" style="margin-top:10px">Story (2\u20134 short paragraphs; blank line between paragraphs)</span>
-    <textarea class="input" id="stBody" rows="6" style="resize:vertical" data-testid="input-story-body">${esc(m.storyBody||"")}</textarea>
+    ${aiWrap(`<textarea class="input" id="stBody" rows="6" style="resize:vertical" data-testid="input-story-body">${esc(m.storyBody||"")}</textarea>`,aiBtn('meta',0,'storyBody'))}
     ${metaGroupLbl("Sale")}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       <div><span class="field-lbl">Sale Type</span>
