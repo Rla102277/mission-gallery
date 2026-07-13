@@ -4,3 +4,4 @@
 - [SmugMug API visibility](smugmug-visibility.md) — public API key only sees PUBLIC albums; check album privacy before suspecting code when albums are missing.
 - [Lightroom integration](lightroom-integration.md) — while(1){} strip on every lr.adobe.io response, HMAC state on OAuth, redirect URIs must be registered in Adobe console; never serve images live from Lightroom.
 - [Admin e2e testing](lightroom-integration.md) — when testing with Replit Auth override as rla1022@gmail.com, always reuse sub "admin-test-lr"; a new sub with the same email hits the users_email_key unique constraint.
+- [Dev vs prod config DBs](dev-prod-config-dbs.md) — dev and production have SEPARATE Postgres site_config databases; changes made in the live admin exist only in prod, and code fixes need a republish to reach it.

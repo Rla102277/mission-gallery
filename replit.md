@@ -6,7 +6,7 @@ JSON-config-driven CMS photography platform with a block-rendered page system an
 ## Architecture
 - **Frontend**: Block-rendered pages — thin HTML shells load blocks from config via `block-renderer.js`
 - **Admin Panel**: `admin/index.html` — single-page admin for managing pages (block editor), portfolio works with gallery hierarchy, navigation, site settings, photos, and Cloudflare images
-- **Config Storage**: PostgreSQL database (`site_config` table with JSONB column) — persists across deployments, shared between dev and production
+- **Config Storage**: PostgreSQL database (`site_config` table with JSONB column) — persists across deployments. Dev and production use SEPARATE databases (changes made in the live admin exist only in prod config, and vice versa)
 - **Photo Hosting**: Cloudflare Images (sole image server)
 - **Server**: Express with multer — proxies uploads to Cloudflare Images API (protects API token)
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
