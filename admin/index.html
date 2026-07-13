@@ -2426,12 +2426,18 @@ let pkSlotId=null,pkCtx=null,pkActive=null;
 let smugmugAlbums=null;
 let smugmugCurrentAlbum=null;
 let smugmugImages=null;
+let pkMulti=false;
+let pkSelected=[];
 
 async function openSmugMugPicker(ctx,targetId){
   pkSlotId=targetId;pkCtx=ctx;pkActive=null;
+  pkMulti=(ctx==='series'||ctx==='gallery'||ctx==='folder');
+  pkSelected=[];
   smugmugCurrentAlbum=null;smugmugImages=null;
-  document.getElementById("pkTitle").textContent="Select Photo from SmugMug";
-  document.getElementById("pkConfirm").disabled=true;
+  document.getElementById("pkTitle").textContent=pkMulti?"Select Photos from SmugMug":"Select Photo from SmugMug";
+  var btn=document.getElementById("pkConfirm");
+  btn.disabled=true;
+  btn.textContent=pkMulti?"Add Photos":"Use This Photo";
   document.getElementById("picker").classList.add("open");
   await loadSmugMugAlbums();
   renderSmugMugAlbums();
@@ -2491,13 +2497,41 @@ function renderSmugMugImages(){
     return;
   }
   grid.innerHTML=smugmugImages.map(img=>`
-    <div class="pk-cell ${pkActive===img.imageKey?"active":""}" onclick="selectSmugMugImage('${img.imageKey}',this)">
+    <div class="pk-cell ${(pkMulti?pkSelected.includes(img.imageKey):pkActive===img.imageKey)?"active":""}" onclick="selectSmugMugImage('${img.imageKey}',this)">
       ${img.sizes?.medium?`<img src="${img.sizes.medium}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
       <div class="pk-cell-lbl">${esc(img.filename||img.imageKey)}</div>
     </div>`).join("");
+  if(pkMulti&&smugmugImages.length){
+    grid.insertAdjacentHTML('afterbegin','<div style="grid-column:1/-1;display:flex;gap:8px;margin-bottom:4px"><button class="btn" style="font-size:10px" onclick="pkSelectAll(true)" data-testid="btn-pk-select-all">Select All ('+smugmugImages.length+')</button><button class="btn" style="font-size:10px" onclick="pkSelectAll(false)" data-testid="btn-pk-clear">Clear Selection</button></div>');
+  }
+}
+
+function pkUpdateConfirm(){
+  var btn=document.getElementById("pkConfirm");
+  if(pkMulti){
+    btn.disabled=pkSelected.length===0;
+    btn.textContent=pkSelected.length?('Add '+pkSelected.length+' Photo'+(pkSelected.length===1?'':'s')):'Add Photos';
+  }else{
+    btn.disabled=!pkActive;
+    btn.textContent='Use This Photo';
+  }
+}
+
+function pkSelectAll(on){
+  if(!smugmugImages)return;
+  pkSelected=on?smugmugImages.map(function(img){return img.imageKey;}):[];
+  renderSmugMugImages();
+  pkUpdateConfirm();
 }
 
 function selectSmugMugImage(imageKey,el){
+  if(pkMulti){
+    var i=pkSelected.indexOf(imageKey);
+    if(i>=0){pkSelected.splice(i,1);el.classList.remove("active");}
+    else{pkSelected.push(imageKey);el.classList.add("active");}
+    pkUpdateConfirm();
+    return;
+  }
   pkActive=imageKey;
   document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
   el.classList.add("active");
@@ -2535,35 +2569,37 @@ function selectInPicker(assetId,el){
   document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
   el.classList.add("active");document.getElementById("pkConfirm").disabled=false;
 }
+function pkSmugObj(key){
+  var img=smugmugImages?smugmugImages.find(function(m){return m.imageKey===key;}):null;
+  return img?{imageKey:img.imageKey,filename:img.filename,webUri:img.webUri,caption:img.caption,sizes:img.sizes}:null;
+}
+
 function confirmPick(){
-  if(!pkActive||!pkSlotId)return;
+  if(!pkSlotId)return;
+  if(pkMulti){if(!pkSelected.length)return;}
+  else if(!pkActive)return;
+  var picks=pkMulti?pkSelected.slice():[pkActive];
   
   // Find the full SmugMug image object if we're using SmugMug picker
   let smugmugImage=null;
-  if(smugmugImages){
+  if(smugmugImages&&pkActive){
     smugmugImage=smugmugImages.find(img=>img.imageKey===pkActive);
   }
   
   if(pkCtx==="series"){
     if(!STATE.photos[pkSlotId])STATE.photos[pkSlotId]=[];
-    if(smugmugImage){
-      // Store full SmugMug image object
-      if(!STATE.photos[pkSlotId].some(p=>p.imageKey===pkActive)){
-        STATE.photos[pkSlotId].push({
-          imageKey: smugmugImage.imageKey,
-          filename: smugmugImage.filename,
-          webUri: smugmugImage.webUri,
-          caption: smugmugImage.caption,
-          sizes: smugmugImage.sizes
-        });
+    var addedS=0;
+    picks.forEach(function(key){
+      var obj=pkSmugObj(key);
+      if(obj){
+        if(!STATE.photos[pkSlotId].some(p=>p&&p.imageKey===key)){STATE.photos[pkSlotId].push(obj);addedS++;}
+      }else{
+        if(!STATE.photos[pkSlotId].includes(key)){STATE.photos[pkSlotId].push(key);addedS++;}
       }
-    }else{
-      // Legacy support for string IDs
-      if(!STATE.photos[pkSlotId].includes(pkActive))STATE.photos[pkSlotId].push(pkActive);
-    }
+    });
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added — saving...");
+    toast(addedS+" photo"+(addedS===1?"":"s")+" added — saving...");
     saveAll();
     return;
   }
@@ -2575,23 +2611,19 @@ function confirmPick(){
     if(works[wIdx]&&works[wIdx].galleries&&works[wIdx].galleries[gIdx]){
       var gallery=works[wIdx].galleries[gIdx];
       if(!gallery.photos)gallery.photos=[];
-      if(smugmugImage){
-        if(!gallery.photos.some(p=>p.imageKey===pkActive)){
-          gallery.photos.push({
-            imageKey: smugmugImage.imageKey,
-            filename: smugmugImage.filename,
-            webUri: smugmugImage.webUri,
-            caption: smugmugImage.caption,
-            sizes: smugmugImage.sizes
-          });
+      var addedG=0;
+      picks.forEach(function(key){
+        var obj=pkSmugObj(key);
+        if(obj){
+          if(!gallery.photos.some(p=>p&&p.imageKey===key)){gallery.photos.push(obj);addedG++;}
+        }else{
+          if(!gallery.photos.includes(key)){gallery.photos.push(key);addedG++;}
         }
-      }else{
-        if(!gallery.photos.includes(pkActive))gallery.photos.push(pkActive);
-      }
+      });
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to gallery — saving...");
+    toast((typeof addedG==="number"?addedG:0)+" photo"+(addedG===1?"":"s")+" added to collection — saving...");
     saveAll();
     return;
   }
@@ -2603,23 +2635,19 @@ function confirmPick(){
     if(works[wIdx]&&works[wIdx].galleries&&works[wIdx].galleries[gIdx]&&works[wIdx].galleries[gIdx].folders){
       var folder=works[wIdx].galleries[gIdx].folders[folderIdx];
       if(!folder.photos)folder.photos=[];
-      if(smugmugImage){
-        if(!folder.photos.some(p=>p.imageKey===pkActive)){
-          folder.photos.push({
-            imageKey: smugmugImage.imageKey,
-            filename: smugmugImage.filename,
-            webUri: smugmugImage.webUri,
-            caption: smugmugImage.caption,
-            sizes: smugmugImage.sizes
-          });
+      var addedF=0;
+      picks.forEach(function(key){
+        var obj=pkSmugObj(key);
+        if(obj){
+          if(!folder.photos.some(p=>p&&p.imageKey===key)){folder.photos.push(obj);addedF++;}
+        }else{
+          if(!folder.photos.includes(key)){folder.photos.push(key);addedF++;}
         }
-      }else{
-        if(!folder.photos.includes(pkActive))folder.photos.push(pkActive);
-      }
+      });
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to folder — saving...");
+    toast((typeof addedF==="number"?addedF:0)+" photo"+(addedF===1?"":"s")+" added to folder — saving...");
     saveAll();
     return;
   }
