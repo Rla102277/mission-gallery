@@ -84,9 +84,10 @@
       var data = await res.json().catch(function(){ return {}; });
       var who = data && data.user && (data.user.email || data.user.name || '');
       render('<p class="status ok" data-testid="text-lr-connected">&#10003; Lightroom connected' + (who ? ' as <strong>' + esc(who) + '</strong>' : '') + '</p>' +
-        '<p>You can close this tab and return to the admin panel.</p>' +
+        '<p>Returning to the admin panel&hellip;</p>' +
         '<a class="btn" href="/admin/" data-testid="link-back-admin">Back to Admin</a> ' +
-        '<button class="btn secondary" onclick="LightroomAuth.clear();location.reload()" data-testid="button-lr-disconnect">Disconnect</button>');
+        '<button class="btn secondary" onclick="window.__lrStay=1;LightroomAuth.clear();location.reload()" data-testid="button-lr-disconnect">Disconnect</button>');
+      setTimeout(function(){ if (!window.__lrStay) location.href = '/admin/'; }, 2000);
     } catch (e) {
       showError('Token verification failed', e.message);
     }

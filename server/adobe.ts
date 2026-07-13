@@ -50,11 +50,18 @@ function clientSecret(): string | undefined {
   return process.env.ADOBE_CLIENT_SECRET;
 }
 
-export function defaultRedirectUri(): string {
-  const base =
-    process.env.CLIENT_URL ||
-    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "") ||
-    (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : "");
+export function defaultRedirectUri(req?: Request): string {
+  // Prefer the domain the admin is actually browsing on (works for custom domains
+  // like infinitearchphoto.com). trust proxy is enabled, so req.hostname honors
+  // X-Forwarded-Host behind Replit's proxy. Adobe rejects unregistered URIs, so a
+  // spoofed Host header gains nothing.
+  const reqHost =
+    req && req.hostname && !/^(localhost|127\.0\.0\.1)$/i.test(req.hostname) ? req.hostname : "";
+  const base = reqHost
+    ? `https://${reqHost}`
+    : process.env.CLIENT_URL ||
+      (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "") ||
+      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : "");
   return `${base.replace(/\/$/, "").replace("http:", "https:")}/test/lightroom`;
 }
 
@@ -74,7 +81,7 @@ export function registerAdobeRoutes(
 ) {
   // Public-ish: the client_id (API key) is needed by the admin browser for lr.adobe.io calls.
   // Also issues a signed OAuth state, double-bound via an HttpOnly cookie.
-  app.get("/api/adobe/client-id", ...guards, (_req, res) => {
+  app.get("/api/adobe/client-id", ...guards, (req, res) => {
     const id = clientId();
     if (!id) return res.status(500).json({ error: "ADOBE_CLIENT_ID not configured" });
     const state = createState();
@@ -85,7 +92,7 @@ export function registerAdobeRoutes(
       maxAge: STATE_TTL_MS,
       path: "/",
     });
-    res.json({ clientId: id, redirectUri: defaultRedirectUri(), state });
+    res.json({ clientId: id, redirectUri: defaultRedirectUri(req), state });
   });
 
   // Exchange authorization code for access token (requires valid OAuth state)
@@ -106,7 +113,7 @@ export function registerAdobeRoutes(
       client_id: id,
       client_secret: secret,
       code,
-      redirect_uri: defaultRedirectUri(),
+      redirect_uri: defaultRedirectUri(req),
     });
     if (!ok) {
       console.log("[Adobe] Token exchange error:", status, JSON.stringify(data).slice(0, 300));

@@ -471,7 +471,7 @@ const TIA = {
   STORE_KEY:  'tia_admin',
 
   cfUrl(imageId, variant) {
-    const hash = TIA.getState().cf?.hash;
+    const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
     if (!hash || !imageId) return '';
     return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
   },
@@ -2923,10 +2923,10 @@ function getImgSeriesForImage(cfId){
   return series;
 }
 
-let imgSource="smugmug";
+let imgSource="library";
 
 async function showImagesPanel(){
-  setPanel("Images",imgSource==="lightroom"?"Lightroom Albums":"SmugMug Albums","");
+  setPanel("Images",imgSource==="lightroom"?"Lightroom Albums":(imgSource==="smugmug"?"SmugMug Albums":"Site Library (CDN)"),"");
   imgSelected=new Set();
   document.getElementById("panelBody").innerHTML=`<div class="img-layout">
     <div class="img-main">
@@ -2935,6 +2935,7 @@ async function showImagesPanel(){
           <span class="img-sel-count" id="imgSelCount">Browse albums and images</span>
         </div>
         <div class="img-toolbar-right">
+          <button class="btn ${imgSource==="library"?"gold":""}" onclick="imgSwitchSource('library')" data-testid="btn-src-library">Site Library</button>
           <button class="btn ${imgSource==="smugmug"?"gold":""}" onclick="imgSwitchSource('smugmug')" data-testid="btn-src-smugmug">SmugMug</button>
           <button class="btn ${imgSource==="lightroom"?"gold":""}" onclick="imgSwitchSource('lightroom')" data-testid="btn-src-lightroom">Lightroom</button>
         </div>
@@ -2946,9 +2947,42 @@ async function showImagesPanel(){
   </div>`;
   if(imgSource==="lightroom"){
     await lrShowAlbumsInTab();
-  }else{
+  }else if(imgSource==="smugmug"){
     await loadSmugMugAlbums();
     renderSmugMugAlbumsInTab();
+  }else{
+    await cdnShowLibraryInTab();
+  }
+}
+
+// All images sitting in Cloudflare Images (the CDN), regardless of Lightroom/SmugMug connection
+async function cdnShowLibraryInTab(){
+  const grid=document.getElementById("imgGrid");
+  smugmugCurrentAlbum=null;
+  smugSelected=new Set();
+  grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading CDN images...</div>";
+  try{
+    if(!imgAllImages||!imgAllImages.length){
+      const res=await fetch("/api/images/list");
+      if(!res.ok)throw new Error("Failed to load CDN images");
+      const data=await res.json();
+      imgAllImages=data.images||[];
+      if(data.hash)TIA.CF_HASH=data.hash;
+    }
+    smugmugImages=(imgAllImages||[]).map(function(img){
+      var o={imageKey:img.id,filename:img.filename||img.id,caption:'',sizes:{
+        medium:TIA.cfUrl(img.id,'thumb'),large:TIA.cfUrl(img.id,'cover'),
+        xlarge:TIA.cfUrl(img.id,'hero'),x2large:TIA.cfUrl(img.id,'full')}};
+      if(String(img.id).indexOf('lr-')===0){o.source='lightroom';o.assetId=String(img.id).slice(3);}
+      return o;
+    });
+    if(!smugmugImages.length){
+      grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in the CDN yet</div>";
+      return;
+    }
+    renderSmugMugImagesInTab();
+  }catch(err){
+    grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
   }
 }
 
@@ -2993,7 +3027,7 @@ let smugSelected=new Set();
 function smugUsageMap(){
   var map={};
   function add(key,label){if(!key)return;if(!map[key])map[key]=[];if(map[key].indexOf(label)===-1)map[key].push(label);}
-  function keyOf(p){return p&&typeof p==='object'?p.imageKey:null;}
+  function keyOf(p){if(typeof p==='string')return p;return p&&typeof p==='object'?(p.imageKey||p.id||null):null;}
   getPortfolioWorks().forEach(function(w){
     (w.galleries||[]).forEach(function(g){
       (g.photos||[]).forEach(function(p){add(keyOf(p),g.title||'Collection');});
@@ -3047,7 +3081,7 @@ function smugRenderToolbar(){
   const toolbar=document.querySelector(".img-toolbar-left");
   if(!toolbar)return;
   const n=smugSelected.size;
-  let html=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()" data-testid="btn-smug-back">← Albums</button>`;
+  let html=imgSource==="library"?"":`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()" data-testid="btn-smug-back">← Albums</button>`;
   html+=`<button class="btn" onclick="smugSelectAll()" data-testid="btn-smug-select-all">Select All</button>`;
   if(n)html+=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugImagesInTab()" data-testid="btn-smug-clear">Clear</button>`;
   html+=`<span class="img-sel-count">${n?n+" selected":""}</span>`;
@@ -3068,7 +3102,11 @@ function smugSelectAll(){
 
 function smugImgObj(key){
   var img=(smugmugImages||[]).find(m=>m.imageKey===key);
-  return img?{imageKey:img.imageKey,filename:img.filename,webUri:img.webUri,caption:img.caption,sizes:img.sizes}:null;
+  if(!img)return null;
+  var o={imageKey:img.imageKey,filename:img.filename,webUri:img.webUri,caption:img.caption,sizes:img.sizes};
+  if(img.source)o.source=img.source;
+  if(img.assetId)o.assetId=img.assetId;
+  return o;
 }
 
 function smugOpenAssign(mode){
