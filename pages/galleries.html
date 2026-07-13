@@ -1368,7 +1368,7 @@ window.addEventListener('popstate', function() {
   window.scrollTo(0, 0);
 });
 
-(async function() {
+document.addEventListener('DOMContentLoaded', async () => {
   try {
     var cfRes = await fetch('/api/images/config');
     if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
@@ -1379,7 +1379,7 @@ window.addEventListener('popstate', function() {
   var ogUrl = document.querySelector('meta[property="og:url"]');
   if (ogUrl) ogUrl.content = window.location.href;
   renderView();
-})();
+});
 </script>
 <script src="/assets/js/components.js"></script>
 <script src="/assets/js/tia.js"></script>

@@ -19,7 +19,7 @@
 <script src="/assets/js/tia-data.js"></script>
 <script src="/assets/js/block-renderer.js"></script>
 <script>
-(async function() {
+document.addEventListener('DOMContentLoaded', async function() {
   try {
     var cfRes = await fetch('/api/images/config');
     if (cfRes.ok) { var cfg = await cfRes.json(); if (cfg.hash) TIA.CF_HASH = cfg.hash; }
@@ -55,7 +55,7 @@
     }
   }
   BlockRenderer.initReveals();
-})();
+});
 </script>
 <script src="/assets/js/components.js"></script>
 <script src="/assets/js/tia.js"></script>
