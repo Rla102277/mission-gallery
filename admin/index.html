@@ -1786,11 +1786,7 @@ function movePhotoToFolder(workIdx,galIdx,photoIdx){
 }
 
 function assignPhotosToFolder(workIdx,galIdx,folderIdx){
-  pickerTarget='__folder__'+workIdx+'__'+galIdx+'__'+folderIdx;
-  pickerMode='folder';
-  pickerLabel='Add photos to folder';
-  renderPkFilter();renderPkGrid(null);
-  document.getElementById('picker').classList.add('open');
+  openSmugMugPicker('folder','__folder__'+workIdx+'__'+galIdx+'__'+folderIdx);
 }
 
 function addPortfolioWork(){
@@ -2167,13 +2163,7 @@ function removeGalleryPhoto(workIdx,galIdx,photoIdx){
 }
 
 function assignPhotosToGallery(workIdx,galIdx){
-  pkSlotId='__galassign__'+workIdx+'__'+galIdx;
-  pkCtx='galassign';
-  pkActive=null;
-  document.getElementById("pkTitle").textContent='Add Photos to Gallery';
-  document.getElementById("pkConfirm").disabled=true;
-  renderPkFilter();renderPkGrid(null);
-  document.getElementById("picker").classList.add("open");
+  openSmugMugPicker('galassign','__galassign__'+workIdx+'__'+galIdx);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2562,7 +2552,19 @@ function confirmPick(){
     var w3=getPortfolioWorks()[wIdx2];
     if(w3&&w3.galleries&&w3.galleries[gIdx2]){
       if(!w3.galleries[gIdx2].photos)w3.galleries[gIdx2].photos=[];
-      if(!w3.galleries[gIdx2].photos.includes(pkActive))w3.galleries[gIdx2].photos.push(pkActive);
+      if(smugmugImage){
+        if(!w3.galleries[gIdx2].photos.some(p=>p.imageKey===pkActive)){
+          w3.galleries[gIdx2].photos.push({
+            imageKey: smugmugImage.imageKey,
+            filename: smugmugImage.filename,
+            webUri: smugmugImage.webUri,
+            caption: smugmugImage.caption,
+            sizes: smugmugImage.sizes
+          });
+        }
+      }else{
+        if(!w3.galleries[gIdx2].photos.includes(pkActive))w3.galleries[gIdx2].photos.push(pkActive);
+      }
     }
   }
   if(pkCtx==="folder"){
@@ -2571,7 +2573,19 @@ function confirmPick(){
     var fw=getPortfolioWorks()[fwIdx];
     if(fw&&fw.galleries&&fw.galleries[fgIdx]&&fw.galleries[fgIdx].folders&&fw.galleries[fgIdx].folders[ffIdx]){
       if(!fw.galleries[fgIdx].folders[ffIdx].photos)fw.galleries[fgIdx].folders[ffIdx].photos=[];
-      if(!fw.galleries[fgIdx].folders[ffIdx].photos.includes(pkActive))fw.galleries[fgIdx].folders[ffIdx].photos.push(pkActive);
+      if(smugmugImage){
+        if(!fw.galleries[fgIdx].folders[ffIdx].photos.some(p=>p.imageKey===pkActive)){
+          fw.galleries[fgIdx].folders[ffIdx].photos.push({
+            imageKey: smugmugImage.imageKey,
+            filename: smugmugImage.filename,
+            webUri: smugmugImage.webUri,
+            caption: smugmugImage.caption,
+            sizes: smugmugImage.sizes
+          });
+        }
+      }else{
+        if(!fw.galleries[fgIdx].folders[ffIdx].photos.includes(pkActive))fw.galleries[fgIdx].folders[ffIdx].photos.push(pkActive);
+      }
     }
   }
   if(pkCtx==="foldercover"){
