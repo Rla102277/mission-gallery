@@ -255,6 +255,13 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .gp-section-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;opacity:.25;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)}
 #assignModal{position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
 #assignModal.open{display:flex}
+#csvModal{position:fixed;inset:0;z-index:860;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
+#csvModal.open{display:flex}
+#csvModal .am-box{width:min(560px,94vw)}
+.csv-hint{font-size:10px;color:var(--dim);line-height:1.6;margin-bottom:10px}
+.csv-hint code{color:var(--gold);font-size:10px}
+#csvText{width:100%;min-height:160px;background:var(--surface2);border:1px solid var(--border);color:var(--cream);font-family:monospace;font-size:11px;padding:10px;resize:vertical}
+.csv-preview{font-size:10px;color:var(--muted);margin-top:8px;max-height:120px;overflow-y:auto}
 .am-box{background:var(--surface);border:1px solid var(--border2);width:min(440px,92vw);border-radius:2px}
 .am-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .am-title{font-size:14px;font-weight:300}
@@ -405,6 +412,27 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
   </div>
 </div>
 
+<div id="csvModal">
+  <div class="am-box">
+    <div class="am-head">
+      <div class="am-title">Bulk Add Folders from CSV</div>
+      <button class="am-close" onclick="closeCsvModal()" data-testid="btn-csv-close">&times;</button>
+    </div>
+    <div class="am-body">
+      <div class="csv-hint">
+        One folder per line. Columns: <code>title, subtitle, type, camera, location</code> — only <code>title</code> is required.
+        A header row is optional (auto-detected). Quotes are supported for values containing commas.
+      </div>
+      <input type="file" id="csvFile" accept=".csv,text/csv,text/plain" onchange="csvFileChosen(event)" style="margin-bottom:10px;font-size:11px" data-testid="input-csv-file">
+      <textarea id="csvText" placeholder="Black Sand Empire, Reynisfjara basalt columns, Series, GFX 100S II, Reynisfjara&#10;The Icelandic Horse&#10;The Crystal Ossuary, Glacial remains beneath arctic light" oninput="updateCsvPreview()" data-testid="input-csv-text"></textarea>
+      <div class="csv-preview" id="csvPreview"></div>
+    </div>
+    <div class="am-foot">
+      <button class="btn" onclick="closeCsvModal()">Cancel</button>
+      <button class="btn pri" onclick="applyCsvFolders()" data-testid="btn-csv-apply">Create Folders</button>
+    </div>
+  </div>
+</div>
 <div id="assignModal">
   <div class="am-box">
     <div class="am-head">
@@ -1581,7 +1609,10 @@ function renderGalleryEditor(w,workIdx,galIdx){
   html+='<div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px">';
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
   html+='<div class="sec-lbl" style="margin:0"><span>Folders</span></div>';
+  html+='<div style="display:flex;gap:6px">';
+  html+='<button class="btn" onclick="openCsvFolderModal('+workIdx+','+galIdx+')" data-testid="btn-bulk-folders-'+workIdx+'-'+galIdx+'" style="font-size:10px;padding:3px 10px">&#8613; Bulk Add (CSV)</button>';
   html+='<button class="btn pri" onclick="addFolderToGallery('+workIdx+','+galIdx+')" data-testid="btn-add-folder-'+workIdx+'-'+galIdx+'" style="font-size:10px;padding:3px 10px">+ Add Folder</button>';
+  html+='</div>';
   html+='</div>';
   var folders=g.folders||[];
   if(folders.length){
@@ -1697,6 +1728,92 @@ function toggleFolderEditor(workIdx,galIdx,folderIdx){
   var key=workIdx+'__'+galIdx+'__'+folderIdx;
   editingFolder=editingFolder===key?null:key;
   showPortfolioPanel(true);
+}
+
+var csvTarget=null;
+function openCsvFolderModal(workIdx,galIdx){
+  csvTarget={workIdx:workIdx,galIdx:galIdx};
+  document.getElementById('csvText').value='';
+  document.getElementById('csvFile').value='';
+  document.getElementById('csvPreview').innerHTML='';
+  document.getElementById('csvModal').classList.add('open');
+}
+function closeCsvModal(){document.getElementById('csvModal').classList.remove('open');csvTarget=null;}
+function csvFileChosen(e){
+  var file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){document.getElementById('csvText').value=reader.result;updateCsvPreview();};
+  reader.readAsText(file);
+}
+function parseCsvLine(line){
+  var out=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(inQ){
+      if(ch==='"'){
+        if(line[i+1]==='"'){cur+='"';i++;}
+        else inQ=false;
+      } else cur+=ch;
+    } else {
+      if(ch==='"')inQ=true;
+      else if(ch===','){out.push(cur.trim());cur='';}
+      else cur+=ch;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+function parseCsvFolders(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
+  if(!lines.length)return [];
+  var cols=['title','subtitle','type','camera','location'];
+  var start=0;
+  var first=parseCsvLine(lines[0]).map(function(c){return c.toLowerCase();});
+  if(first[0]==='title'){
+    cols=first.map(function(c){return c.replace(/[^a-z]/g,'');});
+    start=1;
+  }
+  var folders=[];
+  for(var i=start;i<lines.length;i++){
+    var vals=parseCsvLine(lines[i]);
+    if(!vals[0])continue;
+    var f={id:'fld-'+Date.now()+'-'+i,coverAssetId:'',photos:[]};
+    cols.forEach(function(c,ci){
+      if(['title','subtitle','type','camera','location','description'].indexOf(c)>=0&&vals[ci])f[c]=vals[ci];
+    });
+    if(f.title)folders.push(f);
+  }
+  return folders;
+}
+function updateCsvPreview(){
+  var folders=parseCsvFolders(document.getElementById('csvText').value);
+  var el=document.getElementById('csvPreview');
+  if(!folders.length){el.innerHTML='';return;}
+  el.innerHTML='<strong>'+folders.length+' folder'+(folders.length===1?'':'s')+' will be created:</strong><br>'+
+    folders.map(function(f){return '&bull; '+esc(f.title)+(f.subtitle?' <span style="opacity:.5">— '+esc(f.subtitle)+'</span>':'');}).join('<br>');
+}
+function applyCsvFolders(){
+  if(!csvTarget)return;
+  var folders=parseCsvFolders(document.getElementById('csvText').value);
+  if(!folders.length)return toast('No valid rows found — each line needs at least a title',true);
+  var w=getPortfolioWorks()[csvTarget.workIdx];
+  if(!w||!w.galleries[csvTarget.galIdx])return closeCsvModal();
+  var g=w.galleries[csvTarget.galIdx];
+  if(!g.folders)g.folders=[];
+  var existing={};
+  g.folders.forEach(function(f){existing[(f.title||'').toLowerCase()]=true;});
+  var added=0,skipped=0;
+  folders.forEach(function(f){
+    if(existing[f.title.toLowerCase()]){skipped++;return;}
+    existing[f.title.toLowerCase()]=true;
+    g.folders.push(f);
+    added++;
+  });
+  closeCsvModal();
+  showPortfolioPanel(true);
+  saveAll();
+  toast(added+' folder'+(added===1?'':'s')+' created'+(skipped?' ('+skipped+' skipped — already exist)':''));
 }
 
 function addFolderToGallery(workIdx,galIdx){
