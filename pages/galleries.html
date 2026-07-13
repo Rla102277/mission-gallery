@@ -975,6 +975,7 @@
     <div class="lb-title" id="lbTitle"></div>
     <div class="lb-details" id="lbDetails"></div>
     <a class="lb-buy" id="lbBuy" href="#" target="_blank" style="display:none">Buy / Print</a>
+    <a class="lb-story" id="lbStory" href="#" style="display:none" data-testid="link-lb-story">View Story &#8594;</a>
   </div>
   <span class="lb-prev" onclick="lbNav(-1)" data-testid="btn-lightbox-prev">&#8592;</span>
   <span class="lb-next" onclick="lbNav(1)" data-testid="btn-lightbox-next">&#8594;</span>
@@ -1337,6 +1338,14 @@ function renderLb() {
     buyBtn.style.display = 'inline-block';
   } else {
     buyBtn.style.display = 'none';
+  }
+
+  // Link to the image's story page if it has one
+  var storyLink = document.getElementById('lbStory');
+  if (storyLink) {
+    var storyUrl = TIA.storyUrl(p);
+    if (storyUrl) { storyLink.href = storyUrl; storyLink.style.display = 'inline-block'; }
+    else storyLink.style.display = 'none';
   }
 }
 

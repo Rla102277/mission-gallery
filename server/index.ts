@@ -262,6 +262,286 @@ function registerRoutes() {
     }
     res.type("html").send(dynamicPageShell(slug));
   });
+
+  // Single-image story pages: /work/{slug} — served for images flagged
+  // hasStoryPage in config.cf.assetMeta. Reads sale/edition data but does
+  // NOT process payment or mutate editionsSold (back-half).
+  app.get("/work/:slug", async (req, res) => {
+    const m = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.exec(String(req.params.slug || ""));
+    if (!m) return res.status(404).type("html").send(storyNotFoundShell());
+    const slug = m[0];
+    let entry = findStoryBySlug(slug);
+    if (!entry) {
+      // May be freshly marked on another instance — check the DB once.
+      try {
+        const dbConfig = await loadConfigFromDB();
+        if (dbConfig) configCache = dbConfig;
+      } catch {}
+      entry = findStoryBySlug(slug);
+    }
+    if (!entry) return res.status(404).type("html").send(storyNotFoundShell());
+    res.type("html").send(storyPageShell(entry.id, entry.meta));
+  });
+
+  app.get("/sitemap.xml", (req, res) => {
+    const base = `https://${req.get("host") || "infinitearchphoto.com"}`;
+    const urls: string[] = ["/", "/pages/portfolio.html", "/pages/galleries.html", "/pages/about.html", "/pages/prints.html", "/pages/hope-hike.html", "/pages/contact.html"];
+    const builtIn = new Set(["home", "portfolio", "about", "prints", "hope-hike", "contact"]);
+    Object.keys(configCache?.pages || {}).forEach(slug => {
+      if (!builtIn.has(slug) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) urls.push(`/pages/${slug}.html`);
+    });
+    listStoryEntries().forEach(e => urls.push(`/work/${e.meta.slug}`));
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      urls.map(u => `  <url><loc>${base}${u}</loc></url>`).join("\n") + `\n</urlset>`;
+    res.type("application/xml").send(xml);
+  });
+}
+
+// JSON for safe embedding inside inline <script> blocks
+function jsStr(v: any): string {
+  return JSON.stringify(v).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+}
+
+function escHtml(s: any): string {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function listStoryEntries(): Array<{ id: string; meta: any }> {
+  const assetMeta = configCache?.cf?.assetMeta || {};
+  const entries: Array<{ id: string; meta: any }> = [];
+  for (const id of Object.keys(assetMeta).sort()) {
+    const meta = assetMeta[id];
+    if (meta && meta.hasStoryPage === true && typeof meta.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(meta.slug)) {
+      entries.push({ id, meta });
+    }
+  }
+  entries.sort((a, b) => a.meta.slug.localeCompare(b.meta.slug));
+  // Duplicate slugs (possible via direct config edits) resolve deterministically:
+  // the lowest image id wins; later duplicates are excluded from routing/sitemap.
+  const seen = new Set<string>();
+  return entries.filter(e => (seen.has(e.meta.slug) ? false : (seen.add(e.meta.slug), true)));
+}
+
+function findStoryBySlug(slug: string): { id: string; meta: any } | null {
+  return listStoryEntries().find(e => e.meta.slug === slug) || null;
+}
+
+function cfDeliveryUrl(imageId: string, variant: string): string {
+  const hash = configCache?.cf?.hash || process.env.CF_IMAGES_HASH || "";
+  if (!hash) return "";
+  return `https://imagedelivery.net/${hash}/${imageId}/${variant}`;
+}
+
+// Find the gallery that contains this image so the story page can link back.
+function findGalleryForImage(imageId: string): { workId: string; galleryId: string; title: string } | null {
+  const works = configCache?.portfolioWorks || [];
+  const matches = (p: any) => p === imageId || (p && typeof p === "object" && (p.id === imageId || p.imageKey === imageId || p.assetId === imageId));
+  for (const w of works) {
+    for (const g of w.galleries || []) {
+      if ((g.photos || []).some(matches)) return { workId: w.id, galleryId: g.id, title: g.title || w.title || "Gallery" };
+      for (const f of g.folders || []) {
+        if ((f.photos || []).some(matches)) return { workId: w.id, galleryId: g.id, title: g.title || w.title || "Gallery" };
+      }
+    }
+  }
+  return null;
+}
+
+// storyBody is rendered escape-first: ALL markup is HTML-escaped, then only a
+// tiny allowlist of harmless attribute-free tags is restored. Everything else
+// (scripts, iframes, event handlers, attributes) stays inert escaped text.
+function sanitizeStoryBody(body: string): string {
+  const raw = String(body || "");
+  let out = escHtml(raw);
+  // Restore only exact, attribute-free allowlisted tags
+  const allowed = ["p", "em", "i", "strong", "b", "br"];
+  for (const tag of allowed) {
+    out = out.replace(new RegExp(`&lt;${tag}&gt;`, "gi"), `<${tag}>`);
+    out = out.replace(new RegExp(`&lt;/${tag}&gt;`, "gi"), `</${tag}>`);
+    out = out.replace(new RegExp(`&lt;${tag}\\s*/&gt;`, "gi"), `<${tag}>`);
+  }
+  // If there is no paragraph markup, treat blank lines as paragraph breaks
+  if (!/<p>/i.test(out)) {
+    out = out.split(/\n\s*\n/).map(p => `<p>${p.trim()}</p>`).join("\n");
+  }
+  return out;
+}
+
+function storyNotFoundShell(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Not on view &middot; The Infinite Arch</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/assets/css/tia.css">
+  <link rel="stylesheet" href="/assets/css/blocks.css">
+</head>
+<body>
+<div class="page-content">
+  <section class="story-notfound" data-testid="story-notfound">
+    <span class="story-eyebrow">The Infinite Arch</span>
+    <h1>Not on view</h1>
+    <p>This photograph is not currently on view.</p>
+    <a class="story-back" href="/pages/galleries.html" data-testid="link-story-galleries">&#8592; Browse the galleries</a>
+  </section>
+</div>
+<script src="/assets/js/tia-data.js"></script>
+<script src="/assets/js/components.js"></script>
+<script src="/assets/js/tia.js"></script>
+</body>
+</html>`;
+}
+
+function storyPageShell(imageId: string, meta: any): string {
+  const title = meta.storyTitle || meta.filename || "Untitled";
+  const bodyHtml = sanitizeStoryBody(meta.storyBody || "");
+  const descSource = String(meta.storyBody || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  const metaDesc = descSource.length > 150 ? descSource.slice(0, 147).trimEnd() + "\u2026" : descSource;
+  const imgFull = cfDeliveryUrl(imageId, "full");
+  const imgHero = cfDeliveryUrl(imageId, "hero");
+  const siteName = configCache?.siteSettings?.siteName || "The Infinite Arch";
+  const email = configCache?.siteSettings?.email || "";
+
+  const captionParts: string[] = [];
+  if (meta.location) captionParts.push(escHtml(meta.location));
+  if (meta.camera) captionParts.push(escHtml(meta.camera));
+  if (meta.year) captionParts.push(escHtml(meta.year));
+  const caption = captionParts.join(" &middot; ");
+
+  // Edition status (read-only; never mutated here)
+  const saleType = meta.saleType || "none";
+  let editionHtml = "";
+  if (saleType !== "none") {
+    if (saleType === "limited") {
+      const size = Number(meta.editionSize) || 0;
+      const sold = Number(meta.editionsSold) || 0;
+      const soldOut = size > 0 && sold >= size;
+      editionHtml = `<div class="story-edition" data-testid="story-edition">` +
+        (soldOut
+          ? `<span class="story-edition-status sold-out">Sold out</span><span class="story-edition-detail">Edition of ${size}</span>`
+          : `<span class="story-edition-status">Edition &mdash; of ${size}</span><span class="story-edition-detail">${sold} of ${size} sold</span>`) +
+        `</div>`;
+    } else {
+      editionHtml = `<div class="story-edition" data-testid="story-edition"><span class="story-edition-status">Open edition</span></div>`;
+    }
+  }
+
+  // Print options + inquire (inquiry-only for now)
+  // TODO(back-half): Stripe checkout for open editions — for now every buy
+  // path routes to the inquiry flow; this page never processes payment.
+  const printSizes = Array.isArray(meta.printSizes) ? meta.printSizes : [];
+  const sellable = saleType !== "none" && !!meta.printMasterRef && printSizes.length > 0;
+  const size0 = printSizes[0] || {};
+  const soldOutLimited = saleType === "limited" && Number(meta.editionSize) > 0 && Number(meta.editionsSold) >= Number(meta.editionSize);
+  let buyHtml = "";
+  if (sellable && !soldOutLimited) {
+    const opts = printSizes.map((s: any, i: number) => {
+      const label = escHtml(s.label || s.size || `Size ${i + 1}`);
+      const price = s.price != null && s.price !== "" ? ` — $${escHtml(s.price)}` : "";
+      return `<option value="${i}">${label}${price}</option>`;
+    }).join("");
+    buyHtml = `<div class="story-buy" data-testid="story-buy">
+      <span class="story-buy-lbl">Print Options</span>
+      <div class="story-buy-row">
+        <select class="story-buy-select" id="storySize" data-testid="select-story-size">${opts}</select>
+        <a class="story-buy-btn" id="storyInquire" href="#" data-testid="btn-story-inquire">Inquire to Purchase</a>
+      </div>
+    </div>
+    <script>
+    (function(){
+      var sizes = ${jsStr(printSizes.map((s: any, i: number) => String(s.label || s.size || `Size ${i + 1}`)))};
+      var email = ${jsStr(email)};
+      var title = ${jsStr(String(title))};
+      function upd(){
+        var sel = document.getElementById('storySize');
+        var sizeLabel = sizes[Number(sel.value)] || '';
+        var subject = encodeURIComponent('Print inquiry: ' + title);
+        var body = encodeURIComponent('I am interested in a print of "' + title + '"' + (sizeLabel ? ' in size ' + sizeLabel : '') + '.');
+        document.getElementById('storyInquire').href = email
+          ? 'mailto:' + email + '?subject=' + subject + '&body=' + body
+          : '/pages/contact.html';
+      }
+      document.getElementById('storySize').addEventListener('change', upd);
+      upd();
+    })();
+    </script>`;
+  }
+
+  // Quiet nav: back to its gallery + prev/next through story pages
+  const backRef = findGalleryForImage(imageId);
+  const backHref = backRef
+    ? `/pages/galleries.html?work=${encodeURIComponent(backRef.workId)}&gallery=${encodeURIComponent(backRef.galleryId)}`
+    : "/pages/galleries.html";
+  const backLabel = backRef ? backRef.title : "Galleries";
+  const entries = listStoryEntries();
+  const idx = entries.findIndex(e => e.id === imageId);
+  const prev = idx > 0 ? entries[idx - 1] : null;
+  const next = idx >= 0 && idx < entries.length - 1 ? entries[idx + 1] : null;
+  const navHtml = `<nav class="story-nav" data-testid="story-nav">
+    <a class="story-back" href="${backHref}" data-testid="link-story-back">&#8592; ${escHtml(backLabel)}</a>
+    <div class="story-nav-siblings">
+      ${prev ? `<a href="/work/${prev.meta.slug}" data-testid="link-story-prev">&#8592; Previous</a>` : ""}
+      ${next ? `<a href="/work/${next.meta.slug}" data-testid="link-story-next">Next &#8594;</a>` : ""}
+    </div>
+  </nav>`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "VisualArtwork",
+    name: String(title),
+    creator: { "@type": "Person", name: "Randy" },
+    artMedium: "Photography",
+    image: imgHero || imgFull,
+    description: metaDesc,
+    ...(saleType === "limited" && Number(meta.editionSize) > 0 ? { artEdition: Number(meta.editionSize) } : {})
+  };
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escHtml(title)} &middot; ${escHtml(siteName)}</title>
+  <meta name="description" content="${escHtml(metaDesc)}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${escHtml(title)} \u00b7 ${escHtml(siteName)}">
+  <meta property="og:description" content="${escHtml(metaDesc)}">
+  <meta property="og:image" content="${escHtml(imgHero || imgFull)}">
+  <link rel="stylesheet" href="/assets/css/tia.css">
+  <link rel="stylesheet" href="/assets/css/blocks.css">
+  <script type="application/ld+json">${jsStr(jsonLd)}</script>
+</head>
+<body>
+<div class="page-content">
+  <article class="story-page" data-testid="story-page-${escHtml(meta.slug)}">
+    <figure class="story-figure">
+      ${imgFull ? `<img class="story-img" src="${escHtml(imgFull)}" alt="${escHtml(title)}" loading="lazy" data-testid="img-story">` : ""}
+    </figure>
+    <header class="story-header">
+      <h1 class="story-title" data-testid="text-story-title">${escHtml(title)}</h1>
+      ${caption ? `<p class="story-caption" data-testid="text-story-caption">${caption}</p>` : ""}
+    </header>
+    ${bodyHtml ? `<div class="story-body" data-testid="text-story-body">${bodyHtml}</div>` : ""}
+    ${editionHtml}
+    ${buyHtml}
+    ${navHtml}
+  </article>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.content = window.location.href;
+});
+</script>
+<script src="/assets/js/tia-data.js"></script>
+<script src="/assets/js/components.js"></script>
+<script src="/assets/js/tia.js"></script>
+</body>
+</html>`;
 }
 
 function dynamicPageShell(slug: string): string {

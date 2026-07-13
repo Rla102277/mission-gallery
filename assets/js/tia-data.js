@@ -67,6 +67,29 @@ const TIA = {
   hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
+  // Story page lookup: returns the assetMeta entry if this photo has a
+  // published story page (hasStoryPage === true with a valid slug)
+  storyFor(photo) {
+    var s = TIA.getState();
+    var am = s.cf && s.cf.assetMeta;
+    if (!am) return null;
+    var ids = [];
+    if (typeof photo === 'string') ids.push(photo);
+    else if (photo) {
+      ['assetId', 'imageKey', 'id'].forEach(function(k) { if (photo[k]) ids.push(photo[k]); });
+    }
+    for (var i = 0; i < ids.length; i++) {
+      var m = am[ids[i]];
+      if (m && m.hasStoryPage === true && m.slug) return m;
+    }
+    return null;
+  },
+
+  storyUrl(photo) {
+    var m = TIA.storyFor(photo);
+    return m ? '/work/' + m.slug : null;
+  },
+
   // Get the SmugMug webUri for Buy/Print buttons (opens SmugMug page)
   buyUrl(photo) {
     if (photo && typeof photo === 'object' && photo.webUri) {

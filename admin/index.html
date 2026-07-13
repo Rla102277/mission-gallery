@@ -3161,13 +3161,17 @@ function renderSmugMugImagesInTab(){
     if(!key)return "";
     const sel=smugSelected.has(img.imageKey);
     const used=usage[img.imageKey]||[];
-    const badges=used.map(u=>`<span class="img-card-badge">${esc(u)}</span>`).join("");
+    let badges=used.map(u=>`<span class="img-card-badge">${esc(u)}</span>`).join("");
+    const storyM=STATE.cf?.assetMeta?.[img.imageKey]||STATE.cf?.assetMeta?.[img.id];
+    if(storyM?.hasStoryPage)badges+=`<span class="img-card-badge" style="background:var(--gold,#b5922a);color:#0d0d0d">STORY</span>`;
     const src=smugSafeUrl(img.sizes&&img.sizes.medium);
     return `<div class="img-card ${sel?"selected":""} ${used.length?"in-series":""}" onclick="smugToggle('${key}')" data-testid="img-card-${key}">
       ${src?`<img src="${esc(src)}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
       <div class="img-card-check">&#x2713;</div>
       ${badges?`<div class="img-card-badges">${badges}</div>`:""}
-      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div></div>
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div>
+        <button class="btn" style="margin-top:4px;font-size:9px;padding:3px 7px" onclick="event.stopPropagation();openStoryEditor('${key}')" data-testid="btn-story-${key}">${storyM?.hasStoryPage?"Edit Story":"Story Page"}</button>
+      </div>
     </div>`;
   }).join("");
   smugRenderToolbar();
@@ -3663,10 +3667,10 @@ async function imgRefresh(){
     if(data.hash)TIA.CF_HASH=data.hash;
     imgAllImages.forEach(img=>{
       if(!CF_PHOTOS[img.id]){
-        CF_PHOTOS[img.id]={id:img.id,filename:img.filename||img.id};
         if(!STATE.cf)STATE.cf={assetMeta:{}};
         if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
-        STATE.cf.assetMeta[img.id]={id:img.id,filename:img.filename||img.id};
+        STATE.cf.assetMeta[img.id]=Object.assign({},STATE.cf.assetMeta[img.id],{id:img.id,filename:img.filename||img.id});
+        CF_PHOTOS[img.id]=STATE.cf.assetMeta[img.id];
       }
     });
     renderImgGrid();
@@ -3708,6 +3712,7 @@ function renderImgGrid(){
     if(inSeries)badges+=seriesList.map(s=>`<span class="img-card-badge">${esc(s)}</span>`).join("");
     if(folderName&&imgActiveFolder===null)badges+=`<span class="img-card-badge folder">${esc(folderName)}</span>`;
     const meta=CF_PHOTOS[img.id]||STATE.cf?.assetMeta?.[img.id];
+    if(meta?.hasStoryPage)badges+=`<span class="img-card-badge" style="background:var(--gold,#b5922a);color:#0d0d0d">STORY</span>`;
     const exif=meta?.exif;
     let exifHtml="";
     if(exif){
@@ -3723,7 +3728,9 @@ function renderImgGrid(){
       ${thumb?`<img src="${thumb}" loading="lazy" alt="">`:""}
       <div class="img-card-check">&#x2713;</div>
       ${badges?`<div class="img-card-badges">${badges}</div>`:""}
-      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div>${exifHtml}</div>
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div>${exifHtml}
+        <button class="btn" style="margin-top:6px;font-size:9px;padding:4px 8px" onclick="event.stopPropagation();openStoryEditor('${img.id}')" data-testid="btn-story-${img.id}">${meta?.hasStoryPage?"Edit Story":"Story Page"}</button>
+      </div>
     </div>`;
   }).join("");
 }
@@ -3745,6 +3752,86 @@ function imgUpdateToolbar(){
   if(assignBtn)assignBtn.disabled=n===0;
   if(moveBtn)moveBtn.disabled=n===0;
   if(delBtn)delBtn.disabled=n===0;
+}
+
+// ── Single-image story pages ──────────────────────────────
+let storyEditingId=null;
+
+function storyMeta(id){
+  if(!STATE.cf)STATE.cf={assetMeta:{}};
+  if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+  if(!STATE.cf.assetMeta[id])STATE.cf.assetMeta[id]={id:id,filename:(CF_PHOTOS[id]&&CF_PHOTOS[id].filename)||id};
+  return STATE.cf.assetMeta[id];
+}
+
+function openStoryEditor(id){
+  storyEditingId=id;
+  const m=storyMeta(id);
+  const hash=TIA.CF_HASH||STATE.cf?.hash||"";
+  const thumb=hash?`https://imagedelivery.net/${hash}/${id}/thumb`:"";
+  document.getElementById("amTitle").textContent="Story Page";
+  let html=`<div class="am-section">
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+      ${thumb?`<img src="${thumb}" style="width:90px;height:90px;object-fit:cover;flex-shrink:0" alt="">`:""}
+      <div style="flex:1">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:6px">
+          <input type="checkbox" id="stHas" ${m.hasStoryPage?"checked":""} data-testid="check-story-page"> Story Page enabled
+        </label>
+        <p style="font-size:10px;opacity:.5;margin:0">A dedicated /work/&lt;slug&gt; page for this image. Reserved for select work.</p>
+      </div>
+    </div>
+    <span class="field-lbl">Story Title (literary title)</span>
+    <input class="input" id="stTitle" value="${esc(m.storyTitle||"")}" oninput="stAutoSlug()" placeholder="e.g. Where Dragons Fly" data-testid="input-story-title">
+    <span class="field-lbl" style="margin-top:10px">Slug (URL: /work/&lt;slug&gt;)</span>
+    <input class="input" id="stSlug" value="${esc(m.slug||"")}" oninput="this.dataset.touched=1" placeholder="e.g. where-dragons-fly" data-testid="input-story-slug">
+    <span class="field-lbl" style="margin-top:10px">Story (2\u20134 short paragraphs; blank line between paragraphs)</span>
+    <textarea class="input" id="stBody" rows="7" style="resize:vertical" data-testid="input-story-body">${esc(m.storyBody||"")}</textarea>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+      <div><span class="field-lbl">Location</span><input class="input" id="stLocation" value="${esc(m.location||"")}" data-testid="input-story-location"></div>
+      <div><span class="field-lbl">Camera</span><input class="input" id="stCamera" value="${esc(m.camera||"")}" data-testid="input-story-camera"></div>
+      <div><span class="field-lbl">Year</span><input class="input" id="stYear" value="${esc(m.year||"")}" data-testid="input-story-year"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
+      <button class="btn pri" onclick="saveStory()" data-testid="btn-save-story">Save Story</button>
+      ${m.hasStoryPage&&m.slug?`<a class="btn" href="/work/${esc(m.slug)}" target="_blank" data-testid="link-view-story">View Page &#8599;</a>`:""}
+      <button class="btn" onclick="closeAssignModal()" data-testid="btn-cancel-story">Cancel</button>
+    </div>
+  </div>`;
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+  if(m.slug)document.getElementById("stSlug").dataset.touched=1;
+}
+
+function stAutoSlug(){
+  const slugEl=document.getElementById("stSlug");
+  if(slugEl&&!slugEl.dataset.touched)slugEl.value=apSlugify(document.getElementById("stTitle").value);
+}
+
+async function saveStory(){
+  const id=storyEditingId;
+  if(!id)return;
+  const has=document.getElementById("stHas").checked;
+  const title=(document.getElementById("stTitle").value||"").trim();
+  const slug=apSlugify(document.getElementById("stSlug").value||"");
+  if(has){
+    if(!title){toast("Enter a story title",true);return;}
+    if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)){toast("Slug must use lowercase letters, numbers and hyphens",true);return;}
+    const collision=Object.keys(STATE.cf.assetMeta||{}).find(aid=>aid!==id&&STATE.cf.assetMeta[aid]?.hasStoryPage&&STATE.cf.assetMeta[aid]?.slug===slug);
+    if(collision){toast('Slug "'+slug+'" is already used by another image',true);return;}
+  }
+  const m=storyMeta(id);
+  m.hasStoryPage=has;
+  m.slug=slug;
+  m.storyTitle=title;
+  m.storyBody=document.getElementById("stBody").value||"";
+  m.location=(document.getElementById("stLocation").value||"").trim();
+  m.camera=(document.getElementById("stCamera").value||"").trim();
+  m.year=(document.getElementById("stYear").value||"").trim();
+  CF_PHOTOS[id]=m;
+  closeAssignModal();
+  await saveAll();
+  if(imgSource==="library"&&typeof renderSmugMugImagesInTab==="function"&&smugmugImages)renderSmugMugImagesInTab();
+  else renderImgGrid();
 }
 
 function imgCreateFolder(){

@@ -8,3 +8,5 @@
 - [Admin TIA shim drift](admin-tia-shim-drift.md) — admin/index.html embeds its own older TIA copy, not tia-data.js; helpers must exist in BOTH or admin code throws at runtime.
 - [Stubbed endpoints](stubbed-endpoints.md) — migrations left some API routes as empty-data stubs; curl the endpoint before blaming the frontend when admin views show "no data".
 - OAuth redirect URIs are derived from the request host (works on custom domains); every domain used must be registered in the Adobe developer console or the connect flow fails.
+- [Admin Images tab renderers](admin-images-tab-renderers.md) — Images tab has TWO card renderers (library default vs CF grid); per-card UI must be added to both.
+- [Config cache staleness](config-cache-staleness.md) — direct SQL edits to site_config aren't seen by the running server until restart; lookups only reload on cache miss.
