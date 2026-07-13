@@ -8,6 +8,7 @@ import pg from "pg";
 import Anthropic from "@anthropic-ai/sdk";
 import { setupAuth, registerAuthRoutes, requireAdmin, isAuthenticated, ensureAuthTables } from "./replit_integrations/auth";
 import { getAlbums, getAlbumImages } from "./smugmug";
+import { registerAdobeRoutes } from "./adobe";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -195,9 +196,14 @@ function registerRoutes() {
     }
   });
 
+  registerAdobeRoutes(app, [isAuthenticated, requireAdmin]);
+
   const publicDir = fs.existsSync(path.join(__dirname, "public"))
     ? path.join(__dirname, "public")
     : path.join(__dirname, "..");
+  app.get("/test/lightroom", (_req, res) => {
+    res.sendFile(path.join(publicDir, "pages", "lightroom-connect.html"));
+  });
   app.use(express.static(publicDir));
 }
 

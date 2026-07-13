@@ -1,0 +1,105 @@
+# Lightroom → CDN Integration Spec (for Cascade)
+
+Port the recovered, working Adobe Lightroom integration from the old Firebase/Mongo
+prototype into the current `mission-gallery` (Rla102277/mission-gallery, replit-main),
+adapting it to the architecture we've already built (cached config, CDN serving,
+Push/Resync). Reuse the working auth + album-browsing. DROP the old "serve images
+live from Lightroom" approach — that was the failure.
+
+## What to REUSE from the old code (it works)
+
+1. **Adobe OAuth (server) — port nearly as-is.**
+   From old `server/routes/adobe.js`:
+   - POST /api/adobe/token  → exchanges auth code at https://ims-na1.adobelogin.com/ims/token/v3
+   - POST /api/adobe/refresh-token → refresh_token grant, same endpoint
+   - GET  /api/adobe/test-token → validates via https://ims-na1.adobelogin.com/ims/userinfo/v2
+   Keep client_id/secret server-side (ADOBE_CLIENT_ID / ADOBE_CLIENT_SECRET).
+   Redirect URI pattern: `${CLIENT_URL}/test/lightroom` (must match Adobe console).
+
+2. **Token storage + auto-refresh (client) — port as-is.**
+   From old `src/lib/lightroomAuth.js`: stores token+refresh+expiry, refreshes ~60s
+   early via /api/adobe/refresh-token. This is solid; keep it.
+
+3. **Album browsing (client) — reuse the API walk.**
+   From old `LightroomAlbumSelector.jsx`, the working sequence:
+   - GET https://lr.adobe.io/v2/account
+   - GET https://lr.adobe.io/v2/catalog        (store catalog.id)
+   - GET https://lr.adobe.io/v2/catalogs/{catalogId}/albums   (albums = data.resources)
+   - Assets in an album:
+     GET https://lr.adobe.io/v2/catalogs/{catalogId}/albums/{albumId}/assets
+   REQUIRED quirk: every Lightroom API JSON response is prefixed with `while (1) {}`
+   (anti-hijacking). Strip everything before the real JSON before parsing — the old
+   code's "if text starts with 'while', find the 2nd brace" logic MUST be carried over.
+   Every request needs headers: Authorization: Bearer <token> AND X-API-Key: <ADOBE_CLIENT_ID>.
+
+## What to DROP (this is what "sucked")
+
+- The old GET /api/adobe/image-proxy that fetched a Lightroom rendition LIVE on every
+  image request. Do NOT serve images from Lightroom at page-load time. Lightroom is
+  NOT a CDN. Renditions also expire (~1 day) and invalidate on re-edit, so a stored
+  Lightroom URL rots. This live-proxy approach is the failure we are replacing.
+
+## The NEW architecture (Push / Resync / CDN)
+
+Lightroom = source of record + browse interface only. Touched ONLY during Push/Resync,
+never on public page loads. The live site serves ONLY CDN URLs from the cached config
+(same model as Change 1 / the SmugMug work).
+
+### CDN target
+Use an S3-compatible bucket (Cloudflare R2 recommended; S3 fine). Store public display
+JPEGs. Env: R2/S3 endpoint, bucket, access key, secret (server-side only).
+
+### Admin flow (adapt the existing SmugMug picker UI)
+1. **Connect Lightroom** (once): OAuth via the ported /api/adobe/* routes.
+2. **Browse**: list albums (account→catalog→albums), click an album → list its assets
+   with thumbnail renditions (the small/640/1280 renditions are fine for the picker grid).
+3. **Push** (NEW server route, e.g. POST /api/lightroom/push):
+   - Input: catalogId, assetId(s), and destination(s) in the site config
+     (e.g. Witnesses → Monuments to Nobody → The Keepers). Allow multiple destinations.
+   - For each asset: request a display rendition
+     GET https://lr.adobe.io/v2/catalogs/{cat}/assets/{assetId}/renditions/{size}
+     (use 2048 for display; 2560/fullsize require elevated Adobe access — confirm tier).
+     If the rendition doesn't exist yet, generate it (POST the rendition type), then poll
+     the HEAD until 200 (async, ~exponential backoff, 10 min cap) before reading.
+   - Download the rendition server-side (Bearer token + X-API-Key), then upload the
+     bytes to the CDN bucket at a deterministic key, e.g. `{gallery}/{folder}/{assetId}.jpg`.
+   - Write the resulting CDN URL into the site config (same photo object shape already
+     used: { imageKey/assetId, filename, sizes/url, caption, ... }), in ALL chosen
+     destinations. Persist through the existing POST /api/config path (memory cache +
+     file snapshot), so it inherits the DB-pause resilience already built.
+4. **Resync** (NEW, POST /api/lightroom/resync):
+   - Re-request the rendition (regenerating if expired/invalid), re-upload to the same
+     CDN key (overwrite), update config. Use for when an asset was re-edited in Lightroom.
+
+### Serving
+- Public pages read CDN URLs from cached config. Adobe is never called on page load.
+- Multi-gallery: same asset pushed to multiple destinations = same CDN object referenced
+  in multiple config locations (dedupe the upload by assetId; reuse the URL).
+
+## Env vars (add to .env local + Replit Secrets)
+- ADOBE_CLIENT_ID, ADOBE_CLIENT_SECRET
+- CLIENT_URL (for the /test/lightroom redirect)
+- R2/S3: bucket, endpoint, access key id, secret access key, public base URL
+
+## Guardrails
+- ADOBE_CLIENT_SECRET and CDN secret keys are server-side only; never in a client bundle
+  or in config. (Old code referenced VITE_ADOBE_CLIENT_ID client-side — the client_id/API
+  key can be public-ish, but the SECRET must stay server-side.)
+- Do NOT reintroduce live Lightroom image serving.
+- Do NOT change auth (Replit Auth), the config cache, or Replit deploy config.
+- Keep the `while (1) {}` prefix-stripping on every Lightroom response.
+- Confirm rendition access tier: basic API access caps at 2048px. Fullsize/2560 needs
+  Adobe approval. 2048 is fine for web display; print masters go to LumaPrints separately.
+
+## Phase 0 (prove before building the UI)
+Port the /api/adobe/* auth routes + a single "list my albums" call. Authenticate once,
+confirm it returns the real Lightroom albums (with the while(1) strip working). Only then
+build Push/Resync on top. This is the exact gate that failed before, so prove it first.
+
+## Files to port (source → target)
+- old server/routes/adobe.js         → server: /api/adobe/* (auth) + NEW /api/lightroom/{push,resync}
+- old src/lib/lightroomAuth.js        → client token store + auto-refresh (as-is)
+- old src/components/LightroomAlbumSelector.jsx → the browse UI, adapted into the existing
+                                          admin picker (repoint destination to config+CDN,
+                                          not SmugMug)
+- DROP old image-proxy serving entirely.

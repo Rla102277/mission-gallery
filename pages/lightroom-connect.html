@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Connect Lightroom — The Infinite Arch</title>
+<style>
+  body{margin:0;background:#f5f0e8;color:#0d0d0d;font-family:Georgia,'Times New Roman',serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .card{max-width:480px;width:90%;border:1px solid rgba(13,13,13,0.15);padding:40px;text-align:center;background:#faf7f0}
+  h1{font-size:22px;font-weight:600;letter-spacing:0.04em;margin:0 0 12px}
+  p{font-size:15px;line-height:1.6;color:rgba(13,13,13,0.7)}
+  .btn{display:inline-block;margin-top:18px;padding:12px 28px;background:#0d0d0d;color:#f5f0e8;border:none;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+  .btn:hover{background:#b5922a}
+  .btn.secondary{background:transparent;color:#0d0d0d;border:1px solid rgba(13,13,13,0.3)}
+  .status{margin-top:16px;font-size:14px}
+  .ok{color:#2e7d32}.err{color:#b3261e}
+  .gold{color:#b5922a}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(13,13,13,0.2);border-top-color:#b5922a;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  code{font-size:12px;background:rgba(13,13,13,0.06);padding:2px 6px;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Adobe <span class="gold">Lightroom</span></h1>
+  <div id="content"><p><span class="spin"></span>Loading…</p></div>
+</div>
+<script src="/assets/js/lightroom-auth.js"></script>
+<script>
+(function(){
+  var el = document.getElementById('content');
+  var SCOPES = 'openid,AdobeID,lr_partner_apis,lr_partner_rendition_apis,offline_access';
+
+  function render(html){ el.innerHTML = html; }
+
+  function showError(msg, detail){
+    render('<p class="status err" data-testid="text-lr-error">' + msg + '</p>' +
+      (detail ? '<p><code>' + detail + '</code></p>' : '') +
+      '<button class="btn" onclick="location.href=\'/test/lightroom\'" data-testid="button-lr-retry">Try Again</button>');
+  }
+
+  async function getAppConfig(){
+    var res = await fetch('/api/adobe/client-id', { credentials: 'include' });
+    if (res.status === 401 || res.status === 403) throw new Error('AUTH');
+    if (!res.ok) {
+      var d = await res.json().catch(function(){ return {}; });
+      throw new Error(d.error || ('Server error ' + res.status));
+    }
+    return res.json();
+  }
+
+  async function exchangeCode(code){
+    render('<p><span class="spin"></span>Completing connection…</p>');
+    var res = await fetch('/api/adobe/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ code: code })
+    });
+    var data = await res.json().catch(function(){ return {}; });
+    if (!res.ok) throw new Error((data && data.error) || 'Token exchange failed');
+    LightroomAuth.save(data);
+    // Clean the code out of the URL
+    window.history.replaceState({}, '', '/test/lightroom');
+    showConnected();
+  }
+
+  async function showConnected(){
+    render('<p class="status ok" data-testid="text-lr-connected">&#10003; Lightroom connected</p>' +
+      '<p><span class="spin"></span>Verifying token…</p>');
+    try {
+      var token = await LightroomAuth.getValidAccessToken();
+      var res = await fetch('/api/adobe/test-token?token=' + encodeURIComponent(token), { credentials: 'include' });
+      var data = await res.json().catch(function(){ return {}; });
+      var who = data && data.user && (data.user.email || data.user.name || '');
+      render('<p class="status ok" data-testid="text-lr-connected">&#10003; Lightroom connected' + (who ? ' as <strong>' + who + '</strong>' : '') + '</p>' +
+        '<p>You can close this tab and return to the admin panel.</p>' +
+        '<a class="btn" href="/admin/" data-testid="link-back-admin">Back to Admin</a> ' +
+        '<button class="btn secondary" onclick="LightroomAuth.clear();location.reload()" data-testid="button-lr-disconnect">Disconnect</button>');
+    } catch (e) {
+      showError('Token verification failed', e.message);
+    }
+  }
+
+  async function init(){
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    var oauthError = params.get('error');
+    try {
+      if (oauthError) {
+        return showError('Adobe sign-in was cancelled or failed', oauthError + ': ' + (params.get('error_description') || ''));
+      }
+      if (code) return await exchangeCode(code);
+      if (LightroomAuth.isConnected()) return showConnected();
+
+      var cfg = await getAppConfig();
+      var authUrl = 'https://ims-na1.adobelogin.com/ims/authorize/v2' +
+        '?client_id=' + encodeURIComponent(cfg.clientId) +
+        '&scope=' + encodeURIComponent(SCOPES) +
+        '&response_type=code' +
+        '&redirect_uri=' + encodeURIComponent(cfg.redirectUri);
+      render('<p>Link your Adobe Lightroom account so the admin panel can browse albums and push photos to the site.</p>' +
+        '<p><code>' + cfg.redirectUri + '</code><br><small>(must be registered in the Adobe developer console)</small></p>' +
+        '<a class="btn" href="' + authUrl + '" data-testid="button-lr-connect">Connect Lightroom</a>');
+    } catch (e) {
+      if (e.message === 'AUTH') {
+        render('<p>You must be signed in as the site admin first.</p>' +
+          '<a class="btn" href="/api/login" data-testid="link-login">Sign In</a>');
+      } else {
+        showError('Could not start the connection', e.message);
+      }
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

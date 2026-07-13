@@ -56,3 +56,6 @@ integrations = ["github:1.0.0", "javascript_anthropic_ai_integrations:2.0.0", "j
 [userenv.shared]
 CF_ACCOUNT_ID = "778675cc50c655951ecb0f473db94337"
 CF_IMAGES_HASH = "W2O7t84FW9eAHociDpBWSg"
+
+[userenv.production]
+CLIENT_URL = "https://the-infinite-arch.replit.app"

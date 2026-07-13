@@ -458,6 +458,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 
 <div class="toast" id="toast"></div>
 
+<script src="/assets/js/lightroom-auth.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // TIA-DATA.JS  v8
@@ -2375,9 +2376,55 @@ function showSettingsPanel(){
   html+='<div style="margin-bottom:12px"><span class="field-lbl">Storage</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default">Server-side JSON</div></div>';
   html+='<div style="margin-bottom:12px"><span class="field-lbl">Last Save</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-last-save">'+esc(lastSave)+'</div></div>';
   html+='<div style="display:flex;gap:12px"><div style="flex:1"><span class="field-lbl">Works</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center">'+worksCount+'</div></div></div>';
-  html+='</div></div>';
+  html+='</div>';
+
+  var lrConnected=window.LightroomAuth&&LightroomAuth.isConnected();
+  html+='<div class="card" data-testid="card-lightroom"><span class="sec-lbl">Adobe Lightroom</span>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Status</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" id="lrStatus" data-testid="text-lr-status">'+(lrConnected?'Connected':'Not connected')+'</div></div>';
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  html+='<button class="btn" onclick="window.open(\'/test/lightroom\',\'_blank\')" data-testid="btn-lr-connect">'+(lrConnected?'Manage Connection':'Connect Lightroom')+'</button>';
+  if(lrConnected){
+    html+='<button class="btn" onclick="lrListAlbums()" data-testid="btn-lr-list-albums">List Albums</button>';
+    html+='<button class="btn red" onclick="LightroomAuth.clear();showSettingsPanel()" data-testid="btn-lr-disconnect">Disconnect</button>';
+  }
+  html+='</div>';
+  html+='<div id="lrAlbums" style="margin-top:12px"></div>';
+  html+='</div>';
+
+  html+='</div>';
 
   document.getElementById("panelBody").innerHTML=html;
+}
+
+async function lrListAlbums(){
+  var out=document.getElementById("lrAlbums");
+  if(!out)return;
+  out.innerHTML='<span style="color:var(--gold)">Loading albums from Lightroom…</span>';
+  try{
+    var cfgRes=await fetch('/api/adobe/client-id',{credentials:'include'});
+    if(!cfgRes.ok)throw new Error('Server config error ('+cfgRes.status+')');
+    var apiKey=(await cfgRes.json()).clientId;
+    await LightroomAuth.lrFetch('https://lr.adobe.io/v2/account',apiKey);
+    var catalog=await LightroomAuth.lrFetch('https://lr.adobe.io/v2/catalog',apiKey);
+    if(!catalog||!catalog.id)throw new Error('No Lightroom catalog found');
+    LightroomAuth.saveMetadata({catalogId:catalog.id});
+    var albumsData=await LightroomAuth.lrFetch('https://lr.adobe.io/v2/catalogs/'+encodeURIComponent(catalog.id)+'/albums',apiKey);
+    var albums=(albumsData&&albumsData.resources)||[];
+    if(!albums.length){
+      out.innerHTML='<span style="color:var(--muted)">Connected, but no albums found in this catalog.</span>';
+      return;
+    }
+    var rows=albums.map(function(a){
+      var name=(a.payload&&a.payload.name)||'Untitled Album';
+      var updated=(a.payload&&a.payload.userUpdated)?new Date(a.payload.userUpdated).toLocaleDateString():'';
+      return '<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)" data-testid="row-lr-album-'+esc(a.id)+'"><span>'+esc(name)+'</span><span style="color:var(--muted);font-size:11px">'+esc(updated)+'</span></div>';
+    }).join('');
+    out.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+albums.length+' album'+(albums.length===1?'':'s')+' — catalog '+esc(catalog.id.slice(0,8))+'…</div>'+rows;
+    toast('Lightroom albums loaded');
+  }catch(err){
+    out.innerHTML='<span style="color:var(--red)">'+esc(err.message)+'</span>';
+    toast('Lightroom error: '+err.message,true);
+  }
 }
 
 function toggleNavVis(idx){
