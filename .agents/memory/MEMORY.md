@@ -1,2 +1,4 @@
 - [Production build bundling](build-cjs-bundling.md) — `script/build.cjs` must bundle the REAL `server/index.ts` via esbuild; it previously shipped a stale hand-written server copy that diverged from source.
 - [Local dev sync](local-dev-sync.md) — user pushes from desktop via GitHub replit-main; after pulls, install new deps before debugging; meta tags live in static HTML heads.
+- [Photo format duality](photo-format-duality.md) — config photos are mixed SmugMug objects + dead CF strings; always render via TIA._mapPhotoIds/photoUrl, never string methods.
+- [SmugMug API visibility](smugmug-visibility.md) — public API key only sees PUBLIC albums; check album privacy before suspecting code when albums are missing.

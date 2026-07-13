@@ -2823,6 +2823,7 @@ function renderSmugMugAlbumsInTab(){
 
 async function selectSmugMugAlbumInTab(albumKey){
   smugmugCurrentAlbum=albumKey;
+  smugSelected=new Set();
   const grid=document.getElementById("imgGrid");
   grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading images...</div>";
   try{
@@ -2835,19 +2836,156 @@ async function selectSmugMugAlbumInTab(albumKey){
   }
 }
 
+let smugSelected=new Set();
+
+function smugUsageMap(){
+  var map={};
+  function add(key,label){if(!key)return;if(!map[key])map[key]=[];if(map[key].indexOf(label)===-1)map[key].push(label);}
+  function keyOf(p){return p&&typeof p==='object'?p.imageKey:null;}
+  getPortfolioWorks().forEach(function(w){
+    (w.galleries||[]).forEach(function(g){
+      (g.photos||[]).forEach(function(p){add(keyOf(p),g.title||'Collection');});
+      (g.folders||[]).forEach(function(f){
+        (f.photos||[]).forEach(function(p){add(keyOf(p),(g.title||'Collection')+' / '+(f.title||'Folder'));});
+      });
+    });
+  });
+  return map;
+}
+
 function renderSmugMugImagesInTab(){
   const grid=document.getElementById("imgGrid");
   if(!smugmugImages||!smugmugImages.length){
     grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in this album</div>";
+    const tb0=document.querySelector(".img-toolbar-left");
+    if(tb0)tb0.innerHTML=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()">← Back to Albums</button>`;
     return;
   }
-  grid.innerHTML=smugmugImages.map(img=>`
-    <div class="img-card">
-      ${img.sizes?.medium?`<img src="${img.sizes.medium}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
+  const usage=smugUsageMap();
+  grid.innerHTML=smugmugImages.map(img=>{
+    const key=smugSafeKey(img.imageKey);
+    if(!key)return "";
+    const sel=smugSelected.has(img.imageKey);
+    const used=usage[img.imageKey]||[];
+    const badges=used.map(u=>`<span class="img-card-badge">${esc(u)}</span>`).join("");
+    const src=smugSafeUrl(img.sizes&&img.sizes.medium);
+    return `<div class="img-card ${sel?"selected":""} ${used.length?"in-series":""}" onclick="smugToggle('${key}')" data-testid="img-card-${key}">
+      ${src?`<img src="${esc(src)}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
+      <div class="img-card-check">&#x2713;</div>
+      ${badges?`<div class="img-card-badges">${badges}</div>`:""}
       <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div></div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
+  smugRenderToolbar();
+}
+
+function smugSafeKey(key){
+  return typeof key==="string"&&/^[A-Za-z0-9_-]+$/.test(key)?key:null;
+}
+
+function smugSafeUrl(url){
+  if(typeof url!=="string")return null;
+  try{
+    const u=new URL(url);
+    return (u.protocol==="https:"||u.protocol==="http:")?u.href:null;
+  }catch(e){return null;}
+}
+
+function smugRenderToolbar(){
   const toolbar=document.querySelector(".img-toolbar-left");
-  if(toolbar)toolbar.innerHTML=`<button class="btn" onclick="renderSmugMugAlbumsInTab()">← Back to Albums</button>`;
+  if(!toolbar)return;
+  const n=smugSelected.size;
+  let html=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()" data-testid="btn-smug-back">← Albums</button>`;
+  html+=`<button class="btn" onclick="smugSelectAll()" data-testid="btn-smug-select-all">Select All</button>`;
+  if(n)html+=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugImagesInTab()" data-testid="btn-smug-clear">Clear</button>`;
+  html+=`<span class="img-sel-count">${n?n+" selected":""}</span>`;
+  if(n)html+=`<button class="btn gold" onclick="smugOpenAssign('add')" data-testid="btn-smug-assign">Add to...</button>`;
+  if(n===1)html+=`<button class="btn" onclick="smugOpenAssign('cover')" data-testid="btn-smug-cover">Set as Cover of...</button>`;
+  toolbar.innerHTML=html;
+}
+
+function smugToggle(key){
+  if(smugSelected.has(key))smugSelected.delete(key);else smugSelected.add(key);
+  renderSmugMugImagesInTab();
+}
+
+function smugSelectAll(){
+  smugSelected=new Set((smugmugImages||[]).map(i=>i.imageKey));
+  renderSmugMugImagesInTab();
+}
+
+function smugImgObj(key){
+  var img=(smugmugImages||[]).find(m=>m.imageKey===key);
+  return img?{imageKey:img.imageKey,filename:img.filename,webUri:img.webUri,caption:img.caption,sizes:img.sizes}:null;
+}
+
+function smugOpenAssign(mode){
+  const n=smugSelected.size;
+  if(!n)return;
+  document.getElementById("amTitle").textContent=mode==='cover'
+    ?"Set as cover of..."
+    :"Add "+n+" image"+(n>1?"s":"")+" to...";
+  let html="";
+  getPortfolioWorks().forEach(function(w,wi){
+    html+=`<div class="gp-section-lbl">${esc(w.title||'Collection Set')}</div>`;
+    if(mode==='cover')html+=`<button class="am-opt" onclick="smugApplyAssign('cover','work',${wi})" data-testid="am-cover-work-${wi}">&#9733; Cover of set: ${esc(w.title||'Untitled')}</button>`;
+    (w.galleries||[]).forEach(function(g,gi){
+      if(mode==='cover'){
+        html+=`<button class="am-opt" onclick="smugApplyAssign('cover','gallery',${wi},${gi})" data-testid="am-cover-gal-${wi}-${gi}">&#9733; ${esc(g.title||'Collection')}</button>`;
+      }else{
+        html+=`<button class="am-opt" onclick="smugApplyAssign('add','gallery',${wi},${gi})" data-testid="am-add-gal-${wi}-${gi}">${esc(g.title||'Collection')} <span style="opacity:.4">(${(g.photos||[]).length} photos)</span></button>`;
+      }
+      (g.folders||[]).forEach(function(f,fi){
+        if(mode==='cover'){
+          html+=`<button class="am-opt" style="padding-left:26px" onclick="smugApplyAssign('cover','folder',${wi},${gi},${fi})" data-testid="am-cover-fld-${wi}-${gi}-${fi}">&#9733; ${esc(f.title||'Folder')}</button>`;
+        }else{
+          html+=`<button class="am-opt" style="padding-left:26px" onclick="smugApplyAssign('add','folder',${wi},${gi},${fi})" data-testid="am-add-fld-${wi}-${gi}-${fi}">&#128193; ${esc(f.title||'Folder')} <span style="opacity:.4">(${(f.photos||[]).length} photos)</span></button>`;
+        }
+      });
+    });
+  });
+  if(!html)html="<div style='padding:16px;font-size:11px;opacity:.5'>No collections yet — create one in the Portfolio tab first.</div>";
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+}
+
+function smugApplyAssign(mode,targetType,wi,gi,fi){
+  const works=getPortfolioWorks();
+  const w=works[wi];
+  if(!w)return closeAssignModal();
+  const keys=[...smugSelected];
+  if(mode==='cover'){
+    const obj=smugImgObj(keys[0]);
+    if(!obj)return closeAssignModal();
+    if(targetType==='work')w.coverAssetId=obj;
+    else if(targetType==='gallery'&&w.galleries[gi])w.galleries[gi].coverAssetId=obj;
+    else if(targetType==='folder'&&w.galleries[gi]&&w.galleries[gi].folders[fi])w.galleries[gi].folders[fi].coverAssetId=obj;
+    closeAssignModal();
+    smugSelected=new Set();
+    renderSmugMugImagesInTab();
+    saveAll();
+    toast("Cover set — saving...");
+    return;
+  }
+  let list=null;
+  if(targetType==='gallery'&&w.galleries[gi]){
+    if(!w.galleries[gi].photos)w.galleries[gi].photos=[];
+    list=w.galleries[gi].photos;
+  }else if(targetType==='folder'&&w.galleries[gi]&&w.galleries[gi].folders[fi]){
+    if(!w.galleries[gi].folders[fi].photos)w.galleries[gi].folders[fi].photos=[];
+    list=w.galleries[gi].folders[fi].photos;
+  }
+  if(!list)return closeAssignModal();
+  let added=0;
+  keys.forEach(function(key){
+    const obj=smugImgObj(key);
+    if(obj&&!list.some(p=>p&&typeof p==='object'&&p.imageKey===key)){list.push(obj);added++;}
+  });
+  closeAssignModal();
+  smugSelected=new Set();
+  renderSmugMugImagesInTab();
+  saveAll();
+  toast(added+" photo"+(added===1?"":"s")+" added — saving...");
 }
 
 function renderImgFolders(){

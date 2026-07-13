@@ -1000,6 +1000,14 @@ function countAllPhotos(obj) {
   return c;
 }
 
+function mapPhotos(photos) {
+  return TIA._mapPhotoIds(photos || []).map(function(p) {
+    var fname = p.filename || String(p.assetId || '').substring(0, 12);
+    p.title = fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '');
+    return p;
+  });
+}
+
 function renderView() {
   var params = new URLSearchParams(window.location.search);
   var workId = params.get('work');
@@ -1185,11 +1193,7 @@ function renderGalleryView(workId, galId) {
       '</div>';
 
     if (photos.length > 0) {
-      currentPhotos = photos.map(function(aid) {
-        var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-        var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-        return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
-      });
+      currentPhotos = mapPhotos(photos);
       contentHtml +=
         '<div class="work-gal-section" style="padding-top:0">' +
           '<div class="work-gal-header">' +
@@ -1209,11 +1213,7 @@ function renderGalleryView(workId, galId) {
         '</div>';
     }
   } else {
-    currentPhotos = photos.map(function(aid) {
-      var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-      var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-      return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
-    });
+    currentPhotos = mapPhotos(photos);
 
     var photosHtml = '';
     if (currentPhotos.length > 0) {
@@ -1278,11 +1278,7 @@ function renderFolderView(workId, galId, folderId) {
                  (gallery.coverAssetId ? TIA.photoUrl(gallery.coverAssetId, 'hero') :
                  (work.coverAssetId ? TIA.photoUrl(work.coverAssetId, 'hero') : ''));
   var photos = folder.photos || [];
-  currentPhotos = photos.map(function(aid) {
-    var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-    var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-    return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
-  });
+  currentPhotos = mapPhotos(photos);
 
   var photosHtml = '';
   if (currentPhotos.length > 0) {
