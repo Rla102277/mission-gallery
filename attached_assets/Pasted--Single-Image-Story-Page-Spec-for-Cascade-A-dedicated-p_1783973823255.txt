@@ -1,0 +1,76 @@
+# Single-Image Story Page — Spec (for Cascade)
+
+A dedicated page per SELECTED image — the place a collector meets one photograph
+and decides to buy. Only images Randy marks get one (not every image). This is the
+front-of-house sales surface; it reads edition/sale data set by the Mark-for-Sale
+wizard but does NOT itself process payment (buy button routes out / to inquiry for now).
+
+## Principle
+Most images live in galleries. A story page is reserved for S/A-tier work worth a
+dedicated URL, title treatment, context, and buy path. Quiet, editorial, image-first —
+matches the brand (Ma, restraint, threshold). No clutter, no social widgets.
+
+## Config additions (per image object)
+- hasStoryPage: boolean (default false)  — Randy flags this in admin
+- slug: string (URL-safe, from title, e.g. "where-dragons-fly") — unique
+- storyTitle: string (the literary title, may differ from filename)
+- storyBody: string (2–4 short paragraphs / HTML) — the context, in Randy's voice
+- location, camera, year: strings (optional caption facts)
+- (reads existing) sizes (Cloudflare Images URLs), saleType, editionSize,
+  editionsSold, printSizes, printMasterRef
+
+## Routing
+- Route: /work/{slug}  (or /image/{slug}). Server resolves slug → image in config.
+- 404 (designed) if slug not found or hasStoryPage is false.
+- Every gallery tile / lightbox for a story-page image links to its /work/{slug}.
+- Add slugs to any sitemap; these are the pages you want indexed.
+
+## Page layout (top → bottom)
+1. **The image, large.** Full-bleed or generous margins, x2large size, lazy-loaded.
+   This is 80% of the page. Let it breathe (Ma). Dark ground suits the work.
+2. **Literary title** (storyTitle), understated type. Optional small caption line:
+   location · camera · year.
+3. **The story** (storyBody): 2–4 short paragraphs. This is what sells the print —
+   what you waited for, what the threshold is. Randy's plain voice, no em dashes.
+4. **Edition status** (if saleType != none):
+   - open: "Open edition"
+   - limited: "Edition — of {editionSize}" and "{editionsSold} of {editionSize} sold",
+     or "Sold out" when editionsSold >= editionSize.
+5. **Print options + Buy** (if sellable = saleType!=none && printMasterRef set &&
+   printSizes non-empty):
+   - List printSizes (label + price).
+   - Buy button behavior FOR NOW (back half not built):
+     - limited → "Inquire to Purchase" → existing inquiry/contact flow
+       (mailto or contact form), pre-filled with title + chosen size.
+     - open → same inquiry flow for now, with a // TODO(back-half): Stripe checkout.
+   - If not sellable → no buy UI (display-only story page is fine).
+6. **Quiet nav**: back to its chapter/gallery; optional prev/next through other
+   story-page images. No related-posts clutter.
+
+## Admin: marking + editing a story page
+- In the image admin, add: a "Story Page" toggle (sets hasStoryPage), and fields for
+  storyTitle, storyBody, location/camera/year, slug (auto from title, editable).
+- Persist via the existing POST /api/config path (cache + snapshot).
+- Slug uniqueness check; warn on collision.
+
+## SEO / share (do it here — these are your money pages)
+- <title> = storyTitle · The Infinite Arch
+- meta description = first ~150 chars of storyBody (stripped)
+- og:image = the image's large CDN URL (so shares show the photo)
+- Optional JSON-LD (VisualArtwork / Product) with title, artist, edition info.
+
+## Guardrails
+- Story pages read sale/edition data; they do NOT process payment or mutate
+  editionsSold (that's back-half). Show status only.
+- Do NOT auto-create story pages for all images — only hasStoryPage === true.
+- No social/comment/like widgets.
+- Do NOT change auth, the config cache, Lightroom push, or Replit deploy.
+- Serve only Cloudflare Images URLs; never Lightroom live.
+
+## Build order
+1. Config fields + admin marking/editing UI + slug handling.
+2. /work/{slug} route + page layout (image, title, story, edition status).
+3. Buy/inquire block (inquiry-only now; Stripe stubbed).
+4. SEO/OG tags + sitemap entries.
+Verify: mark one image (e.g. Where Dragons Fly), fill story, view /work/where-dragons-fly,
+confirm image + title + story + edition status render and share preview shows the photo.
