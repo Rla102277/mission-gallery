@@ -9,6 +9,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { setupAuth, registerAuthRoutes, requireAdmin, isAuthenticated, ensureAuthTables } from "./replit_integrations/auth";
 import { getAlbums, getAlbumImages } from "./smugmug";
 import { registerAdobeRoutes } from "./adobe";
+import { registerLightroomRoutes } from "./lightroom";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,6 +92,16 @@ function writeConfigToFile(config: Record<string, any>) {
   }
 }
 
+async function persistConfig(config: Record<string, any>) {
+  await pool.query(
+    `INSERT INTO site_config (id, config, updated_at) VALUES (1, $1::jsonb, NOW())
+     ON CONFLICT (id) DO UPDATE SET config = EXCLUDED.config, updated_at = NOW()`,
+    [JSON.stringify(config)]
+  );
+  configCache = config;
+  writeConfigToFile(config);
+}
+
 async function ensureConfigTable() {
   await queryWithTimeout(async () => {
     await pool.query(`
@@ -141,13 +152,7 @@ function registerRoutes() {
 
   app.post("/api/config", isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      await pool.query(
-        `INSERT INTO site_config (id, config, updated_at) VALUES (1, $1::jsonb, NOW())
-         ON CONFLICT (id) DO UPDATE SET config = EXCLUDED.config, updated_at = NOW()`,
-        [JSON.stringify(req.body)]
-      );
-      configCache = req.body;
-      writeConfigToFile(req.body);
+      await persistConfig(req.body);
       const seriesCount = Object.keys(req.body.series || {}).length;
       const worksCount = (req.body.portfolioWorks || []).length;
       let photoCount = 0;
@@ -197,6 +202,10 @@ function registerRoutes() {
   });
 
   registerAdobeRoutes(app, [isAuthenticated, requireAdmin]);
+  registerLightroomRoutes(app, [isAuthenticated, requireAdmin], {
+    getConfig: () => configCache,
+    saveConfig: persistConfig,
+  });
 
   const publicDir = fs.existsSync(path.join(__dirname, "public"))
     ? path.join(__dirname, "public")
