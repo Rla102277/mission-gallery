@@ -6,3 +6,5 @@
 - [Admin e2e testing](lightroom-integration.md) — when testing with Replit Auth override as rla1022@gmail.com, always reuse sub "admin-test-lr"; a new sub with the same email hits the users_email_key unique constraint.
 - [Dev vs prod config DBs](dev-prod-config-dbs.md) — dev and production have SEPARATE Postgres site_config databases; changes made in the live admin exist only in prod, and code fixes need a republish to reach it.
 - [Admin TIA shim drift](admin-tia-shim-drift.md) — admin/index.html embeds its own older TIA copy, not tia-data.js; helpers must exist in BOTH or admin code throws at runtime.
+- [Stubbed endpoints](stubbed-endpoints.md) — migrations left some API routes as empty-data stubs; curl the endpoint before blaming the frontend when admin views show "no data".
+- OAuth redirect URIs are derived from the request host (works on custom domains); every domain used must be registered in the Adobe developer console or the connect flow fails.

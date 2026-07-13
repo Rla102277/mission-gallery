@@ -138,11 +138,40 @@ function registerRoutes() {
   });
 
   app.get("/api/images/list", isAuthenticated, requireAdmin, async (_req, res) => {
-    res.json({ images: [], smugmug: true });
+    const accountId = process.env.CF_ACCOUNT_ID;
+    const token = process.env.CF_IMAGES_TOKEN;
+    const hash = process.env.CF_IMAGES_HASH || null;
+    if (!accountId || !token) {
+      return res.status(500).json({ error: "Cloudflare Images is not configured (CF_ACCOUNT_ID / CF_IMAGES_TOKEN missing)" });
+    }
+    try {
+      const images: Array<{ id: string; filename: string; uploaded?: string }> = [];
+      let page = 1;
+      while (page <= 100) {
+        const r = await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1?page=${page}&per_page=100`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data: any = await r.json().catch(() => ({}));
+        if (!r.ok || !data.success) {
+          throw new Error(`Cloudflare list failed (HTTP ${r.status})`);
+        }
+        const batch: any[] = data.result?.images || [];
+        for (const img of batch) {
+          images.push({ id: img.id, filename: img.filename || img.id, uploaded: img.uploaded });
+        }
+        if (batch.length < 100) break;
+        page++;
+      }
+      res.json({ images, hash, smugmug: true });
+    } catch (err: any) {
+      console.log("[CF Images] List error:", err.message);
+      res.status(500).json({ error: err.message });
+    }
   });
 
   app.get("/api/images/config", (_req, res) => {
-    res.json({ smugmug: true });
+    res.json({ hash: process.env.CF_IMAGES_HASH || null, smugmug: true });
   });
 
   app.get("/api/config", async (_req, res) => {
