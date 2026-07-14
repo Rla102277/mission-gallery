@@ -1,0 +1,70 @@
+# Add Page — Page Builder Spec (for Cascade)
+
+Add an "Add Page" capability to the admin page builder. Today the builder can edit
+existing pages (config.pages: home, about, portfolio) but there is NO way to CREATE a
+new page. Nav links can be added, but they point to pages that don't exist. This closes
+that gap: create a page in the builder AND wire its nav entry in one action.
+
+## Current structure (confirmed in data/tia-config.json)
+- config.pages = { home:{...}, about:{...}, portfolio:{...} }
+  Each page = { title, blocks:[...], metaDescription }. Blocks are the builder units
+  (hero, text, divider, collections-grid, quote, callout, etc.).
+- config.navigation = [ { href, label, visible }, ... ]
+  Existing hrefs look like "/pages/about.html", "/pages/portfolio.html", etc.
+
+## What to build
+
+### 1. "Add Page" button in the page builder
+Place it in the page-builder UI (near the page selector/list). Clicking opens a small
+form:
+- **Page name** (label shown in nav, e.g. "Exhibitions")
+- **Slug** (URL-safe, auto-generated from name, editable, e.g. "exhibitions")
+  → validate: lowercase, hyphens, no spaces/special chars, unique among pages
+- **Add to navigation?** (checkbox, default on) + **nav position** (optional order)
+- **Starter template** (optional dropdown): "Blank" or clone blocks from an existing
+  page (e.g. start like About). Default "Blank".
+
+### 2. On create
+- Add a new key to config.pages under the slug:
+  config.pages[slug] = {
+    title: "",
+    blocks: [],            // or cloned from chosen template
+    metaDescription: ""
+  }
+  (Use slug as the page key, consistent with existing home/about/portfolio keys.)
+- If "Add to navigation" is checked, append to config.navigation:
+  { href: "/pages/{slug}.html", label: "{Page name}", visible: true }
+  at the chosen position (default end). Match the EXISTING href pattern exactly
+  ("/pages/{slug}.html") so routing/serving works like the current pages.
+- Persist everything through the EXISTING POST /api/config path (memory cache +
+  data/tia-config.json snapshot). Do NOT add a separate save path.
+- After create, open the new (empty) page in the builder so Randy can add blocks.
+
+### 3. Serving / routing the new page
+- Confirm how existing pages at /pages/{name}.html are served and make new pages work
+  the SAME way. If pages are rendered from config by key (likely, since content lives in
+  config.pages), ensure the route resolves /pages/{slug}.html → config.pages[slug].
+  If there's a static HTML file per page instead, generate/serve the new page from the
+  config entry rather than requiring a physical file — the whole point is no manual file
+  creation.
+
+### 4. Nav sync + hygiene
+- The nav entry and the page are created together so they never drift (the current bug
+  is that you can add a nav link with no page).
+- Deleting a page (if delete exists/lands later) should offer to remove its nav entry too.
+- Toggling nav "visible" already works — leave that as-is.
+
+## Guardrails
+- Slug must be unique across config.pages AND not collide with reserved routes
+  (home, portfolio, galleries, about, prints, contact, admin, api, work, pages).
+- Reuse the existing block/editor components for the new page — no new editor.
+- Persist ONLY via POST /api/config (keeps DB-pause cache/snapshot resilience).
+- Do NOT change auth, the config cache, Lightroom push, or Replit deploy.
+- Everything server-side stays admin-gated (isAuthenticated + requireAdmin).
+
+## Verify
+1. Page builder → Add Page → name "Exhibitions", slug "exhibitions", add to nav.
+2. Confirm: new empty page opens in builder; nav shows "Exhibitions" →
+   /pages/exhibitions.html; config.pages.exhibitions exists; saved via /api/config.
+3. Add a hero + text block, save, load /pages/exhibitions.html on the site → renders.
+4. Reload after a fresh start (cache re-seed) → page persists (snapshot works).

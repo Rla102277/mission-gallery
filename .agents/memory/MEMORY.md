@@ -1,1 +1,12 @@
 - [Production build bundling](build-cjs-bundling.md) — `script/build.cjs` must bundle the REAL `server/index.ts` via esbuild; it previously shipped a stale hand-written server copy that diverged from source.
+- [Local dev sync](local-dev-sync.md) — user pushes from desktop via GitHub replit-main; after pulls, install new deps before debugging; meta tags live in static HTML heads.
+- [Photo format duality](photo-format-duality.md) — config photos are mixed SmugMug objects + dead CF strings; always render via TIA._mapPhotoIds/photoUrl, never string methods.
+- [SmugMug API visibility](smugmug-visibility.md) — public API key only sees PUBLIC albums; check album privacy before suspecting code when albums are missing.
+- [Lightroom integration](lightroom-integration.md) — while(1){} strip on every lr.adobe.io response, HMAC state on OAuth, redirect URIs must be registered in Adobe console; never serve images live from Lightroom.
+- [Admin e2e testing](lightroom-integration.md) — when testing with Replit Auth override as rla1022@gmail.com, always reuse sub "admin-test-lr"; a new sub with the same email hits the users_email_key unique constraint.
+- [Dev vs prod config DBs](dev-prod-config-dbs.md) — dev and production have SEPARATE Postgres site_config databases; changes made in the live admin exist only in prod, and code fixes need a republish to reach it.
+- [Admin TIA shim drift](admin-tia-shim-drift.md) — admin/index.html embeds its own older TIA copy, not tia-data.js; helpers must exist in BOTH or admin code throws at runtime.
+- [Stubbed endpoints](stubbed-endpoints.md) — migrations left some API routes as empty-data stubs; curl the endpoint before blaming the frontend when admin views show "no data".
+- OAuth redirect URIs are derived from the request host (works on custom domains); every domain used must be registered in the Adobe developer console or the connect flow fails.
+- [Admin Images tab renderers](admin-images-tab-renderers.md) — Images tab has TWO card renderers (library default vs CF grid); per-card UI must be added to both.
+- [Config cache staleness](config-cache-staleness.md) — direct SQL edits to site_config aren't seen by the running server until restart; lookups only reload on cache miss.

@@ -6,7 +6,7 @@ JSON-config-driven CMS photography platform with a block-rendered page system an
 ## Architecture
 - **Frontend**: Block-rendered pages — thin HTML shells load blocks from config via `block-renderer.js`
 - **Admin Panel**: `admin/index.html` — single-page admin for managing pages (block editor), portfolio works with gallery hierarchy, navigation, site settings, photos, and Cloudflare images
-- **Config Storage**: PostgreSQL database (`site_config` table with JSONB column) — persists across deployments, shared between dev and production
+- **Config Storage**: PostgreSQL database (`site_config` table with JSONB column) — persists across deployments. Dev and production use SEPARATE databases (changes made in the live admin exist only in prod config, and vice versa)
 - **Photo Hosting**: Cloudflare Images (sole image server)
 - **Server**: Express with multer — proxies uploads to Cloudflare Images API (protects API token)
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
@@ -99,6 +99,17 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `GET /api/config` — Read site configuration JSON
 - `POST /api/config` — Write site configuration JSON
 - `POST /api/ai/enrich` — AI text enrichment via Anthropic Claude (PIN-authenticated, X-Admin-Pin header required)
+- `POST /api/adobe/token`, `/api/adobe/refresh-token`, `GET /api/adobe/client-id`, `GET /api/adobe/test-token` — Adobe Lightroom OAuth (admin-guarded)
+- `GET /api/lightroom/cdn-status` — Reports whether Cloudflare Images env vars are configured (admin-guarded)
+- `POST /api/lightroom/push` — Pull 2048px Lightroom rendition → upload to Cloudflare Images (id `lr-{assetId}`) → write photo object into config destinations (requires X-Lightroom-Token header; admin-guarded)
+- `POST /api/lightroom/resync` — Regenerate + re-upload a pushed asset, refresh its URLs everywhere in config with `?v=` cache-bust (admin-guarded)
+
+## Lightroom Integration
+- **Connect**: `/test/lightroom` connect page; tokens in browser localStorage, auto-refreshed; server holds client secret only
+- **Browse**: Admin → Images tab → Lightroom source toggle — albums → asset grid (authorized blob thumbnails), multi-select
+- **Push**: "Push N to..." or "Push Entire Album to..." → multi-destination checkboxes (collections + folders) → sequential per-asset push with progress; config written server-side, admin reloads state after
+- **Resync**: select already-pushed assets → Resync button re-pulls fresh renditions and cache-busts all config references
+- **Rule**: never serve images live from Lightroom — public pages serve only imagedelivery.net URLs from config
 
 ## AI Text Enrichment
 - **Integration**: Replit AI Integrations for Anthropic (no API key needed, billed to Replit credits)
@@ -110,8 +121,10 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 ## Admin Panel Features
 - **Portfolio tab**: Works with expandable gallery hierarchy — create/edit/reorder/delete works, add/edit/reorder/delete galleries, import default galleries into works, upload/assign photos to galleries, set gallery covers, inline editors with AI enrichment
 - **Images tab**: Browse all CF images, organize into folders, assign to galleries (under portfolio works), set as portfolio cover, mark as print, assign to legacy series, upload, delete, EXIF display on cards
-- **Pages tab**: Page builder — select page (Home/Portfolio/About/Prints/Hope Hike/Contact), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
+- **Pages tab**: Page builder — select page (Home/Portfolio/About/Prints/Hope Hike/Contact + custom pages), view/add/edit/reorder/duplicate/delete blocks with type-specific form editors, page title & meta description, image picker integration
+- **Add Page**: "+ Add Page" button in the Pages tab — form with name, auto slug (validated: lowercase/hyphens, unique, reserved-slug blocklist), add-to-nav checkbox + optional position, starter template (blank or clone existing page). Creates `config.pages[slug]` + nav entry `{href:"/pages/{slug}.html", label, visible:true}` together, saved via POST /api/config. Custom pages get View Page + Delete Page (delete also removes the nav entry). Custom pages have NO physical HTML file — the server serves `/pages/{slug}.html` dynamically from config via a generic block-shell route registered after express.static (physical shells win)
 - **Settings tab**: Site settings (name, tagline, footer quote/attribution, email), navigation editor, Cloudflare connection status
+- **Story Pages**: Images tab cards have a "Story Page" button → modal (enable toggle, storyTitle with auto-slug, editable slug with uniqueness check, storyBody, location/camera/year). Fields stored per-image on `config.cf.assetMeta[imageId]` (hasStoryPage, slug, storyTitle, storyBody, location, camera, year). Server serves `/work/{slug}` server-rendered (SEO: title/meta/og:image/JSON-LD VisualArtwork) for images with hasStoryPage=true; designed "Not on view" 404 otherwise. Reads sale fields (saleType/editionSize/editionsSold/printSizes/printMasterRef) if present — edition status display + inquiry-only buy (mailto prefilled; Stripe = TODO back-half, never mutates editionsSold). Lightboxes show "View Story →" via `TIA.storyFor/storyUrl`. `/sitemap.xml` lists core + custom pages + /work/ slugs
 
 ## Portfolio & Gallery Hierarchy System (Lightroom-style)
 Galleries page supports 4-level Lightroom-style hierarchy via URL params:

@@ -975,6 +975,7 @@
     <div class="lb-title" id="lbTitle"></div>
     <div class="lb-details" id="lbDetails"></div>
     <a class="lb-buy" id="lbBuy" href="#" target="_blank" style="display:none">Buy / Print</a>
+    <a class="lb-story" id="lbStory" href="#" style="display:none" data-testid="link-lb-story">View Story &#8594;</a>
   </div>
   <span class="lb-prev" onclick="lbNav(-1)" data-testid="btn-lightbox-prev">&#8592;</span>
   <span class="lb-next" onclick="lbNav(1)" data-testid="btn-lightbox-next">&#8594;</span>
@@ -998,6 +999,14 @@ function countAllPhotos(obj) {
   var c = (obj.photos || []).length;
   (obj.folders || []).forEach(function(f) { c += (f.photos || []).length; });
   return c;
+}
+
+function mapPhotos(photos) {
+  return TIA._mapPhotoIds(photos || []).map(function(p) {
+    var fname = p.filename || String(p.assetId || '').substring(0, 12);
+    p.title = fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '');
+    return p;
+  });
 }
 
 function renderView() {
@@ -1185,11 +1194,7 @@ function renderGalleryView(workId, galId) {
       '</div>';
 
     if (photos.length > 0) {
-      currentPhotos = photos.map(function(aid) {
-        var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-        var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-        return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
-      });
+      currentPhotos = mapPhotos(photos);
       contentHtml +=
         '<div class="work-gal-section" style="padding-top:0">' +
           '<div class="work-gal-header">' +
@@ -1209,11 +1214,7 @@ function renderGalleryView(workId, galId) {
         '</div>';
     }
   } else {
-    currentPhotos = photos.map(function(aid) {
-      var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-      var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-      return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
-    });
+    currentPhotos = mapPhotos(photos);
 
     var photosHtml = '';
     if (currentPhotos.length > 0) {
@@ -1278,11 +1279,7 @@ function renderFolderView(workId, galId, folderId) {
                  (gallery.coverAssetId ? TIA.photoUrl(gallery.coverAssetId, 'hero') :
                  (work.coverAssetId ? TIA.photoUrl(work.coverAssetId, 'hero') : ''));
   var photos = folder.photos || [];
-  currentPhotos = photos.map(function(aid) {
-    var meta = STATE.cf && STATE.cf.assetMeta && STATE.cf.assetMeta[aid];
-    var fname = meta && meta.filename ? meta.filename : aid.substring(0, 12);
-    return { assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid), title: fname.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '') };
-  });
+  currentPhotos = mapPhotos(photos);
 
   var photosHtml = '';
   if (currentPhotos.length > 0) {
@@ -1341,6 +1338,14 @@ function renderLb() {
     buyBtn.style.display = 'inline-block';
   } else {
     buyBtn.style.display = 'none';
+  }
+
+  // Link to the image's story page if it has one
+  var storyLink = document.getElementById('lbStory');
+  if (storyLink) {
+    var storyUrl = TIA.storyUrl(p);
+    if (storyUrl) { storyLink.href = storyUrl; storyLink.style.display = 'inline-block'; }
+    else storyLink.style.display = 'none';
   }
 }
 

@@ -108,7 +108,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .slot-act{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim)}.slot.filled .slot-act{color:var(--green)}
 /* PORTFOLIO WORKS */
 .pf-works{display:flex;flex-direction:column;gap:10px}
-.pf-work-card{background:var(--surface2);border:1px solid var(--border);overflow:hidden}
+.pf-work-card{background:var(--surface2);border:1px solid var(--border)}
 .pf-work-card:hover{border-color:var(--border2)}
 .pf-work-card.expanded{border-color:var(--gold)}
 .pf-work-header{display:flex;gap:14px;cursor:pointer;padding:0}
@@ -255,6 +255,13 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 .gp-section-lbl{font-size:8px;letter-spacing:4px;text-transform:uppercase;opacity:.25;margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)}
 #assignModal{position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
 #assignModal.open{display:flex}
+#csvModal{position:fixed;inset:0;z-index:860;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
+#csvModal.open{display:flex}
+#csvModal .am-box{width:min(560px,94vw)}
+.csv-hint{font-size:10px;color:var(--dim);line-height:1.6;margin-bottom:10px}
+.csv-hint code{color:var(--gold);font-size:10px}
+#csvText{width:100%;min-height:160px;background:var(--surface2);border:1px solid var(--border);color:var(--cream);font-family:monospace;font-size:11px;padding:10px;resize:vertical}
+.csv-preview{font-size:10px;color:var(--muted);margin-top:8px;max-height:120px;overflow-y:auto}
 .am-box{background:var(--surface);border:1px solid var(--border2);width:min(440px,92vw);border-radius:2px}
 .am-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .am-title{font-size:14px;font-weight:300}
@@ -405,6 +412,27 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
   </div>
 </div>
 
+<div id="csvModal">
+  <div class="am-box">
+    <div class="am-head">
+      <div class="am-title" id="csvModalTitle">Bulk Add Folders from CSV</div>
+      <button class="am-close" onclick="closeCsvModal()" data-testid="btn-csv-close">&times;</button>
+    </div>
+    <div class="am-body">
+      <div class="csv-hint">
+        One <span id="csvItemWord">folder</span> per line. Columns: <code>title, subtitle, type, camera, location</code> — only <code>title</code> is required.
+        A header row is optional (auto-detected). Quotes are supported for values containing commas.
+      </div>
+      <input type="file" id="csvFile" accept=".csv,text/csv,text/plain" onchange="csvFileChosen(event)" style="margin-bottom:10px;font-size:11px" data-testid="input-csv-file">
+      <textarea id="csvText" placeholder="Black Sand Empire, Reynisfjara basalt columns, Series, GFX 100S II, Reynisfjara&#10;The Icelandic Horse&#10;The Crystal Ossuary, Glacial remains beneath arctic light" oninput="updateCsvPreview()" data-testid="input-csv-text"></textarea>
+      <div class="csv-preview" id="csvPreview"></div>
+    </div>
+    <div class="am-foot">
+      <button class="btn" onclick="closeCsvModal()">Cancel</button>
+      <button class="btn pri" onclick="applyCsvFolders()" data-testid="btn-csv-apply">Create Folders</button>
+    </div>
+  </div>
+</div>
 <div id="assignModal">
   <div class="am-box">
     <div class="am-head">
@@ -430,6 +458,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 
 <div class="toast" id="toast"></div>
 
+<script src="/assets/js/lightroom-auth.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // TIA-DATA.JS  v8
@@ -440,6 +469,12 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 
 const TIA = {
   STORE_KEY:  'tia_admin',
+
+  cfUrl(imageId, variant) {
+    const hash = TIA.CF_HASH || TIA.getState().cf?.hash;
+    if (!hash || !imageId) return '';
+    return `https://imagedelivery.net/${hash}/${imageId}/${variant || 'public'}`;
+  },
 
   photoUrl(photo, size) {
     if (!photo) return '';
@@ -456,16 +491,8 @@ const TIA = {
   hero(photo)   { return TIA.photoUrl(photo, 'hero'); },
   full(photo)   { return TIA.photoUrl(photo, 'full');   },
 
-  DEFAULT_SERIES: [
-    { id:'s1', num:'01', title:'Solitude & Scale',          subtitle:'The Secret Lagoon',                  type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Fjallsárlón Glacier Lagoon'          },
-    { id:'s2', num:'02', title:'Glacial Contrasts',          subtitle:'Ice in Two Realms',                  type:'Diptych',  camera:'GFX 100S II + 100–200mm', location:'Jökulsárlón & Diamond Beach'         },
-    { id:'s3', num:'03', title:'Blue Trilogy',               subtitle:'The Impossible Blues of Iceland Ice', type:'Triptych', camera:'X-E5 + GFX 100S II',      location:'Ice Cave · Diamond Beach · Jökulsárlón'},
-    { id:'s4', num:'04', title:'Coastal Contrasts',          subtitle:'Black Sand vs Blue Water',            type:'Diptych',  camera:'GFX 100S II',              location:'Reynisfjara · Blue Lagoon'           },
-    { id:'s5', num:'05', title:'The Human Element',          subtitle:'Presence at the Edge of the World',   type:'Diptych',  camera:'GFX 100S II',              location:'South Iceland Plains'                },
-    { id:'s6', num:'06', title:'Arnarstapi Geometry',        subtitle:'The Architecture of Erosion',         type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Arnarstapi, Snæfellsnes'             },
-    { id:'s7', num:'07', title:'Peninsular Panorama',        subtitle:'Snæfellsnes in Three Moods',          type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Snæfellsnes Peninsula'               },
-    { id:'s8', num:'08', title:'Urban Odyssey',              subtitle:'Reykjavík as Coda',                   type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Reykjavík'                           },
-  ],
+  // Legacy hardcoded gallery seeds removed — galleries now live entirely in config (portfolioWorks)
+  DEFAULT_SERIES: [],
 
   _state: null,
 
@@ -646,22 +673,6 @@ function getSeriesPhotos(sid){
     return{assetId:aid,filename:m.filename,thumbUrl:m.thumbUrl,fullUrl:m.fullUrl};
   });
 }
-function allPhotos(){
-  const seen=new Set();
-  const all=[];
-  function add(aid){
-    if(!aid||seen.has(aid))return;
-    seen.add(aid);
-    const m=getPhotoMeta(aid);
-    all.push({assetId:aid,filename:m.filename,urlThumb:m.thumbUrl,url2048:m.fullUrl});
-  }
-  Object.values(STATE.photos||{}).forEach(ids=>ids.forEach(add));
-  Object.keys(CF_PHOTOS||{}).forEach(add);
-  Object.keys(STATE.cf?.assetMeta||{}).forEach(add);
-  (STATE.portfolioWorks||[]).forEach(w=>(w.galleries||[]).forEach(g=>(g.photos||[]).forEach(add)));
-  imgAllImages.forEach(img=>add(img.id));
-  return all;
-}
 
 // INIT
 async function init(){
@@ -805,6 +816,7 @@ function removePhotoFromSeries(sid,pid){
   if(!STATE.photos[sid])return;
   STATE.photos[sid]=STATE.photos[sid].filter(id=>id!==pid);
   showPortfolioPanel();
+  saveAll();
   toast("Photo removed from series");
 }
 
@@ -908,6 +920,103 @@ const BLOCK_TYPES=[
 ];
 let activePage='home';
 let editingBlockIdx=null;
+let addingPage=false;
+const RESERVED_SLUGS=['home','portfolio','about','prints','hope-hike','contact','galleries','gallery','admin','api','assets','pages','work','test','index','lightroom-connect'];
+
+function isDefaultPage(slug){return PAGE_SLUGS.some(function(p){return p.slug===slug;});}
+
+function customPageSlugs(){
+  return Object.keys(STATE.pages||{}).filter(function(s){
+    return !isDefaultPage(s)&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s);
+  });
+}
+
+function pageLabel(slug){
+  var nav=(STATE.navigation||[]).find(function(n){return n.href==='/pages/'+slug+'.html';});
+  if(nav&&nav.label)return nav.label;
+  return slug.split('-').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(' ');
+}
+
+function apSlugify(s){
+  return String(s||'').toLowerCase().trim().replace(/['\u2019]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+
+function openAddPage(){
+  addingPage=true;
+  showPagesPanel(true);
+  setTimeout(function(){var el=document.getElementById('apName');if(el)el.focus();},50);
+}
+
+function cancelAddPage(){
+  addingPage=false;
+  showPagesPanel(true);
+}
+
+function apAutoSlug(){
+  var slugEl=document.getElementById('apSlug');
+  if(slugEl&&!slugEl.dataset.touched)slugEl.value=apSlugify(document.getElementById('apName').value);
+}
+
+function renderAddPageForm(){
+  var tplOpts='<option value="blank">Blank page</option>';
+  PAGE_SLUGS.forEach(function(p){tplOpts+='<option value="'+p.slug+'">Clone: '+esc(p.label)+'</option>';});
+  customPageSlugs().forEach(function(s){tplOpts+='<option value="'+s+'">Clone: '+esc(pageLabel(s))+'</option>';});
+  return '<div class="card" style="margin-bottom:16px" data-testid="card-add-page"><span class="sec-lbl">New Page</span>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'
+    +'<div><span class="field-lbl">Page Name (shown in nav)</span><input class="input" id="apName" oninput="apAutoSlug()" placeholder="e.g. Exhibitions" data-testid="input-page-name"></div>'
+    +'<div><span class="field-lbl">Slug (URL)</span><input class="input" id="apSlug" oninput="this.dataset.touched=1" placeholder="e.g. exhibitions" data-testid="input-page-slug"></div>'
+    +'<div><span class="field-lbl">Starter Template</span><select class="input" id="apTemplate" data-testid="select-page-template">'+tplOpts+'</select></div>'
+    +'<div><span class="field-lbl">Navigation</span><div style="display:flex;align-items:center;gap:10px;margin-top:8px">'
+    +'<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="apNav" checked data-testid="check-add-to-nav"> Add to navigation</label>'
+    +'<input class="input" id="apNavPos" type="number" min="1" placeholder="Position (end)" style="width:130px" data-testid="input-nav-position"></div></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:14px">'
+    +'<button class="btn pri" onclick="createNewPage()" data-testid="btn-create-page">Create Page</button>'
+    +'<button class="btn" onclick="cancelAddPage()" data-testid="btn-cancel-add-page">Cancel</button>'
+    +'</div>'
+    +'<p style="font-size:11px;opacity:.5;margin:10px 0 0">The page will be served at /pages/&lt;slug&gt;.html — no HTML file needed.</p>'
+    +'</div>';
+}
+
+async function createNewPage(){
+  var name=(document.getElementById('apName').value||'').trim();
+  var slug=apSlugify(document.getElementById('apSlug').value||'');
+  if(!name){toast('Enter a page name',true);return;}
+  if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)){toast('Slug must use lowercase letters, numbers and hyphens',true);return;}
+  if(RESERVED_SLUGS.indexOf(slug)>=0){toast('"'+slug+'" is reserved — pick another slug',true);return;}
+  if(!STATE.pages)STATE.pages={};
+  if(STATE.pages[slug]){toast('A page with that slug already exists',true);return;}
+  var tpl=(document.getElementById('apTemplate')||{}).value||'blank';
+  var blocks=[];
+  if(tpl!=='blank'){
+    var src=(STATE.pages[tpl]&&STATE.pages[tpl].blocks)||(typeof BlockRenderer!=='undefined'&&BlockRenderer.PAGE_DEFAULTS&&BlockRenderer.PAGE_DEFAULTS[tpl])||[];
+    blocks=JSON.parse(JSON.stringify(src));
+  }
+  STATE.pages[slug]={title:'',metaDescription:'',blocks:blocks};
+  if(document.getElementById('apNav').checked){
+    var nav=getNavigation();
+    var entry={label:name,href:'/pages/'+slug+'.html',visible:true};
+    var pos=parseInt((document.getElementById('apNavPos')||{}).value,10);
+    if(!isNaN(pos)&&pos>=1&&pos<=nav.length)nav.splice(pos-1,0,entry);
+    else nav.push(entry);
+  }
+  addingPage=false;
+  activePage=slug;
+  editingBlockIdx=null;
+  await saveAll();
+  showPagesPanel();
+}
+
+async function deletePage(slug){
+  if(isDefaultPage(slug))return;
+  if(!confirm('Delete the "'+pageLabel(slug)+'" page? Its navigation link will be removed too.'))return;
+  delete STATE.pages[slug];
+  if(STATE.navigation)STATE.navigation=STATE.navigation.filter(function(n){return n.href!=='/pages/'+slug+'.html';});
+  activePage='home';
+  editingBlockIdx=null;
+  await saveAll();
+  showPagesPanel();
+}
 
 function getPageBlocks(slug){
   if(!STATE.pages)STATE.pages={};
@@ -931,10 +1040,21 @@ function showPagesPanel(keepEditor){
   PAGE_SLUGS.forEach(function(p){
     html+='<button class="page-sel-btn '+(activePage===p.slug?'active':'')+'" onclick="selectPage(\''+p.slug+'\')" data-testid="btn-page-'+p.slug+'">'+p.label+'</button>';
   });
+  customPageSlugs().forEach(function(s){
+    html+='<button class="page-sel-btn '+(activePage===s?'active':'')+'" onclick="selectPage(\''+s+'\')" data-testid="btn-page-'+s+'">'+esc(pageLabel(s))+'</button>';
+  });
+  html+='<button class="page-sel-btn" style="border-style:dashed" onclick="openAddPage()" data-testid="btn-add-page">+ Add Page</button>';
   html+='</div>';
+  if(addingPage)html+=renderAddPageForm();
   if(!STATE.pages)STATE.pages={};
   ensurePageDefaults(activePage);
   const pg=STATE.pages[activePage]||{title:'',metaDescription:'',blocks:[]};
+  if(!isDefaultPage(activePage)){
+    html+='<div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">'
+      +'<a class="btn" href="/pages/'+activePage+'.html" target="_blank" data-testid="link-view-page">View Page &#8599;</a>'
+      +'<button class="btn red" onclick="deletePage(\''+activePage+'\')" data-testid="btn-delete-page">Delete Page</button>'
+      +'</div>';
+  }
   html+='<div class="page-meta"><div><span class="field-lbl">Page Title</span>'+aiWrap('<input class="input" value="'+esc(pg.title||'')+'" oninput="updatePageMeta(\'title\',this.value)" data-testid="input-page-title" placeholder="e.g. About — The Infinite Arch">',aiBtn('page',0,'title'))+'</div>';
   html+='<div><span class="field-lbl">Meta Description</span>'+aiWrap('<input class="input" value="'+esc(pg.metaDescription||'')+'" oninput="updatePageMeta(\'metaDescription\',this.value)" data-testid="input-page-meta">',aiBtn('page',0,'metaDescription'))+'</div>';
   html+='<div><span class="field-lbl">OG Image (Social Share)</span><div style="display:flex;align-items:center;gap:12px">';
@@ -1389,13 +1509,7 @@ function renderBlockEditor(b,idx){
 }
 
 function pickBlockPhotos(idx){
-  pkSlotId='__blockphotos__'+idx;
-  pkCtx='blockphotos';
-  pkActive=null;
-  document.getElementById("pkTitle").textContent='Add Photos to Grid';
-  document.getElementById("pkConfirm").disabled=true;
-  renderPkFilter();renderPkGrid(null);
-  document.getElementById("picker").classList.add("open");
+  openPicker('__blockphotos__'+idx,'blockphotos','Add Photos to Grid');
 }
 
 function removeBlockPhoto(idx,photoIdx){
@@ -1406,13 +1520,7 @@ function removeBlockPhoto(idx,photoIdx){
 }
 
 function pickCuratedPhoto(blockIdx){
-  pkSlotId='__curated__'+blockIdx;
-  pkCtx='curated';
-  pkActive=null;
-  document.getElementById("pkTitle").textContent='Add Curated Photo';
-  document.getElementById("pkConfirm").disabled=true;
-  renderPkFilter();renderPkGrid(null);
-  document.getElementById("picker").classList.add("open");
+  openPicker('__curated__'+blockIdx,'curated','Add Curated Photo');
 }
 
 function removeCuratedPhoto(blockIdx,photoIdx){
@@ -1518,7 +1626,10 @@ function toggleWork(workId){
 }
 
 function renderWorkGalleries(w,workIdx){
-  var html='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'" style="margin-bottom:10px">+ Add Collection</button>';
+  var html='<div style="display:flex;gap:6px;margin-bottom:10px">';
+  html+='<button class="btn" onclick="openCsvGalleryModal('+workIdx+')" data-testid="btn-bulk-galleries-'+workIdx+'">&#8613; Bulk Add (CSV)</button>';
+  html+='<button class="btn pri" onclick="addGalleryToWork('+workIdx+')" data-testid="btn-add-gallery-'+workIdx+'">+ Add Collection</button>';
+  html+='</div>';
   var galleries=w.galleries||[];
   if(!galleries.length){
     html+='<div style="padding:20px;text-align:center;opacity:.3;font-size:9px;letter-spacing:3px;text-transform:uppercase">No collections yet</div>';
@@ -1589,7 +1700,10 @@ function renderGalleryEditor(w,workIdx,galIdx){
   html+='<div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px">';
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
   html+='<div class="sec-lbl" style="margin:0"><span>Folders</span></div>';
+  html+='<div style="display:flex;gap:6px">';
+  html+='<button class="btn" onclick="openCsvFolderModal('+workIdx+','+galIdx+')" data-testid="btn-bulk-folders-'+workIdx+'-'+galIdx+'" style="font-size:10px;padding:3px 10px">&#8613; Bulk Add (CSV)</button>';
   html+='<button class="btn pri" onclick="addFolderToGallery('+workIdx+','+galIdx+')" data-testid="btn-add-folder-'+workIdx+'-'+galIdx+'" style="font-size:10px;padding:3px 10px">+ Add Folder</button>';
+  html+='</div>';
   html+='</div>';
   var folders=g.folders||[];
   if(folders.length){
@@ -1705,6 +1819,115 @@ function toggleFolderEditor(workIdx,galIdx,folderIdx){
   var key=workIdx+'__'+galIdx+'__'+folderIdx;
   editingFolder=editingFolder===key?null:key;
   showPortfolioPanel(true);
+}
+
+var csvTarget=null;
+function openCsvModal(){
+  document.getElementById('csvModalTitle').textContent='Bulk Add '+(csvTarget.mode==='gallery'?'Collections':'Folders')+' from CSV';
+  document.getElementById('csvItemWord').textContent=csvTarget.mode==='gallery'?'collection':'folder';
+  document.getElementById('csvText').value='';
+  document.getElementById('csvFile').value='';
+  document.getElementById('csvPreview').innerHTML='';
+  document.getElementById('csvModal').classList.add('open');
+}
+function openCsvFolderModal(workIdx,galIdx){
+  csvTarget={mode:'folder',workIdx:workIdx,galIdx:galIdx};
+  openCsvModal();
+}
+function openCsvGalleryModal(workIdx){
+  csvTarget={mode:'gallery',workIdx:workIdx};
+  openCsvModal();
+}
+function closeCsvModal(){document.getElementById('csvModal').classList.remove('open');csvTarget=null;}
+function csvFileChosen(e){
+  var file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){document.getElementById('csvText').value=reader.result;updateCsvPreview();};
+  reader.readAsText(file);
+}
+function parseCsvLine(line){
+  var out=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(inQ){
+      if(ch==='"'){
+        if(line[i+1]==='"'){cur+='"';i++;}
+        else inQ=false;
+      } else cur+=ch;
+    } else {
+      if(ch==='"')inQ=true;
+      else if(ch===','){out.push(cur.trim());cur='';}
+      else cur+=ch;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+function parseCsvFolders(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});
+  if(!lines.length)return [];
+  var cols=['title','subtitle','type','camera','location'];
+  var start=0;
+  var first=parseCsvLine(lines[0]).map(function(c){return c.toLowerCase();});
+  if(first[0]==='title'){
+    cols=first.map(function(c){return c.replace(/[^a-z]/g,'');});
+    start=1;
+  }
+  var isGal=csvTarget&&csvTarget.mode==='gallery';
+  var folders=[];
+  for(var i=start;i<lines.length;i++){
+    var vals=parseCsvLine(lines[i]);
+    if(!vals[0])continue;
+    var f={id:(isGal?'gal-':'fld-')+Date.now()+'-'+i,coverAssetId:'',photos:[]};
+    if(isGal)f.folders=[];
+    cols.forEach(function(c,ci){
+      if(['title','subtitle','type','camera','location','description'].indexOf(c)>=0&&vals[ci])f[c]=vals[ci];
+    });
+    if(f.title)folders.push(f);
+  }
+  return folders;
+}
+function updateCsvPreview(){
+  var folders=parseCsvFolders(document.getElementById('csvText').value);
+  var el=document.getElementById('csvPreview');
+  if(!folders.length){el.innerHTML='';return;}
+  var word=(csvTarget&&csvTarget.mode==='gallery')?'collection':'folder';
+  el.innerHTML='<strong>'+folders.length+' '+word+(folders.length===1?'':'s')+' will be created:</strong><br>'+
+    folders.map(function(f){return '&bull; '+esc(f.title)+(f.subtitle?' <span style="opacity:.5">— '+esc(f.subtitle)+'</span>':'');}).join('<br>');
+}
+function applyCsvFolders(){
+  if(!csvTarget)return;
+  var isGal=csvTarget.mode==='gallery';
+  var items=parseCsvFolders(document.getElementById('csvText').value);
+  if(!items.length)return toast('No valid rows found — each line needs at least a title',true);
+  var w=getPortfolioWorks()[csvTarget.workIdx];
+  if(!w)return closeCsvModal();
+  var list;
+  if(isGal){
+    if(!w.galleries)w.galleries=[];
+    list=w.galleries;
+  } else {
+    if(!w.galleries[csvTarget.galIdx])return closeCsvModal();
+    var g=w.galleries[csvTarget.galIdx];
+    if(!g.folders)g.folders=[];
+    list=g.folders;
+  }
+  var existing={};
+  list.forEach(function(f){existing[(f.title||'').toLowerCase()]=true;});
+  var added=0,skipped=0;
+  items.forEach(function(f){
+    if(existing[f.title.toLowerCase()]){skipped++;return;}
+    existing[f.title.toLowerCase()]=true;
+    list.push(f);
+    added++;
+  });
+  if(isGal)expandedWork=w.id;
+  var word=isGal?'collection':'folder';
+  closeCsvModal();
+  showPortfolioPanel(true);
+  saveAll();
+  toast(added+' '+word+(added===1?'':'s')+' created'+(skipped?' ('+skipped+' skipped — already exist)':''));
 }
 
 function addFolderToGallery(workIdx,galIdx){
@@ -2229,9 +2452,55 @@ function showSettingsPanel(){
   html+='<div style="margin-bottom:12px"><span class="field-lbl">Storage</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default">Server-side JSON</div></div>';
   html+='<div style="margin-bottom:12px"><span class="field-lbl">Last Save</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" data-testid="text-last-save">'+esc(lastSave)+'</div></div>';
   html+='<div style="display:flex;gap:12px"><div style="flex:1"><span class="field-lbl">Works</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default;text-align:center">'+worksCount+'</div></div></div>';
-  html+='</div></div>';
+  html+='</div>';
+
+  var lrConnected=window.LightroomAuth&&LightroomAuth.isConnected();
+  html+='<div class="card" data-testid="card-lightroom"><span class="sec-lbl">Adobe Lightroom</span>';
+  html+='<div style="margin-bottom:12px"><span class="field-lbl">Status</span><div class="input" style="background:var(--surface);border-color:var(--border);cursor:default" id="lrStatus" data-testid="text-lr-status">'+(lrConnected?'Connected':'Not connected')+'</div></div>';
+  html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  html+='<button class="btn" onclick="window.open(\'/test/lightroom\',\'_blank\')" data-testid="btn-lr-connect">'+(lrConnected?'Manage Connection':'Connect Lightroom')+'</button>';
+  if(lrConnected){
+    html+='<button class="btn" onclick="lrListAlbums()" data-testid="btn-lr-list-albums">List Albums</button>';
+    html+='<button class="btn red" onclick="LightroomAuth.clear();showSettingsPanel()" data-testid="btn-lr-disconnect">Disconnect</button>';
+  }
+  html+='</div>';
+  html+='<div id="lrAlbums" style="margin-top:12px"></div>';
+  html+='</div>';
+
+  html+='</div>';
 
   document.getElementById("panelBody").innerHTML=html;
+}
+
+async function lrListAlbums(){
+  var out=document.getElementById("lrAlbums");
+  if(!out)return;
+  out.innerHTML='<span style="color:var(--gold)">Loading albums from Lightroom…</span>';
+  try{
+    var cfgRes=await fetch('/api/adobe/client-id',{credentials:'include'});
+    if(!cfgRes.ok)throw new Error('Server config error ('+cfgRes.status+')');
+    var apiKey=(await cfgRes.json()).clientId;
+    await LightroomAuth.lrFetch('https://lr.adobe.io/v2/account',apiKey);
+    var catalog=await LightroomAuth.lrFetch('https://lr.adobe.io/v2/catalog',apiKey);
+    if(!catalog||!catalog.id)throw new Error('No Lightroom catalog found');
+    LightroomAuth.saveMetadata({catalogId:catalog.id});
+    var albumsData=await LightroomAuth.lrFetch('https://lr.adobe.io/v2/catalogs/'+encodeURIComponent(catalog.id)+'/albums',apiKey);
+    var albums=(albumsData&&albumsData.resources)||[];
+    if(!albums.length){
+      out.innerHTML='<span style="color:var(--muted)">Connected, but no albums found in this catalog.</span>';
+      return;
+    }
+    var rows=albums.map(function(a){
+      var name=(a.payload&&a.payload.name)||'Untitled Album';
+      var updated=(a.payload&&a.payload.userUpdated)?new Date(a.payload.userUpdated).toLocaleDateString():'';
+      return '<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)" data-testid="row-lr-album-'+esc(a.id)+'"><span>'+esc(name)+'</span><span style="color:var(--muted);font-size:11px">'+esc(updated)+'</span></div>';
+    }).join('');
+    out.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+albums.length+' album'+(albums.length===1?'':'s')+' — catalog '+esc(catalog.id.slice(0,8))+'…</div>'+rows;
+    toast('Lightroom albums loaded');
+  }catch(err){
+    out.innerHTML='<span style="color:var(--red)">'+esc(err.message)+'</span>';
+    toast('Lightroom error: '+err.message,true);
+  }
 }
 
 function toggleNavVis(idx){
@@ -2277,18 +2546,177 @@ function testCfConnection(){
 
 // PICKER
 let pkSlotId=null,pkCtx=null,pkActive=null;
+let pkSource="library";
+let pkScopeSel="all";
+let pkObjCache={};
 let smugmugAlbums=null;
 let smugmugCurrentAlbum=null;
 let smugmugImages=null;
+let pkMulti=false;
+let pkSelected=[];
 
 async function openSmugMugPicker(ctx,targetId){
   pkSlotId=targetId;pkCtx=ctx;pkActive=null;
+  pkMulti=(ctx==='series'||ctx==='gallery'||ctx==='folder');
+  pkSelected=[];pkObjCache={};
+  pkSource="library";
+  pkScopeSel=pkDefaultScope(ctx,targetId);
   smugmugCurrentAlbum=null;smugmugImages=null;
-  document.getElementById("pkTitle").textContent="Select Photo from SmugMug";
-  document.getElementById("pkConfirm").disabled=true;
+  document.getElementById("pkTitle").textContent=pkMulti?"Select Photos":"Select Photo";
+  var btn=document.getElementById("pkConfirm");
+  btn.disabled=true;
+  btn.textContent=pkMulti?"Add Photos":"Use This Photo";
   document.getElementById("picker").classList.add("open");
+  await pkRenderSource();
+}
+
+// Render the current picker source (SmugMug albums or site library)
+async function pkRenderSource(){
+  if(pkSource==="library"){pkShowLibrary();return;}
   await loadSmugMugAlbums();
   renderSmugMugAlbums();
+}
+
+function pkSourceBar(){
+  return '<button class="pk-f '+(pkSource==='smugmug'?'active':'')+'" onclick="pkSetSource(\'smugmug\')" data-testid="btn-pk-src-smugmug">SmugMug</button>'
+       + '<button class="pk-f '+(pkSource==='library'?'active':'')+'" onclick="pkSetSource(\'library\')" data-testid="btn-pk-src-library">Site Library</button>';
+}
+
+function pkSetSource(src){
+  pkSource=src;
+  smugmugCurrentAlbum=null;smugmugImages=null;
+  pkRenderSource();
+}
+
+// Scope helpers: 'all' | 'w{i}' | 'w{i}g{j}' | 'w{i}g{j}f{k}'
+function pkParseScope(sel){
+  var m=typeof sel==='string'&&sel.match(/^w(\d+)(?:g(\d+))?(?:f(\d+))?$/);
+  if(!m)return null;
+  return{w:+m[1],g:m[2]!==undefined?+m[2]:null,f:m[3]!==undefined?+m[3]:null};
+}
+
+// Where was the picker opened from? Map ctx+target to a default library scope.
+function pkDefaultScope(ctx,targetId){
+  try{
+    var works=STATE.portfolioWorks||[],parts,wi;
+    if(ctx==='portfolio'){
+      wi=works.findIndex(function(w){return w.id===targetId;});
+      return wi>=0?('w'+wi):'all';
+    }
+    if(ctx==='workfeat'){
+      parts=String(targetId).match(/^__feat__(\d+)$/);
+      return parts?('w'+parts[1]):'all';
+    }
+    if(ctx==='galcover'){
+      parts=String(targetId).match(/^(?:__galcover__)?(\d+)__(\d+)$/);
+      return parts?('w'+parts[1]+'g'+parts[2]):'all';
+    }
+    if(ctx==='gallery'){
+      parts=String(targetId).match(/^(\d+)__(\d+)$/);
+      return parts?('w'+parts[1]):'all';
+    }
+    if(ctx==='foldercover'||ctx==='folder'){
+      parts=String(targetId).match(/^(\d+)__(\d+)__(\d+)$/);
+      return parts?('w'+parts[1]+'g'+parts[2]):'all';
+    }
+  }catch(e){}
+  return 'all';
+}
+
+// Photos already on the site as picker-ready objects, optionally scoped to a work/collection/folder
+function libraryPhotos(scopeSel){
+  var seen=new Set(),out=[];
+  function add(p){
+    if(!p)return;
+    if(typeof p==='string'){
+      if(seen.has(p))return;seen.add(p);
+      var m=getPhotoMeta(p);
+      if(!m.thumbUrl)return;
+      out.push({imageKey:p,filename:m.filename,caption:'',sizes:{medium:m.thumbUrl,large:m.fullUrl,xlarge:m.fullUrl,x2large:m.fullUrl}});
+      return;
+    }
+    if(typeof p!=='object')return;
+    var key=p.imageKey||p.assetId;
+    if(!key||seen.has(key))return;seen.add(key);
+    if(!p.sizes||!(p.sizes.medium||p.sizes.large))return;
+    var o={imageKey:key,filename:p.filename||key,caption:p.caption||'',sizes:p.sizes};
+    if(p.webUri)o.webUri=p.webUri;
+    if(p.source)o.source=p.source;
+    if(p.assetId)o.assetId=p.assetId;
+    out.push(o);
+  }
+  function addGallery(g,fOnly){
+    if(!g)return;
+    if(fOnly===null||fOnly===undefined){
+      (g.photos||[]).forEach(add);
+      (g.folders||[]).forEach(function(f){(f.photos||[]).forEach(add);});
+    }else{
+      var f=(g.folders||[])[fOnly];
+      if(f)(f.photos||[]).forEach(add);
+    }
+  }
+  var works=STATE.portfolioWorks||[];
+  var sc=pkParseScope(scopeSel);
+  if(sc){
+    var w=works[sc.w];
+    if(w){
+      if(sc.g===null){(w.galleries||[]).forEach(function(g){addGallery(g,null);});}
+      else addGallery((w.galleries||[])[sc.g],sc.f);
+    }
+    return out;
+  }
+  works.forEach(function(w){(w.galleries||[]).forEach(function(g){addGallery(g,null);});});
+  Object.values(STATE.photos||{}).forEach(function(arr){(arr||[]).forEach(add);});
+  Object.keys((STATE.cf&&STATE.cf.assetMeta)||{}).forEach(add);
+  return out;
+}
+
+function pkScopeOptions(){
+  var html='<option value="all"'+(pkScopeSel==='all'?' selected':'')+'>All Site Photos</option>';
+  (STATE.portfolioWorks||[]).forEach(function(w,i){
+    var wv='w'+i;
+    html+='<option value="'+wv+'"'+(pkScopeSel===wv?' selected':'')+'>'+esc(w.title||'Untitled Set')+'</option>';
+    (w.galleries||[]).forEach(function(g,j){
+      var gv=wv+'g'+j;
+      html+='<option value="'+gv+'"'+(pkScopeSel===gv?' selected':'')+'>&nbsp;&nbsp;— '+esc(g.title||'Collection')+'</option>';
+      (g.folders||[]).forEach(function(f,k){
+        var fv=gv+'f'+k;
+        html+='<option value="'+fv+'"'+(pkScopeSel===fv?' selected':'')+'>&nbsp;&nbsp;&nbsp;&nbsp;· '+esc(f.title||'Folder')+'</option>';
+      });
+    });
+  });
+  return '<select onchange="pkSetScope(this.value)" data-testid="select-pk-scope" style="font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 8px;background:transparent;border:1px solid var(--rule,rgba(13,13,13,.2));color:inherit;max-width:260px">'+html+'</select>';
+}
+
+function pkSetScope(sel){
+  pkScopeSel=(sel==='all'||pkParseScope(sel))?sel:'all';
+  pkShowLibrary();
+}
+
+function pkShowLibrary(){
+  var grid=document.getElementById("pkGrid");
+  try{
+    smugmugCurrentAlbum=null;
+    // If the default scope has no photos, widen it (folder → collection → set → all)
+    smugmugImages=libraryPhotos(pkScopeSel);
+    while(!smugmugImages.length&&pkScopeSel!=='all'){
+      var sc=pkParseScope(pkScopeSel);
+      if(!sc)pkScopeSel='all';
+      else if(sc.f!==null)pkScopeSel='w'+sc.w+'g'+sc.g;
+      else if(sc.g!==null)pkScopeSel='w'+sc.w;
+      else pkScopeSel='all';
+      smugmugImages=libraryPhotos(pkScopeSel);
+    }
+    document.getElementById("pkFilter").innerHTML=pkSourceBar()+pkScopeOptions();
+    if(!smugmugImages.length){
+      grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No photos on the site yet — push from Lightroom or add from SmugMug first.</p></div>";
+      return;
+    }
+    renderSmugMugImages();
+  }catch(err){
+    document.getElementById("pkFilter").innerHTML=pkSourceBar();
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p style='color:var(--red)'>Library failed to load: "+esc(err.message)+"</p></div>";
+  }
 }
 
 async function loadSmugMugAlbums(){
@@ -2307,19 +2735,22 @@ async function loadSmugMugAlbums(){
 function renderSmugMugAlbums(){
   const grid=document.getElementById("pkGrid");
   const filter=document.getElementById("pkFilter");
-  filter.innerHTML="";
+  filter.innerHTML=pkSourceBar();
   if(!smugmugAlbums||!smugmugAlbums.length){
     grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No albums found</p></div>";
     return;
   }
-  grid.innerHTML=smugmugAlbums.map(album=>`
-    <div class="pk-cell" onclick="selectSmugMugAlbum('${album.albumKey}')">
+  grid.innerHTML=smugmugAlbums.map(album=>{
+    const key=smugSafeKey(album.albumKey);
+    if(!key)return "";
+    return `
+    <div class="pk-cell" onclick="selectSmugMugAlbum('${key}')">
       <div style="padding:20px;text-align:center">
         <div style="font-size:24px;opacity:.3;margin-bottom:8px">&#x1f5bc;</div>
         <div class="pk-cell-lbl">${esc(album.title)}</div>
         <div style="font-size:8px;opacity:.4;margin-top:4px">${album.imageCount} photos</div>
       </div>
-    </div>`).join("");
+    </div>`;}).join("");
 }
 
 async function selectSmugMugAlbum(albumKey){
@@ -2327,7 +2758,7 @@ async function selectSmugMugAlbum(albumKey){
   const grid=document.getElementById("pkGrid");
   grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>Loading images...</p></div>";
   const filter=document.getElementById("pkFilter");
-  filter.innerHTML=`<button class="pk-f" onclick="renderSmugMugAlbums()">← Back to Albums</button>`;
+  filter.innerHTML=pkSourceBar()+`<button class="pk-f" onclick="renderSmugMugAlbums()">← Back to Albums</button>`;
   try{
     const res=await fetch("/api/smugmug/albums/"+encodeURIComponent(albumKey)+"/images");
     if(!res.ok)throw new Error("Failed to load images");
@@ -2344,14 +2775,48 @@ function renderSmugMugImages(){
     grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No images in this album</p></div>";
     return;
   }
-  grid.innerHTML=smugmugImages.map(img=>`
-    <div class="pk-cell ${pkActive===img.imageKey?"active":""}" onclick="selectSmugMugImage('${img.imageKey}',this)">
-      ${img.sizes?.medium?`<img src="${img.sizes.medium}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
+  grid.innerHTML=smugmugImages.map(img=>{
+    const key=smugSafeKey(img.imageKey);
+    if(!key)return "";
+    const thumb=(img.sizes&&(img.sizes.medium||img.sizes.large))||null;
+    return `
+    <div class="pk-cell ${(pkMulti?pkSelected.includes(img.imageKey):pkActive===img.imageKey)?"active":""}" onclick="selectSmugMugImage('${key}',this)">
+      ${thumb?`<img src="${esc(thumb)}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
       <div class="pk-cell-lbl">${esc(img.filename||img.imageKey)}</div>
-    </div>`).join("");
+    </div>`;}).join("");
+  if(pkMulti&&smugmugImages.length){
+    grid.insertAdjacentHTML('afterbegin','<div style="grid-column:1/-1;display:flex;gap:8px;margin-bottom:4px"><button class="btn" style="font-size:10px" onclick="pkSelectAll(true)" data-testid="btn-pk-select-all">Select All ('+smugmugImages.length+')</button><button class="btn" style="font-size:10px" onclick="pkSelectAll(false)" data-testid="btn-pk-clear">Clear Selection</button></div>');
+  }
+}
+
+function pkUpdateConfirm(){
+  var btn=document.getElementById("pkConfirm");
+  if(pkMulti){
+    btn.disabled=pkSelected.length===0;
+    btn.textContent=pkSelected.length?('Add '+pkSelected.length+' Photo'+(pkSelected.length===1?'':'s')):'Add Photos';
+  }else{
+    btn.disabled=!pkActive;
+    btn.textContent='Use This Photo';
+  }
+}
+
+function pkSelectAll(on){
+  if(!smugmugImages)return;
+  pkSelected=on?smugmugImages.map(function(img){return img.imageKey;}):[];
+  renderSmugMugImages();
+  pkUpdateConfirm();
 }
 
 function selectSmugMugImage(imageKey,el){
+  var found=smugmugImages?smugmugImages.find(function(m){return m.imageKey===imageKey;}):null;
+  if(found)pkObjCache[imageKey]=found;
+  if(pkMulti){
+    var i=pkSelected.indexOf(imageKey);
+    if(i>=0){pkSelected.splice(i,1);el.classList.remove("active");}
+    else{pkSelected.push(imageKey);el.classList.add("active");}
+    pkUpdateConfirm();
+    return;
+  }
   pkActive=imageKey;
   document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
   el.classList.add("active");
@@ -2360,64 +2825,57 @@ function selectSmugMugImage(imageKey,el){
 
 async function openPicker(slotId,ctx,label){
   pkSlotId=slotId;pkCtx=ctx;pkActive=null;
+  pkMulti=false;pkSelected=[];pkObjCache={};
+  pkSource="library";
+  pkScopeSel=pkDefaultScope(ctx,slotId);
   smugmugCurrentAlbum=null;smugmugImages=null;
   document.getElementById("pkTitle").textContent=label;
-  document.getElementById("pkConfirm").disabled=true;
+  var btn=document.getElementById("pkConfirm");
+  btn.disabled=true;
+  btn.textContent="Use This Photo";
   document.getElementById("picker").classList.add("open");
-  await loadSmugMugAlbums();
-  renderSmugMugAlbums();
+  await pkRenderSource();
 }
 function closePicker(){document.getElementById("picker").classList.remove("open");}
-function renderPkFilter(){
-  document.getElementById("pkFilter").innerHTML=
-    `<button class="pk-f active" onclick="renderPkGrid(null);setActivePkF(this)">All</button>`+
-    getSeries().map(s=>`<button class="pk-f" onclick="renderPkGrid('${s.id}');setActivePkF(this)">${s.num} ${s.title}</button>`).join("");
+function pkObjFromImage(img){
+  var o={imageKey:img.imageKey,filename:img.filename,caption:img.caption||'',sizes:img.sizes};
+  if(img.webUri)o.webUri=img.webUri;
+  if(img.source)o.source=img.source;
+  if(img.assetId)o.assetId=img.assetId;
+  return o;
 }
-function setActivePkF(btn){document.querySelectorAll(".pk-f").forEach(b=>b.classList.remove("active"));btn.classList.add("active");}
-function renderPkGrid(filterSid){
-  const photos=filterSid?getSeriesPhotos(filterSid).map(p=>({assetId:p.assetId,thumbUrl:p.thumbUrl,filename:p.filename})):
-    allPhotos().map(p=>({assetId:p.assetId,thumbUrl:p.urlThumb||"",filename:p.filename||p.assetId}));
-  const grid=document.getElementById("pkGrid");
-  if(!photos.length){grid.innerHTML="<div class='empty' style='grid-column:1/-1'><p>No photos imported yet</p></div>";return;}
-  grid.innerHTML=photos.map(p=>`
-    <div class="pk-cell ${pkActive===p.assetId?"active":""}" onclick="selectInPicker('${p.assetId}',this)">
-      ${p.thumbUrl?`<img src="${p.thumbUrl}" loading="lazy" alt="">`:``}
-      <div class="pk-cell-lbl">${p.filename||p.assetId}</div></div>`).join("");
+function pkSmugObj(key){
+  var img=(smugmugImages?smugmugImages.find(function(m){return m.imageKey===key;}):null)||pkObjCache[key]||null;
+  return img?pkObjFromImage(img):null;
 }
-function selectInPicker(assetId,el){
-  pkActive=assetId;
-  document.querySelectorAll(".pk-cell").forEach(c=>c.classList.remove("active"));
-  el.classList.add("active");document.getElementById("pkConfirm").disabled=false;
-}
+
 function confirmPick(){
-  if(!pkActive||!pkSlotId)return;
+  if(!pkSlotId)return;
+  if(pkMulti){if(!pkSelected.length)return;}
+  else if(!pkActive)return;
+  var picks=pkMulti?pkSelected.slice():[pkActive];
   
-  // Find the full SmugMug image object if we're using SmugMug picker
+  // Find the full image object (SmugMug album or site library; cache covers source switches)
   let smugmugImage=null;
-  if(smugmugImages){
-    smugmugImage=smugmugImages.find(img=>img.imageKey===pkActive);
+  if(pkActive){
+    smugmugImage=(smugmugImages?smugmugImages.find(img=>img.imageKey===pkActive):null)||pkObjCache[pkActive]||null;
   }
   
   if(pkCtx==="series"){
     if(!STATE.photos[pkSlotId])STATE.photos[pkSlotId]=[];
-    if(smugmugImage){
-      // Store full SmugMug image object
-      if(!STATE.photos[pkSlotId].some(p=>p.imageKey===pkActive)){
-        STATE.photos[pkSlotId].push({
-          imageKey: smugmugImage.imageKey,
-          filename: smugmugImage.filename,
-          webUri: smugmugImage.webUri,
-          caption: smugmugImage.caption,
-          sizes: smugmugImage.sizes
-        });
+    var addedS=0;
+    picks.forEach(function(key){
+      var obj=pkSmugObj(key);
+      if(obj){
+        if(!STATE.photos[pkSlotId].some(p=>p&&(typeof p==='string'?p:p.imageKey)===key)){STATE.photos[pkSlotId].push(obj);addedS++;}
+      }else{
+        if(!STATE.photos[pkSlotId].includes(key)){STATE.photos[pkSlotId].push(key);addedS++;}
       }
-    }else{
-      // Legacy support for string IDs
-      if(!STATE.photos[pkSlotId].includes(pkActive))STATE.photos[pkSlotId].push(pkActive);
-    }
+    });
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to gallery");
+    toast(addedS+" photo"+(addedS===1?"":"s")+" added — saving...");
+    saveAll();
     return;
   }
   
@@ -2428,23 +2886,20 @@ function confirmPick(){
     if(works[wIdx]&&works[wIdx].galleries&&works[wIdx].galleries[gIdx]){
       var gallery=works[wIdx].galleries[gIdx];
       if(!gallery.photos)gallery.photos=[];
-      if(smugmugImage){
-        if(!gallery.photos.some(p=>p.imageKey===pkActive)){
-          gallery.photos.push({
-            imageKey: smugmugImage.imageKey,
-            filename: smugmugImage.filename,
-            webUri: smugmugImage.webUri,
-            caption: smugmugImage.caption,
-            sizes: smugmugImage.sizes
-          });
+      var addedG=0;
+      picks.forEach(function(key){
+        var obj=pkSmugObj(key);
+        if(obj){
+          if(!gallery.photos.some(p=>p&&(typeof p==='string'?p:p.imageKey)===key)){gallery.photos.push(obj);addedG++;}
+        }else{
+          if(!gallery.photos.includes(key)){gallery.photos.push(key);addedG++;}
         }
-      }else{
-        if(!gallery.photos.includes(pkActive))gallery.photos.push(pkActive);
-      }
+      });
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to gallery");
+    toast((typeof addedG==="number"?addedG:0)+" photo"+(addedG===1?"":"s")+" added to collection — saving...");
+    saveAll();
     return;
   }
   
@@ -2455,37 +2910,34 @@ function confirmPick(){
     if(works[wIdx]&&works[wIdx].galleries&&works[wIdx].galleries[gIdx]&&works[wIdx].galleries[gIdx].folders){
       var folder=works[wIdx].galleries[gIdx].folders[folderIdx];
       if(!folder.photos)folder.photos=[];
-      if(smugmugImage){
-        if(!folder.photos.some(p=>p.imageKey===pkActive)){
-          folder.photos.push({
-            imageKey: smugmugImage.imageKey,
-            filename: smugmugImage.filename,
-            webUri: smugmugImage.webUri,
-            caption: smugmugImage.caption,
-            sizes: smugmugImage.sizes
-          });
+      var addedF=0;
+      picks.forEach(function(key){
+        var obj=pkSmugObj(key);
+        if(obj){
+          if(!folder.photos.some(p=>p&&(typeof p==='string'?p:p.imageKey)===key)){folder.photos.push(obj);addedF++;}
+        }else{
+          if(!folder.photos.includes(key)){folder.photos.push(key);addedF++;}
         }
-      }else{
-        if(!folder.photos.includes(pkActive))folder.photos.push(pkActive);
-      }
+      });
     }
     closePicker();
     if(activeTab==="portfolio") showPortfolioPanel();
-    toast("Photo added to folder");
+    toast((typeof addedF==="number"?addedF:0)+" photo"+(addedF===1?"":"s")+" added to folder — saving...");
+    saveAll();
     return;
   }
   
-  if(pkCtx==="home"){if(smugmugImage){STATE.home[pkSlotId]={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{STATE.home[pkSlotId]=pkActive;}}
+  if(pkCtx==="home"){if(smugmugImage){STATE.home[pkSlotId]=pkObjFromImage(smugmugImage);}else{STATE.home[pkSlotId]=pkActive;}}
   if(pkCtx==="portfolio"){
     var works=getPortfolioWorks();
     var w=works.find(function(w){return w.id===pkSlotId;});
-    if(w){if(smugmugImage){w.coverAssetId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{w.coverAssetId=pkActive;}}
+    if(w){if(smugmugImage){w.coverAssetId=pkObjFromImage(smugmugImage);}else{w.coverAssetId=pkActive;}}
   }
   if(pkCtx==="block"){
     var parts=pkSlotId.replace('__block__','').split('__');
     var bIdx=parseInt(parts[0]);var bField=parts[1];
     var blocks=getPageBlocks(activePage);
-    if(blocks[bIdx]){if(smugmugImage){blocks[bIdx].data[bField]={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{blocks[bIdx].data[bField]=pkActive;}}
+    if(blocks[bIdx]){if(smugmugImage){blocks[bIdx].data[bField]=pkObjFromImage(smugmugImage);}else{blocks[bIdx].data[bField]=pkActive;}}
   }
   if(pkCtx==="blockphotos"){
     var bIdx2=parseInt(pkSlotId.replace('__blockphotos__',''));
@@ -2493,14 +2945,8 @@ function confirmPick(){
     if(blocks2[bIdx2]){
       if(!blocks2[bIdx2].data.photos)blocks2[bIdx2].data.photos=[];
       if(smugmugImage){
-        var photoObj={
-          imageKey: smugmugImage.imageKey,
-          filename: smugmugImage.filename,
-          webUri: smugmugImage.webUri,
-          caption: smugmugImage.caption,
-          sizes: smugmugImage.sizes
-        };
-        if(!blocks2[bIdx2].data.photos.some(p=>p.imageKey===pkActive))blocks2[bIdx2].data.photos.push(photoObj);
+        var photoObj=pkObjFromImage(smugmugImage);
+        if(!blocks2[bIdx2].data.photos.some(p=>(typeof p==='string'?p:p&&p.imageKey)===pkActive))blocks2[bIdx2].data.photos.push(photoObj);
       }else{
         if(!blocks2[bIdx2].data.photos.includes(pkActive))blocks2[bIdx2].data.photos.push(pkActive);
       }
@@ -2511,13 +2957,7 @@ function confirmPick(){
     var cBlocks=getPageBlocks(activePage);
     if(cBlocks[cIdx]){
       if(!cBlocks[cIdx].data.photos)cBlocks[cIdx].data.photos=[];
-      var photoObj=smugmugImage?{
-        imageKey: smugmugImage.imageKey,
-        filename: smugmugImage.filename,
-        webUri: smugmugImage.webUri,
-        caption: smugmugImage.caption,
-        sizes: smugmugImage.sizes
-      }:{assetId:pkActive,caption:''};
+      var photoObj=smugmugImage?pkObjFromImage(smugmugImage):{assetId:pkActive,caption:''};
       var cWorks=getPortfolioWorks();
       for(var wi=0;wi<cWorks.length;wi++){
         var cw=cWorks[wi];
@@ -2531,76 +2971,34 @@ function confirmPick(){
         }
         if(found)break;
       }
-      var alreadyIn=cBlocks[cIdx].data.photos.some(function(p){return (typeof p==='string'?p:p.assetId)===pkActive;});
+      var alreadyIn=cBlocks[cIdx].data.photos.some(function(p){return (typeof p==='string'?p:p&&(p.imageKey||p.assetId))===pkActive;});
       if(!alreadyIn)cBlocks[cIdx].data.photos.push(photoObj);
     }
   }
   if(pkCtx==="workfeat"){
     var fIdx=parseInt(pkSlotId.replace('__feat__',''));
     var wf=getPortfolioWorks()[fIdx];
-    if(wf){if(smugmugImage){wf.featuredImageId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{wf.featuredImageId=pkActive;}}
+    if(wf){if(smugmugImage){wf.featuredImageId=pkObjFromImage(smugmugImage);}else{wf.featuredImageId=pkActive;}}
   }
   if(pkCtx==="galcover"){
     var gparts=pkSlotId.replace('__galcover__','').split('__');
     var wIdx=parseInt(gparts[0]);var gIdx=parseInt(gparts[1]);
     var w2=getPortfolioWorks()[wIdx];
-    if(w2&&w2.galleries&&w2.galleries[gIdx]){if(smugmugImage){w2.galleries[gIdx].coverAssetId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{w2.galleries[gIdx].coverAssetId=pkActive;}}
-  }
-  if(pkCtx==="galassign"){
-    var aparts=pkSlotId.replace('__galassign__','').split('__');
-    var wIdx2=parseInt(aparts[0]);var gIdx2=parseInt(aparts[1]);
-    var w3=getPortfolioWorks()[wIdx2];
-    if(w3&&w3.galleries&&w3.galleries[gIdx2]){
-      if(!w3.galleries[gIdx2].photos)w3.galleries[gIdx2].photos=[];
-      if(smugmugImage){
-        if(!w3.galleries[gIdx2].photos.some(p=>p.imageKey===pkActive)){
-          w3.galleries[gIdx2].photos.push({
-            imageKey: smugmugImage.imageKey,
-            filename: smugmugImage.filename,
-            webUri: smugmugImage.webUri,
-            caption: smugmugImage.caption,
-            sizes: smugmugImage.sizes
-          });
-        }
-      }else{
-        if(!w3.galleries[gIdx2].photos.includes(pkActive))w3.galleries[gIdx2].photos.push(pkActive);
-      }
-    }
-  }
-  if(pkCtx==="folder"){
-    var fparts=pkSlotId.replace('__folder__','').split('__');
-    var fwIdx=parseInt(fparts[0]);var fgIdx=parseInt(fparts[1]);var ffIdx=parseInt(fparts[2]);
-    var fw=getPortfolioWorks()[fwIdx];
-    if(fw&&fw.galleries&&fw.galleries[fgIdx]&&fw.galleries[fgIdx].folders&&fw.galleries[fgIdx].folders[ffIdx]){
-      if(!fw.galleries[fgIdx].folders[ffIdx].photos)fw.galleries[fgIdx].folders[ffIdx].photos=[];
-      if(smugmugImage){
-        if(!fw.galleries[fgIdx].folders[ffIdx].photos.some(p=>p.imageKey===pkActive)){
-          fw.galleries[fgIdx].folders[ffIdx].photos.push({
-            imageKey: smugmugImage.imageKey,
-            filename: smugmugImage.filename,
-            webUri: smugmugImage.webUri,
-            caption: smugmugImage.caption,
-            sizes: smugmugImage.sizes
-          });
-        }
-      }else{
-        if(!fw.galleries[fgIdx].folders[ffIdx].photos.includes(pkActive))fw.galleries[fgIdx].folders[ffIdx].photos.push(pkActive);
-      }
-    }
+    if(w2&&w2.galleries&&w2.galleries[gIdx]){if(smugmugImage){w2.galleries[gIdx].coverAssetId=pkObjFromImage(smugmugImage);}else{w2.galleries[gIdx].coverAssetId=pkActive;}}
   }
   if(pkCtx==="foldercover"){
     var fcparts=pkSlotId.replace("__foldercover__","").split("__");
     var fcwIdx=parseInt(fcparts[0]);var fcgIdx=parseInt(fcparts[1]);var fcfIdx=parseInt(fcparts[2]);
     var fcw=getPortfolioWorks()[fcwIdx];
     if(fcw&&fcw.galleries&&fcw.galleries[fcgIdx]&&fcw.galleries[fcgIdx].folders&&fcw.galleries[fcgIdx].folders[fcfIdx]){
-      if(smugmugImage){fcw.galleries[fcgIdx].folders[fcfIdx].coverAssetId={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{fcw.galleries[fcgIdx].folders[fcfIdx].coverAssetId=pkActive;}
+      if(smugmugImage){fcw.galleries[fcgIdx].folders[fcfIdx].coverAssetId=pkObjFromImage(smugmugImage);}else{fcw.galleries[fcgIdx].folders[fcfIdx].coverAssetId=pkActive;}
     }
   }
   if(pkCtx==="ogimage"){
     var ogPage=pkSlotId.replace('__ogimage__','');
     if(!STATE.pages)STATE.pages={};
     if(!STATE.pages[ogPage])STATE.pages[ogPage]={title:'',metaDescription:'',blocks:[]};
-    if(smugmugImage){STATE.pages[ogPage].ogImage={imageKey:smugmugImage.imageKey,filename:smugmugImage.filename,webUri:smugmugImage.webUri,caption:smugmugImage.caption,sizes:smugmugImage.sizes};}else{STATE.pages[ogPage].ogImage=pkActive;}
+    if(smugmugImage){STATE.pages[ogPage].ogImage=pkObjFromImage(smugmugImage);}else{STATE.pages[ogPage].ogImage=pkActive;}
   }
   closePicker();
   if(activeTab==="pages") showPagesPanel(true);
@@ -2633,14 +3031,21 @@ function getImgSeriesForImage(cfId){
   return series;
 }
 
+let imgSource="library";
+
 async function showImagesPanel(){
-  setPanel("Images","SmugMug Albums","");
+  setPanel("Images",imgSource==="lightroom"?"Lightroom Albums":(imgSource==="smugmug"?"SmugMug Albums":"Site Library (CDN)"),"");
   imgSelected=new Set();
   document.getElementById("panelBody").innerHTML=`<div class="img-layout">
     <div class="img-main">
       <div class="img-toolbar">
         <div class="img-toolbar-left">
-          <span class="img-sel-count" id="imgSelCount">Browse SmugMug albums and images</span>
+          <span class="img-sel-count" id="imgSelCount">Browse albums and images</span>
+        </div>
+        <div class="img-toolbar-right">
+          <button class="btn ${imgSource==="library"?"gold":""}" onclick="imgSwitchSource('library')" data-testid="btn-src-library">Site Library</button>
+          <button class="btn ${imgSource==="smugmug"?"gold":""}" onclick="imgSwitchSource('smugmug')" data-testid="btn-src-smugmug">SmugMug</button>
+          <button class="btn ${imgSource==="lightroom"?"gold":""}" onclick="imgSwitchSource('lightroom')" data-testid="btn-src-lightroom">Lightroom</button>
         </div>
       </div>
       <div class="img-content" id="imgContent">
@@ -2648,8 +3053,50 @@ async function showImagesPanel(){
       </div>
     </div>
   </div>`;
-  await loadSmugMugAlbums();
-  renderSmugMugAlbumsInTab();
+  if(imgSource==="lightroom"){
+    await lrShowAlbumsInTab();
+  }else if(imgSource==="smugmug"){
+    await loadSmugMugAlbums();
+    renderSmugMugAlbumsInTab();
+  }else{
+    await cdnShowLibraryInTab();
+  }
+}
+
+// All images sitting in Cloudflare Images (the CDN), regardless of Lightroom/SmugMug connection
+async function cdnShowLibraryInTab(){
+  const grid=document.getElementById("imgGrid");
+  smugmugCurrentAlbum=null;
+  smugSelected=new Set();
+  grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading CDN images...</div>";
+  try{
+    if(!imgAllImages||!imgAllImages.length){
+      const res=await fetch("/api/images/list");
+      if(!res.ok)throw new Error("Failed to load CDN images");
+      const data=await res.json();
+      imgAllImages=data.images||[];
+      if(data.hash)TIA.CF_HASH=data.hash;
+    }
+    smugmugImages=(imgAllImages||[]).map(function(img){
+      var o={imageKey:img.id,filename:img.filename||img.id,caption:'',sizes:{
+        medium:TIA.cfUrl(img.id,'thumb'),large:TIA.cfUrl(img.id,'cover'),
+        xlarge:TIA.cfUrl(img.id,'hero'),x2large:TIA.cfUrl(img.id,'full')}};
+      if(String(img.id).indexOf('lr-')===0){o.source='lightroom';o.assetId=String(img.id).slice(3);}
+      return o;
+    });
+    if(!smugmugImages.length){
+      grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in the CDN yet</div>";
+      return;
+    }
+    renderSmugMugImagesInTab();
+  }catch(err){
+    grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
+  }
+}
+
+function imgSwitchSource(src){
+  imgSource=src;
+  showImagesPanel();
 }
 
 function renderSmugMugAlbumsInTab(){
@@ -2670,6 +3117,7 @@ function renderSmugMugAlbumsInTab(){
 
 async function selectSmugMugAlbumInTab(albumKey){
   smugmugCurrentAlbum=albumKey;
+  smugSelected=new Set();
   const grid=document.getElementById("imgGrid");
   grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading images...</div>";
   try{
@@ -2682,19 +3130,487 @@ async function selectSmugMugAlbumInTab(albumKey){
   }
 }
 
+let smugSelected=new Set();
+
+function smugUsageMap(){
+  var map={};
+  function add(key,label){if(!key)return;if(!map[key])map[key]=[];if(map[key].indexOf(label)===-1)map[key].push(label);}
+  function keyOf(p){if(typeof p==='string')return p;return p&&typeof p==='object'?(p.imageKey||p.id||null):null;}
+  getPortfolioWorks().forEach(function(w){
+    (w.galleries||[]).forEach(function(g){
+      (g.photos||[]).forEach(function(p){add(keyOf(p),g.title||'Collection');});
+      (g.folders||[]).forEach(function(f){
+        (f.photos||[]).forEach(function(p){add(keyOf(p),(g.title||'Collection')+' / '+(f.title||'Folder'));});
+      });
+    });
+  });
+  return map;
+}
+
 function renderSmugMugImagesInTab(){
   const grid=document.getElementById("imgGrid");
   if(!smugmugImages||!smugmugImages.length){
     grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No images in this album</div>";
+    const tb0=document.querySelector(".img-toolbar-left");
+    if(tb0)tb0.innerHTML=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()">← Back to Albums</button>`;
     return;
   }
-  grid.innerHTML=smugmugImages.map(img=>`
-    <div class="img-card">
-      ${img.sizes?.medium?`<img src="${img.sizes.medium}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
-      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div></div>
-    </div>`).join("");
+  const usage=smugUsageMap();
+  grid.innerHTML=smugmugImages.map(img=>{
+    const key=smugSafeKey(img.imageKey);
+    if(!key)return "";
+    const sel=smugSelected.has(img.imageKey);
+    const used=usage[img.imageKey]||[];
+    let badges=used.map(u=>`<span class="img-card-badge">${esc(u)}</span>`).join("");
+    const storyM=STATE.cf?.assetMeta?.[img.imageKey]||STATE.cf?.assetMeta?.[img.id];
+    if(storyM?.hasStoryPage)badges+=`<span class="img-card-badge" style="background:var(--gold,#b5922a);color:#0d0d0d">STORY</span>`;
+    const src=smugSafeUrl(img.sizes&&img.sizes.medium);
+    return `<div class="img-card ${sel?"selected":""} ${used.length?"in-series":""}" onclick="smugToggle('${key}')" data-testid="img-card-${key}">
+      ${src?`<img src="${esc(src)}" loading="lazy" alt="">`:`<div style="padding:20px;text-align:center;opacity:.3">No preview</div>`}
+      <div class="img-card-check">&#x2713;</div>
+      ${badges?`<div class="img-card-badges">${badges}</div>`:""}
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.imageKey)}</div>
+        <button class="btn" style="margin-top:4px;font-size:9px;padding:3px 7px" onclick="event.stopPropagation();openStoryEditor('${key}')" data-testid="btn-story-${key}">${storyM?.hasStoryPage?"Edit Story":"Story Page"}</button>
+      </div>
+    </div>`;
+  }).join("");
+  smugRenderToolbar();
+}
+
+function smugSafeKey(key){
+  return typeof key==="string"&&/^[A-Za-z0-9_-]+$/.test(key)?key:null;
+}
+
+function smugSafeUrl(url){
+  if(typeof url!=="string")return null;
+  try{
+    const u=new URL(url);
+    return (u.protocol==="https:"||u.protocol==="http:")?u.href:null;
+  }catch(e){return null;}
+}
+
+function smugRenderToolbar(){
   const toolbar=document.querySelector(".img-toolbar-left");
-  if(toolbar)toolbar.innerHTML=`<button class="btn" onclick="renderSmugMugAlbumsInTab()">← Back to Albums</button>`;
+  if(!toolbar)return;
+  const n=smugSelected.size;
+  let html=imgSource==="library"?"":`<button class="btn" onclick="smugSelected=new Set();renderSmugMugAlbumsInTab()" data-testid="btn-smug-back">← Albums</button>`;
+  html+=`<button class="btn" onclick="smugSelectAll()" data-testid="btn-smug-select-all">Select All</button>`;
+  if(n)html+=`<button class="btn" onclick="smugSelected=new Set();renderSmugMugImagesInTab()" data-testid="btn-smug-clear">Clear</button>`;
+  html+=`<span class="img-sel-count">${n?n+" selected":""}</span>`;
+  if(n)html+=`<button class="btn gold" onclick="smugOpenAssign('add')" data-testid="btn-smug-assign">Add to...</button>`;
+  if(n===1)html+=`<button class="btn" onclick="smugOpenAssign('cover')" data-testid="btn-smug-cover">Set as Cover of...</button>`;
+  toolbar.innerHTML=html;
+}
+
+function smugToggle(key){
+  if(smugSelected.has(key))smugSelected.delete(key);else smugSelected.add(key);
+  renderSmugMugImagesInTab();
+}
+
+function smugSelectAll(){
+  smugSelected=new Set((smugmugImages||[]).map(i=>i.imageKey));
+  renderSmugMugImagesInTab();
+}
+
+function smugImgObj(key){
+  var img=(smugmugImages||[]).find(m=>m.imageKey===key);
+  if(!img)return null;
+  var o={imageKey:img.imageKey,filename:img.filename,webUri:img.webUri,caption:img.caption,sizes:img.sizes};
+  if(img.source)o.source=img.source;
+  if(img.assetId)o.assetId=img.assetId;
+  return o;
+}
+
+function smugOpenAssign(mode){
+  const n=smugSelected.size;
+  if(!n)return;
+  document.getElementById("amTitle").textContent=mode==='cover'
+    ?"Set as cover of..."
+    :"Add "+n+" image"+(n>1?"s":"")+" to...";
+  let html="";
+  getPortfolioWorks().forEach(function(w,wi){
+    html+=`<div class="gp-section-lbl">${esc(w.title||'Collection Set')}</div>`;
+    if(mode==='cover')html+=`<button class="am-opt" onclick="smugApplyAssign('cover','work',${wi})" data-testid="am-cover-work-${wi}">&#9733; Cover of set: ${esc(w.title||'Untitled')}</button>`;
+    (w.galleries||[]).forEach(function(g,gi){
+      if(mode==='cover'){
+        html+=`<button class="am-opt" onclick="smugApplyAssign('cover','gallery',${wi},${gi})" data-testid="am-cover-gal-${wi}-${gi}">&#9733; ${esc(g.title||'Collection')}</button>`;
+      }else{
+        html+=`<button class="am-opt" onclick="smugApplyAssign('add','gallery',${wi},${gi})" data-testid="am-add-gal-${wi}-${gi}">${esc(g.title||'Collection')} <span style="opacity:.4">(${(g.photos||[]).length} photos)</span></button>`;
+      }
+      (g.folders||[]).forEach(function(f,fi){
+        if(mode==='cover'){
+          html+=`<button class="am-opt" style="padding-left:26px" onclick="smugApplyAssign('cover','folder',${wi},${gi},${fi})" data-testid="am-cover-fld-${wi}-${gi}-${fi}">&#9733; ${esc(f.title||'Folder')}</button>`;
+        }else{
+          html+=`<button class="am-opt" style="padding-left:26px" onclick="smugApplyAssign('add','folder',${wi},${gi},${fi})" data-testid="am-add-fld-${wi}-${gi}-${fi}">&#128193; ${esc(f.title||'Folder')} <span style="opacity:.4">(${(f.photos||[]).length} photos)</span></button>`;
+        }
+      });
+    });
+  });
+  if(!html)html="<div style='padding:16px;font-size:11px;opacity:.5'>No collections yet — create one in the Portfolio tab first.</div>";
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+}
+
+function smugApplyAssign(mode,targetType,wi,gi,fi){
+  const works=getPortfolioWorks();
+  const w=works[wi];
+  if(!w)return closeAssignModal();
+  const keys=[...smugSelected];
+  if(mode==='cover'){
+    const obj=smugImgObj(keys[0]);
+    if(!obj)return closeAssignModal();
+    if(targetType==='work')w.coverAssetId=obj;
+    else if(targetType==='gallery'&&w.galleries[gi])w.galleries[gi].coverAssetId=obj;
+    else if(targetType==='folder'&&w.galleries[gi]&&w.galleries[gi].folders[fi])w.galleries[gi].folders[fi].coverAssetId=obj;
+    closeAssignModal();
+    smugSelected=new Set();
+    renderSmugMugImagesInTab();
+    saveAll();
+    toast("Cover set — saving...");
+    return;
+  }
+  let list=null;
+  if(targetType==='gallery'&&w.galleries[gi]){
+    if(!w.galleries[gi].photos)w.galleries[gi].photos=[];
+    list=w.galleries[gi].photos;
+  }else if(targetType==='folder'&&w.galleries[gi]&&w.galleries[gi].folders[fi]){
+    if(!w.galleries[gi].folders[fi].photos)w.galleries[gi].folders[fi].photos=[];
+    list=w.galleries[gi].folders[fi].photos;
+  }
+  if(!list)return closeAssignModal();
+  let added=0;
+  keys.forEach(function(key){
+    const obj=smugImgObj(key);
+    if(obj&&!list.some(p=>p&&typeof p==='object'&&p.imageKey===key)){list.push(obj);added++;}
+  });
+  closeAssignModal();
+  smugSelected=new Set();
+  renderSmugMugImagesInTab();
+  saveAll();
+  toast(added+" photo"+(added===1?"":"s")+" added — saving...");
+}
+
+// ═══════════ LIGHTROOM BROWSE + PUSH ═══════════
+let lrAlbums=[],lrAssets=[],lrSelected=new Set(),lrCurrentAlbum=null,lrCurrentAlbumName="";
+let lrApiKeyCache=null,lrThumbCache={},lrPushBusy=false;
+
+function lrSafeId(id){return typeof id==="string"&&/^[A-Za-z0-9_-]{1,128}$/.test(id)?id:null;}
+
+async function lrApiKey(){
+  if(lrApiKeyCache)return lrApiKeyCache;
+  const res=await fetch('/api/adobe/client-id',{credentials:'include'});
+  if(!res.ok)throw new Error('Server config error ('+res.status+')');
+  lrApiKeyCache=(await res.json()).clientId;
+  return lrApiKeyCache;
+}
+
+async function lrCatalogId(){
+  const meta=LightroomAuth.getMetadata();
+  if(meta&&meta.catalogId)return meta.catalogId;
+  const apiKey=await lrApiKey();
+  const catalog=await LightroomAuth.lrFetch('https://lr.adobe.io/v2/catalog',apiKey);
+  if(!catalog||!catalog.id)throw new Error('No Lightroom catalog found');
+  LightroomAuth.saveMetadata({catalogId:catalog.id});
+  return catalog.id;
+}
+
+async function lrShowAlbumsInTab(){
+  const grid=document.getElementById("imgGrid");
+  lrSelected=new Set();lrCurrentAlbum=null;
+  if(!window.LightroomAuth||!LightroomAuth.isConnected()){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px">
+      <div style="font-size:11px;opacity:.5;margin-bottom:14px">Not connected to Adobe Lightroom</div>
+      <button class="btn gold" onclick="window.open('/test/lightroom','_blank')" data-testid="btn-lr-tab-connect">Connect Lightroom</button>
+    </div>`;
+    return;
+  }
+  grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading Lightroom albums...</div>";
+  try{
+    const apiKey=await lrApiKey();
+    const catId=await lrCatalogId();
+    const data=await LightroomAuth.lrFetch('https://lr.adobe.io/v2/catalogs/'+encodeURIComponent(catId)+'/albums',apiKey);
+    lrAlbums=((data&&data.resources)||[]).filter(a=>a&&a.id);
+    lrRenderAlbums();
+  }catch(err){
+    grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
+  }
+}
+
+function lrRenderAlbums(){
+  const grid=document.getElementById("imgGrid");
+  const tb=document.querySelector(".img-toolbar-left");
+  if(tb)tb.innerHTML=`<span class="img-sel-count">${lrAlbums.length} Lightroom album${lrAlbums.length===1?"":"s"}</span>`;
+  if(!lrAlbums.length){
+    grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No albums found</div>";
+    return;
+  }
+  grid.innerHTML=lrAlbums.map(a=>{
+    const id=lrSafeId(a.id);
+    if(!id)return "";
+    const name=(a.payload&&a.payload.name)||"Untitled Album";
+    return `<div class="img-card" onclick="lrSelectAlbum('${id}')" data-testid="lr-album-${id}">
+      <div style="padding:20px;text-align:center">
+        <div style="font-size:24px;opacity:.3;margin-bottom:8px">&#x1f4f7;</div>
+        <div class="img-card-name">${esc(name)}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function lrSelectAlbum(albumId){
+  const album=lrAlbums.find(a=>a.id===albumId);
+  lrCurrentAlbum=albumId;
+  lrCurrentAlbumName=(album&&album.payload&&album.payload.name)||"Album";
+  lrSelected=new Set();
+  const grid=document.getElementById("imgGrid");
+  grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.3'>Loading photos...</div>";
+  try{
+    const apiKey=await lrApiKey();
+    const catId=await lrCatalogId();
+    lrAssets=[];
+    let url='https://lr.adobe.io/v2/catalogs/'+encodeURIComponent(catId)+'/albums/'+encodeURIComponent(albumId)+'/assets?embed=asset&limit=100';
+    for(let page=0;page<10&&url;page++){
+      const data=await LightroomAuth.lrFetch(url,apiKey);
+      const res=(data&&data.resources)||[];
+      res.forEach(r=>{
+        const asset=r.asset||r;
+        if(!asset||!lrSafeId(asset.id))return;
+        const payload=asset.payload||{};
+        const src=(payload.importSource||{});
+        lrAssets.push({assetId:asset.id,filename:src.fileName||asset.id+".jpg",captureDate:payload.captureDate||""});
+      });
+      url=null;
+      if(data&&data.links&&data.links.next&&data.links.next.href){
+        const href=data.links.next.href;
+        const base=data.base||('https://lr.adobe.io/v2/catalogs/'+encodeURIComponent(catId)+'/');
+        url=/^https?:/i.test(href)?href:base+href;
+      }
+    }
+    lrRenderAssets();
+    lrLoadThumbs();
+  }catch(err){
+    grid.innerHTML=`<div style="grid-column:1/-1;color:var(--red);font-size:11px;padding:20px">${esc(err.message)}</div>`;
+  }
+}
+
+function lrUsageMap(){
+  var map={};
+  function add(key,label){if(!key)return;if(!map[key])map[key]=[];if(map[key].indexOf(label)===-1)map[key].push(label);}
+  function keyOf(p){return p&&typeof p==='object'?(p.assetId||null):null;}
+  getPortfolioWorks().forEach(function(w){
+    (w.galleries||[]).forEach(function(g){
+      (g.photos||[]).forEach(function(p){add(keyOf(p),g.title||'Collection');});
+      (g.folders||[]).forEach(function(f){
+        (f.photos||[]).forEach(function(p){add(keyOf(p),(g.title||'Collection')+' / '+(f.title||'Folder'));});
+      });
+    });
+  });
+  return map;
+}
+
+function lrRenderAssets(){
+  const grid=document.getElementById("imgGrid");
+  if(!lrAssets.length){
+    grid.innerHTML="<div style='grid-column:1/-1;text-align:center;padding:30px;font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:.2'>No photos in this album</div>";
+    const tb0=document.querySelector(".img-toolbar-left");
+    if(tb0)tb0.innerHTML=`<button class="btn" onclick="lrRenderAlbums()" data-testid="btn-lr-back">← Back to Albums</button>`;
+    return;
+  }
+  const usage=lrUsageMap();
+  grid.innerHTML=lrAssets.map(a=>{
+    const id=lrSafeId(a.assetId);
+    if(!id)return "";
+    const sel=lrSelected.has(id);
+    const used=usage[id]||[];
+    const badges=used.map(u=>`<span class="img-card-badge">${esc(u)}</span>`).join("");
+    const cached=lrThumbCache[id];
+    return `<div class="img-card ${sel?"selected":""} ${used.length?"in-series":""}" onclick="lrToggle('${id}')" data-testid="lr-img-${id}">
+      ${cached?`<img src="${cached}" alt="">`:`<div class="lr-thumb-slot" data-lr-thumb="${id}" style="min-height:110px;display:flex;align-items:center;justify-content:center;opacity:.25;font-size:9px;letter-spacing:2px">LOADING</div>`}
+      <div class="img-card-check">&#x2713;</div>
+      ${badges?`<div class="img-card-badges">${badges}</div>`:""}
+      <div class="img-card-info"><div class="img-card-name">${esc(a.filename)}</div></div>
+    </div>`;
+  }).join("");
+  lrRenderToolbar();
+}
+
+async function lrLoadThumbs(){
+  const slots=[...document.querySelectorAll("[data-lr-thumb]")];
+  const apiKey=await lrApiKey().catch(()=>null);
+  const catId=await lrCatalogId().catch(()=>null);
+  if(!apiKey||!catId)return;
+  const queue=slots.map(el=>el.getAttribute("data-lr-thumb")).filter(id=>!lrThumbCache[id]);
+  const CONCURRENCY=4;
+  let idx=0;
+  async function worker(){
+    while(idx<queue.length){
+      const id=queue[idx++];
+      try{
+        const token=await LightroomAuth.getValidAccessToken();
+        if(!token)return;
+        const res=await fetch('https://lr.adobe.io/v2/catalogs/'+encodeURIComponent(catId)+'/assets/'+encodeURIComponent(id)+'/renditions/thumbnail2x',{
+          headers:{'Authorization':'Bearer '+token,'X-API-Key':apiKey}
+        });
+        if(!res.ok)throw new Error('thumb '+res.status);
+        const blob=await res.blob();
+        lrThumbCache[id]=URL.createObjectURL(blob);
+      }catch(e){lrThumbCache[id]="";}
+      const el=document.querySelector('[data-lr-thumb="'+id+'"]');
+      if(el){
+        if(lrThumbCache[id]){
+          const img=document.createElement("img");
+          img.src=lrThumbCache[id];img.alt="";
+          el.replaceWith(img);
+        }else{
+          el.textContent="NO PREVIEW";
+        }
+      }
+    }
+  }
+  await Promise.all(Array.from({length:CONCURRENCY},worker));
+}
+
+function lrRenderToolbar(){
+  const toolbar=document.querySelector(".img-toolbar-left");
+  if(!toolbar)return;
+  const n=lrSelected.size;
+  const usage=lrUsageMap();
+  let html=`<button class="btn" onclick="lrSelected=new Set();lrRenderAlbums()" data-testid="btn-lr-back">← Albums</button>`;
+  html+=`<button class="btn" onclick="lrSelectAll()" data-testid="btn-lr-select-all">Select All</button>`;
+  if(n)html+=`<button class="btn" onclick="lrSelected=new Set();lrRenderAssets()" data-testid="btn-lr-clear">Clear</button>`;
+  html+=`<span class="img-sel-count">${n?n+" selected":lrAssets.length+" photos"}</span>`;
+  if(n)html+=`<button class="btn gold" onclick="lrOpenPush('selected')" data-testid="btn-lr-push">Push ${n} to...</button>`;
+  html+=`<button class="btn" onclick="lrOpenPush('album')" data-testid="btn-lr-push-album">Push Entire Album to...</button>`;
+  const pushedSel=[...lrSelected].filter(id=>usage[id]&&usage[id].length);
+  if(pushedSel.length)html+=`<button class="btn" onclick="lrResyncSelected()" data-testid="btn-lr-resync">Resync ${pushedSel.length}</button>`;
+  toolbar.innerHTML=html;
+}
+
+function lrToggle(id){
+  if(lrSelected.has(id))lrSelected.delete(id);else lrSelected.add(id);
+  lrRenderAssets();
+}
+function lrSelectAll(){
+  lrSelected=new Set(lrAssets.map(a=>a.assetId));
+  lrRenderAssets();
+}
+
+// ── Push destination modal (multi-destination checkboxes) ──
+let lrPushMode='selected';
+function lrOpenPush(mode){
+  lrPushMode=mode;
+  const ids=mode==='album'?lrAssets.map(a=>a.assetId):[...lrSelected];
+  if(!ids.length){toast("No photos to push",true);return;}
+  document.getElementById("amTitle").textContent=mode==='album'
+    ?`Push entire album "${lrCurrentAlbumName}" (${ids.length} photos) to...`
+    :`Push ${ids.length} photo${ids.length>1?"s":""} to...`;
+  let html="";
+  getPortfolioWorks().forEach(function(w,wi){
+    html+=`<div class="gp-section-lbl">${esc(w.title||'Collection Set')}</div>`;
+    (w.galleries||[]).forEach(function(g,gi){
+      html+=`<label class="am-opt" style="cursor:pointer"><input type="checkbox" class="lr-dest" data-w="${wi}" data-g="${gi}" data-testid="lr-dest-gal-${wi}-${gi}"> ${esc(g.title||'Collection')} <span style="opacity:.4">(${(g.photos||[]).length} photos)</span></label>`;
+      (g.folders||[]).forEach(function(f,fi){
+        html+=`<label class="am-opt" style="cursor:pointer;padding-left:26px"><input type="checkbox" class="lr-dest" data-w="${wi}" data-g="${gi}" data-f="${fi}" data-testid="lr-dest-fld-${wi}-${gi}-${fi}"> &#128193; ${esc(f.title||'Folder')} <span style="opacity:.4">(${(f.photos||[]).length} photos)</span></label>`;
+      });
+    });
+  });
+  if(!html){
+    html="<div style='padding:16px;font-size:11px;opacity:.5'>No collections yet — create one in the Portfolio tab first.</div>";
+  }else{
+    html+=`<div id="lrPushProgress" style="margin-top:10px;font-size:11px;color:var(--gold)"></div>`;
+    html+=`<button class="btn gold" style="margin-top:10px;width:100%" onclick="lrDoPush()" data-testid="btn-lr-push-start">Push to Selected Destinations</button>`;
+  }
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+}
+
+function lrGatherDests(){
+  const works=getPortfolioWorks();
+  return [...document.querySelectorAll(".lr-dest:checked")].map(cb=>{
+    const w=works[+cb.dataset.w];if(!w)return null;
+    const g=(w.galleries||[])[+cb.dataset.g];if(!g)return null;
+    const dest={workId:w.id,galleryId:g.id};
+    if(cb.dataset.f!==undefined){
+      const f=(g.folders||[])[+cb.dataset.f];if(!f)return null;
+      dest.folderId=f.id;
+    }
+    return dest;
+  }).filter(Boolean);
+}
+
+async function lrDoPush(){
+  if(lrPushBusy)return;
+  const dests=lrGatherDests();
+  if(!dests.length){toast("Pick at least one destination",true);return;}
+  const ids=lrPushMode==='album'?lrAssets.map(a=>a.assetId):[...lrSelected];
+  const progress=document.getElementById("lrPushProgress");
+  lrPushBusy=true;
+  let ok=0,failed=[];
+  try{
+    const catId=await lrCatalogId();
+    const token=await LightroomAuth.getValidAccessToken();
+    if(!token)throw new Error("Lightroom connection expired — reconnect and try again");
+    for(let i=0;i<ids.length;i++){
+      const id=ids[i];
+      const asset=lrAssets.find(a=>a.assetId===id);
+      if(progress)progress.textContent=`Pushing ${i+1} of ${ids.length}… (${asset?asset.filename:id})`;
+      try{
+        const freshToken=await LightroomAuth.getValidAccessToken();
+        const res=await fetch('/api/lightroom/push',{
+          method:'POST',credentials:'include',
+          headers:{'Content-Type':'application/json','X-Lightroom-Token':freshToken||token},
+          body:JSON.stringify({catalogId:catId,assetId:id,filename:asset?asset.filename:"",destinations:dests})
+        });
+        const json=await res.json().catch(()=>({}));
+        if(!res.ok||!json.success)throw new Error(json.error||('HTTP '+res.status));
+        ok++;
+      }catch(e){failed.push((asset?asset.filename:id)+": "+e.message);}
+    }
+  }catch(e){failed.push(e.message);}
+  lrPushBusy=false;
+  STATE=await TIA.load(); // server wrote config — refresh local state so we don't clobber it
+  closeAssignModal();
+  lrSelected=new Set();
+  lrRenderAssets();
+  if(failed.length){
+    toast(`Pushed ${ok}, ${failed.length} failed: ${failed[0]}`,true);
+    console.log("[Lightroom] Push failures:",failed);
+  }else{
+    toast(`Pushed ${ok} photo${ok===1?"":"s"} to CDN & site config`);
+  }
+}
+
+async function lrResyncSelected(){
+  if(lrPushBusy)return;
+  const usage=lrUsageMap();
+  const ids=[...lrSelected].filter(id=>usage[id]&&usage[id].length);
+  if(!ids.length){toast("Select already-pushed photos to resync",true);return;}
+  lrPushBusy=true;
+  toast(`Resyncing ${ids.length} photo${ids.length===1?"":"s"}…`);
+  let ok=0,failed=[];
+  try{
+    const catId=await lrCatalogId();
+    for(const id of ids){
+      try{
+        const token=await LightroomAuth.getValidAccessToken();
+        if(!token)throw new Error("Lightroom connection expired");
+        const res=await fetch('/api/lightroom/resync',{
+          method:'POST',credentials:'include',
+          headers:{'Content-Type':'application/json','X-Lightroom-Token':token},
+          body:JSON.stringify({catalogId:catId,assetId:id})
+        });
+        const json=await res.json().catch(()=>({}));
+        if(!res.ok||!json.success)throw new Error(json.error||('HTTP '+res.status));
+        ok++;
+      }catch(e){failed.push(id+": "+e.message);}
+    }
+  }catch(e){failed.push(e.message);}
+  lrPushBusy=false;
+  STATE=await TIA.load();
+  lrSelected=new Set();
+  lrRenderAssets();
+  if(failed.length){toast(`Resynced ${ok}, ${failed.length} failed: ${failed[0]}`,true);console.log("[Lightroom] Resync failures:",failed);}
+  else toast(`Resynced ${ok} photo${ok===1?"":"s"} — fresh renditions live`);
 }
 
 function renderImgFolders(){
@@ -2751,10 +3667,10 @@ async function imgRefresh(){
     if(data.hash)TIA.CF_HASH=data.hash;
     imgAllImages.forEach(img=>{
       if(!CF_PHOTOS[img.id]){
-        CF_PHOTOS[img.id]={id:img.id,filename:img.filename||img.id};
         if(!STATE.cf)STATE.cf={assetMeta:{}};
         if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
-        STATE.cf.assetMeta[img.id]={id:img.id,filename:img.filename||img.id};
+        STATE.cf.assetMeta[img.id]=Object.assign({},STATE.cf.assetMeta[img.id],{id:img.id,filename:img.filename||img.id});
+        CF_PHOTOS[img.id]=STATE.cf.assetMeta[img.id];
       }
     });
     renderImgGrid();
@@ -2796,6 +3712,7 @@ function renderImgGrid(){
     if(inSeries)badges+=seriesList.map(s=>`<span class="img-card-badge">${esc(s)}</span>`).join("");
     if(folderName&&imgActiveFolder===null)badges+=`<span class="img-card-badge folder">${esc(folderName)}</span>`;
     const meta=CF_PHOTOS[img.id]||STATE.cf?.assetMeta?.[img.id];
+    if(meta?.hasStoryPage)badges+=`<span class="img-card-badge" style="background:var(--gold,#b5922a);color:#0d0d0d">STORY</span>`;
     const exif=meta?.exif;
     let exifHtml="";
     if(exif){
@@ -2811,7 +3728,9 @@ function renderImgGrid(){
       ${thumb?`<img src="${thumb}" loading="lazy" alt="">`:""}
       <div class="img-card-check">&#x2713;</div>
       ${badges?`<div class="img-card-badges">${badges}</div>`:""}
-      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div>${exifHtml}</div>
+      <div class="img-card-info"><div class="img-card-name">${esc(img.filename||img.id)}</div>${exifHtml}
+        <button class="btn" style="margin-top:6px;font-size:9px;padding:4px 8px" onclick="event.stopPropagation();openStoryEditor('${img.id}')" data-testid="btn-story-${img.id}">${meta?.hasStoryPage?"Edit Story":"Story Page"}</button>
+      </div>
     </div>`;
   }).join("");
 }
@@ -2833,6 +3752,86 @@ function imgUpdateToolbar(){
   if(assignBtn)assignBtn.disabled=n===0;
   if(moveBtn)moveBtn.disabled=n===0;
   if(delBtn)delBtn.disabled=n===0;
+}
+
+// ── Single-image story pages ──────────────────────────────
+let storyEditingId=null;
+
+function storyMeta(id){
+  if(!STATE.cf)STATE.cf={assetMeta:{}};
+  if(!STATE.cf.assetMeta)STATE.cf.assetMeta={};
+  if(!STATE.cf.assetMeta[id])STATE.cf.assetMeta[id]={id:id,filename:(CF_PHOTOS[id]&&CF_PHOTOS[id].filename)||id};
+  return STATE.cf.assetMeta[id];
+}
+
+function openStoryEditor(id){
+  storyEditingId=id;
+  const m=storyMeta(id);
+  const hash=TIA.CF_HASH||STATE.cf?.hash||"";
+  const thumb=hash?`https://imagedelivery.net/${hash}/${id}/thumb`:"";
+  document.getElementById("amTitle").textContent="Story Page";
+  let html=`<div class="am-section">
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px">
+      ${thumb?`<img src="${thumb}" style="width:90px;height:90px;object-fit:cover;flex-shrink:0" alt="">`:""}
+      <div style="flex:1">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin-bottom:6px">
+          <input type="checkbox" id="stHas" ${m.hasStoryPage?"checked":""} data-testid="check-story-page"> Story Page enabled
+        </label>
+        <p style="font-size:10px;opacity:.5;margin:0">A dedicated /work/&lt;slug&gt; page for this image. Reserved for select work.</p>
+      </div>
+    </div>
+    <span class="field-lbl">Story Title (literary title)</span>
+    <input class="input" id="stTitle" value="${esc(m.storyTitle||"")}" oninput="stAutoSlug()" placeholder="e.g. Where Dragons Fly" data-testid="input-story-title">
+    <span class="field-lbl" style="margin-top:10px">Slug (URL: /work/&lt;slug&gt;)</span>
+    <input class="input" id="stSlug" value="${esc(m.slug||"")}" oninput="this.dataset.touched=1" placeholder="e.g. where-dragons-fly" data-testid="input-story-slug">
+    <span class="field-lbl" style="margin-top:10px">Story (2\u20134 short paragraphs; blank line between paragraphs)</span>
+    <textarea class="input" id="stBody" rows="7" style="resize:vertical" data-testid="input-story-body">${esc(m.storyBody||"")}</textarea>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+      <div><span class="field-lbl">Location</span><input class="input" id="stLocation" value="${esc(m.location||"")}" data-testid="input-story-location"></div>
+      <div><span class="field-lbl">Camera</span><input class="input" id="stCamera" value="${esc(m.camera||"")}" data-testid="input-story-camera"></div>
+      <div><span class="field-lbl">Year</span><input class="input" id="stYear" value="${esc(m.year||"")}" data-testid="input-story-year"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
+      <button class="btn pri" onclick="saveStory()" data-testid="btn-save-story">Save Story</button>
+      ${m.hasStoryPage&&m.slug?`<a class="btn" href="/work/${esc(m.slug)}" target="_blank" data-testid="link-view-story">View Page &#8599;</a>`:""}
+      <button class="btn" onclick="closeAssignModal()" data-testid="btn-cancel-story">Cancel</button>
+    </div>
+  </div>`;
+  document.getElementById("amBody").innerHTML=html;
+  document.getElementById("assignModal").classList.add("open");
+  if(m.slug)document.getElementById("stSlug").dataset.touched=1;
+}
+
+function stAutoSlug(){
+  const slugEl=document.getElementById("stSlug");
+  if(slugEl&&!slugEl.dataset.touched)slugEl.value=apSlugify(document.getElementById("stTitle").value);
+}
+
+async function saveStory(){
+  const id=storyEditingId;
+  if(!id)return;
+  const has=document.getElementById("stHas").checked;
+  const title=(document.getElementById("stTitle").value||"").trim();
+  const slug=apSlugify(document.getElementById("stSlug").value||"");
+  if(has){
+    if(!title){toast("Enter a story title",true);return;}
+    if(!slug||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)){toast("Slug must use lowercase letters, numbers and hyphens",true);return;}
+    const collision=Object.keys(STATE.cf.assetMeta||{}).find(aid=>aid!==id&&STATE.cf.assetMeta[aid]?.hasStoryPage&&STATE.cf.assetMeta[aid]?.slug===slug);
+    if(collision){toast('Slug "'+slug+'" is already used by another image',true);return;}
+  }
+  const m=storyMeta(id);
+  m.hasStoryPage=has;
+  m.slug=slug;
+  m.storyTitle=title;
+  m.storyBody=document.getElementById("stBody").value||"";
+  m.location=(document.getElementById("stLocation").value||"").trim();
+  m.camera=(document.getElementById("stCamera").value||"").trim();
+  m.year=(document.getElementById("stYear").value||"").trim();
+  CF_PHOTOS[id]=m;
+  closeAssignModal();
+  await saveAll();
+  if(imgSource==="library"&&typeof renderSmugMugImagesInTab==="function"&&smugmugImages)renderSmugMugImagesInTab();
+  else renderImgGrid();
 }
 
 function imgCreateFolder(){

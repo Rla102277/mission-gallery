@@ -67,6 +67,29 @@ const TIA = {
   hero(assetId)   { return TIA.photoUrl(assetId, 'hero'); },
   full(assetId)   { return TIA.photoUrl(assetId, 'full');   },
 
+  // Story page lookup: returns the assetMeta entry if this photo has a
+  // published story page (hasStoryPage === true with a valid slug)
+  storyFor(photo) {
+    var s = TIA.getState();
+    var am = s.cf && s.cf.assetMeta;
+    if (!am) return null;
+    var ids = [];
+    if (typeof photo === 'string') ids.push(photo);
+    else if (photo) {
+      ['assetId', 'imageKey', 'id'].forEach(function(k) { if (photo[k]) ids.push(photo[k]); });
+    }
+    for (var i = 0; i < ids.length; i++) {
+      var m = am[ids[i]];
+      if (m && m.hasStoryPage === true && m.slug) return m;
+    }
+    return null;
+  },
+
+  storyUrl(photo) {
+    var m = TIA.storyFor(photo);
+    return m ? '/work/' + m.slug : null;
+  },
+
   // Get the SmugMug webUri for Buy/Print buttons (opens SmugMug page)
   buyUrl(photo) {
     if (photo && typeof photo === 'object' && photo.webUri) {
@@ -83,16 +106,8 @@ const TIA = {
     {id:'pw-shutter',title:'Beyond the Shutter',subtitle:'The slower eye',type:'Film \u00b7 Konica Hexar',description:'The Konica Hexar sees differently. Grain, patience, the commitment of analog \u2014 no spray and pray, no instant review. One frame at a time. One chance to mean it.',camera:'Konica Hexar',location:'Various',format:'Film',coverAssetId:'',galleries:[]}
   ],
 
-  DEFAULT_SERIES: [
-    { id:'s1', num:'01', title:'Solitude & Scale',          subtitle:'The Secret Lagoon',                  type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Fjallsárlón Glacier Lagoon'          },
-    { id:'s2', num:'02', title:'Glacial Contrasts',          subtitle:'Ice in Two Realms',                  type:'Diptych',  camera:'GFX 100S II + 100–200mm', location:'Jökulsárlón & Diamond Beach'         },
-    { id:'s3', num:'03', title:'Blue Trilogy',               subtitle:'The Impossible Blues of Iceland Ice', type:'Triptych', camera:'X-E5 + GFX 100S II',      location:'Ice Cave · Diamond Beach · Jökulsárlón'},
-    { id:'s4', num:'04', title:'Coastal Contrasts',          subtitle:'Black Sand vs Blue Water',            type:'Diptych',  camera:'GFX 100S II',              location:'Reynisfjara · Blue Lagoon'           },
-    { id:'s5', num:'05', title:'The Human Element',          subtitle:'Presence at the Edge of the World',   type:'Diptych',  camera:'GFX 100S II',              location:'South Iceland Plains'                },
-    { id:'s6', num:'06', title:'Arnarstapi Geometry',        subtitle:'The Architecture of Erosion',         type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Arnarstapi, Snæfellsnes'             },
-    { id:'s7', num:'07', title:'Peninsular Panorama',        subtitle:'Snæfellsnes in Three Moods',          type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Snæfellsnes Peninsula'               },
-    { id:'s8', num:'08', title:'Urban Odyssey',              subtitle:'Reykjavík as Coda',                   type:'Triptych', camera:'GFX 100S II + 32–64mm',  location:'Reykjavík'                           },
-  ],
+  // Legacy hardcoded gallery seeds removed — galleries now live entirely in config (portfolioWorks)
+  DEFAULT_SERIES: [],
 
   _state: null,
 
