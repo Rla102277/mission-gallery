@@ -28,14 +28,7 @@
       },
       "lr-944ab9a178d04ccb98149136b9ef8498": {
         "id": "lr-944ab9a178d04ccb98149136b9ef8498",
-        "slug": "where-dragons-fly",
-        "year": "2025",
-        "camera": "GFX 100S II",
-        "filename": "TheRoadToLife_Walter_Mitty.jpeg",
-        "location": "Iceland",
-        "storyBody": "The ridge held its breath that morning. I waited three hours for the cloud to break.\n\n  When it did, the light lasted forty seconds. This frame is what the waiting was for.",
-        "storyTitle": "Where Dragons Fly",
-        "hasStoryPage": false
+        "filename": "TheRoadToLife_Walter_Mitty.jpeg"
       },
       "lr-9d593aa84ce6485ba4889986b9856276": {
         "id": "lr-9d593aa84ce6485ba4889986b9856276",
@@ -44,6 +37,14 @@
       "lr-cd2aabf536ac4034aefe7ad90f5e5a1c": {
         "id": "lr-cd2aabf536ac4034aefe7ad90f5e5a1c",
         "filename": "TheSilentThreshold.RAF"
+      },
+      "016cb2b6-f49b-4c0d-aa40-013ac8406a00": {
+        "id": "016cb2b6-f49b-4c0d-aa40-013ac8406a00",
+        "filename": "TheBirthOfABerg.jpg"
+      },
+      "04c902c9-3653-42dc-a698-b94a3408a500": {
+        "id": "04c902c9-3653-42dc-a698-b94a3408a500",
+        "filename": "TheSurge.jpg"
       },
       "061cdec0-079b-4eb5-ed7c-7ce72e14a500": {
         "id": "061cdec0-079b-4eb5-ed7c-7ce72e14a500",
@@ -57,13 +58,25 @@
         "id": "0aaf145f-8f30-45eb-2f74-010463118400",
         "filename": "TheBirthOfABerg.jpg"
       },
+      "0cae2895-f5c9-4651-bad3-e1d44c76aa00": {
+        "id": "0cae2895-f5c9-4651-bad3-e1d44c76aa00",
+        "filename": "TheEmergence.jpg"
+      },
       "147747a1-045a-4675-6315-cb098b808200": {
         "id": "147747a1-045a-4675-6315-cb098b808200",
         "filename": "TheSilentThreshold.jpg"
       },
+      "1493a588-5866-483d-78dc-8722fb9fbe00": {
+        "id": "1493a588-5866-483d-78dc-8722fb9fbe00",
+        "filename": "FloatingGIants.jpg"
+      },
       "150a5aaf-d6d7-435e-f68f-f15867327100": {
         "id": "150a5aaf-d6d7-435e-f68f-f15867327100",
         "filename": "DSCF2756.jpg"
+      },
+      "155e04b9-2e0c-46b4-245f-5406e5c06b00": {
+        "id": "155e04b9-2e0c-46b4-245f-5406e5c06b00",
+        "filename": "TheIceDiamond.jpg"
       },
       "1787f712-20e7-4fc0-d8f1-1bdf3af8ea00": {
         "id": "1787f712-20e7-4fc0-d8f1-1bdf3af8ea00",
@@ -80,6 +93,18 @@
       "1a67d9d6-c1ac-4407-ea70-339f96ee0d00": {
         "id": "1a67d9d6-c1ac-4407-ea70-339f96ee0d00",
         "filename": "TheBasaltCathedral2.jpg"
+      },
+      "1f832e15-6fad-4df1-726c-d3d7ae3ed100": {
+        "id": "1f832e15-6fad-4df1-726c-d3d7ae3ed100",
+        "filename": "TheApproach.jpg"
+      },
+      "23b7b3b7-00be-4b8b-3e9d-e6a00e812f00": {
+        "id": "23b7b3b7-00be-4b8b-3e9d-e6a00e812f00",
+        "filename": "DSCF2726.jpg"
+      },
+      "24eabead-3bcd-4252-ea21-ff38fd7b0800": {
+        "id": "24eabead-3bcd-4252-ea21-ff38fd7b0800",
+        "filename": "TheTexture.jpg"
       },
       "2857af4d-a12a-47d1-8f03-51ade283cb00": {
         "id": "2857af4d-a12a-47d1-8f03-51ade283cb00",
@@ -117,6 +142,14 @@
         "id": "38ad590f-88a8-4b86-905d-7db7a42ba100",
         "filename": "TheAzureVein.jpg"
       },
+      "39a0619a-13f3-41ec-b0fb-844e9814ca00": {
+        "id": "39a0619a-13f3-41ec-b0fb-844e9814ca00",
+        "filename": "TheFadingLight.jpg"
+      },
+      "3e36f39a-fdb0-4e5f-b705-a67efb629a00": {
+        "id": "3e36f39a-fdb0-4e5f-b705-a67efb629a00",
+        "filename": "TheAzureVein.jpg"
+      },
       "3f4baa9e-97b9-4c27-dfa5-a253b92b1500": {
         "id": "3f4baa9e-97b9-4c27-dfa5-a253b92b1500",
         "filename": "TheSanctuaryChurch.jpg"
@@ -128,6 +161,14 @@
       "42634935-6f83-4eee-559a-9f798ba62900": {
         "id": "42634935-6f83-4eee-559a-9f798ba62900",
         "filename": "TheSeaStacks.jpg"
+      },
+      "441dcb78-c64e-459d-62f2-ac2e65dccf00": {
+        "id": "441dcb78-c64e-459d-62f2-ac2e65dccf00",
+        "filename": "DSCF2739.jpg"
+      },
+      "463957ca-6193-42b1-0d28-6d213f05dd00": {
+        "id": "463957ca-6193-42b1-0d28-6d213f05dd00",
+        "filename": "GroundedJewels.jpg"
       },
       "46d239e8-16be-4bb4-cff0-146250174b00": {
         "id": "46d239e8-16be-4bb4-cff0-146250174b00",
@@ -144,6 +185,14 @@
       "4bc727d5-5b3d-401d-8771-76cc8fc10700": {
         "id": "4bc727d5-5b3d-401d-8771-76cc8fc10700",
         "filename": "TheBasaltMaw.jpg"
+      },
+      "4c4f3369-af42-4dc6-7564-61d58160d400": {
+        "id": "4c4f3369-af42-4dc6-7564-61d58160d400",
+        "filename": "TheRelic.jpg"
+      },
+      "4c611ccb-bf61-4003-a988-b5e286887800": {
+        "id": "4c611ccb-bf61-4003-a988-b5e286887800",
+        "filename": "TheChasm.jpg"
       },
       "4cbd4c58-9e4b-448b-f8a5-4cf438c91b00": {
         "id": "4cbd4c58-9e4b-448b-f8a5-4cf438c91b00",
@@ -177,9 +226,29 @@
         "id": "5c8cc859-971f-4424-b3e2-fc83cd9e1200",
         "filename": "TheAzureVein.jpg"
       },
+      "601ccb05-cee0-411f-08c9-19f7126a8b00": {
+        "id": "601ccb05-cee0-411f-08c9-19f7126a8b00",
+        "filename": "TheHidden_GljuÌfrabuÌi.jpg"
+      },
+      "64250547-40a0-45c1-e274-c490a9eabf00": {
+        "id": "64250547-40a0-45c1-e274-c490a9eabf00",
+        "filename": "DSCF2739.jpg"
+      },
       "66847d6e-071d-4c3c-a91b-fa53feb48200": {
         "id": "66847d6e-071d-4c3c-a91b-fa53feb48200",
         "filename": "TheHidden_GljÃºfrabÃºi.jpg"
+      },
+      "690eae7d-2d6f-47a0-d18d-3c89a0c7b400": {
+        "id": "690eae7d-2d6f-47a0-d18d-3c89a0c7b400",
+        "filename": "TheWildIcleandicHorse.jpg"
+      },
+      "6c63ea07-bfd4-4c46-a91b-4904fee1a500": {
+        "id": "6c63ea07-bfd4-4c46-a91b-4904fee1a500",
+        "filename": "TheWild5.jpg"
+      },
+      "6d748e64-28cd-4cfb-c3da-99157b239400": {
+        "id": "6d748e64-28cd-4cfb-c3da-99157b239400",
+        "filename": "GroundedJewels.jpg"
       },
       "70e9c487-75b1-4730-d70b-587c7ffd7b00": {
         "id": "70e9c487-75b1-4730-d70b-587c7ffd7b00",
@@ -196,6 +265,10 @@
       "73a65d42-d3db-4e18-78f9-70f6fdeb8500": {
         "id": "73a65d42-d3db-4e18-78f9-70f6fdeb8500",
         "filename": "PurePower.jpg"
+      },
+      "75331ca8-4859-48be-d9be-a13e094c1d00": {
+        "id": "75331ca8-4859-48be-d9be-a13e094c1d00",
+        "filename": "GFXS4357.jpg"
       },
       "7885cd48-1894-4ed3-d551-321c6df5fe00": {
         "id": "7885cd48-1894-4ed3-d551-321c6df5fe00",
@@ -237,9 +310,17 @@
         "id": "81d67b2b-83dd-41eb-e312-2b1c475f2700",
         "filename": "FloatingGIants.jpg"
       },
+      "845969c7-e60a-4e32-d7c3-1b9c19055200": {
+        "id": "845969c7-e60a-4e32-d7c3-1b9c19055200",
+        "filename": "TheFlow.jpg"
+      },
       "84d8d6da-7060-40f1-48c3-18956631e600": {
         "id": "84d8d6da-7060-40f1-48c3-18956631e600",
         "filename": "TheWildIcleandicHorse.jpg"
+      },
+      "8580d628-4950-4b51-e0cf-270de2f14800": {
+        "id": "8580d628-4950-4b51-e0cf-270de2f14800",
+        "filename": "TheWIld4.jpg"
       },
       "86ae443b-cafc-46e0-7e36-2245bf183800": {
         "id": "86ae443b-cafc-46e0-7e36-2245bf183800",
@@ -248,6 +329,14 @@
       "86d3b556-5e0a-4f88-dc39-ad46fb873c00": {
         "id": "86d3b556-5e0a-4f88-dc39-ad46fb873c00",
         "filename": "DSCF2739.jpg"
+      },
+      "86eeabb0-76c0-4d89-83a6-dca05bf1b300": {
+        "id": "86eeabb0-76c0-4d89-83a6-dca05bf1b300",
+        "filename": "WhereDragonsFly.jpg"
+      },
+      "8727b8eb-dd2d-40e3-99d0-e9ffb6d1ac00": {
+        "id": "8727b8eb-dd2d-40e3-99d0-e9ffb6d1ac00",
+        "filename": "0388980_0388980-R8-E208.jpeg"
       },
       "8891ad4f-df85-49a0-eb99-fc0914294100": {
         "id": "8891ad4f-df85-49a0-eb99-fc0914294100",
@@ -260,6 +349,10 @@
       "8fd43213-a965-459b-0e09-79f3bad00800": {
         "id": "8fd43213-a965-459b-0e09-79f3bad00800",
         "filename": "DSCF2716.jpg"
+      },
+      "912ffdaa-7dce-4a9a-cd41-2ce3fa5f8200": {
+        "id": "912ffdaa-7dce-4a9a-cd41-2ce3fa5f8200",
+        "filename": "IMG_9417.jpeg"
       },
       "914062aa-16a8-40ac-3638-cf0cface3600": {
         "id": "914062aa-16a8-40ac-3638-cf0cface3600",
@@ -281,9 +374,21 @@
         "id": "95f870d4-31a9-49c8-8589-4d6ea1ee9200",
         "filename": "TheRoadToLife_Walter_Mitty.jpg"
       },
+      "a094a995-4ab4-4cb8-69a8-b9338ab5b200": {
+        "id": "a094a995-4ab4-4cb8-69a8-b9338ab5b200",
+        "filename": "TheBasaltMaw.jpg"
+      },
       "a0982ae1-4595-4187-9801-16523cd53500": {
         "id": "a0982ae1-4595-4187-9801-16523cd53500",
         "filename": "TheBasaltMaw.jpg"
+      },
+      "a09dc356-9658-4555-aec9-00200e78ba00": {
+        "id": "a09dc356-9658-4555-aec9-00200e78ba00",
+        "filename": "The_Grandeur_Seljalandsfoss.jpg"
+      },
+      "a216afec-2624-46f3-6ec5-55cb96733400": {
+        "id": "a216afec-2624-46f3-6ec5-55cb96733400",
+        "filename": "TheRoadToLife_Walter_Mitty.jpg"
       },
       "a8e4833f-6030-4023-1e93-1b0f8094ec00": {
         "id": "a8e4833f-6030-4023-1e93-1b0f8094ec00",
@@ -313,6 +418,10 @@
         "id": "b235bc28-f073-414f-b3dc-8f61f7bf1d00",
         "filename": "TheSilentThreshold-2.jpg"
       },
+      "b2e3f251-f708-4cee-1274-9c80b1d0b500": {
+        "id": "b2e3f251-f708-4cee-1274-9c80b1d0b500",
+        "filename": "TheEmptySoul.jpg"
+      },
       "b3775384-9812-4911-3356-4b9653ddaf00": {
         "id": "b3775384-9812-4911-3356-4b9653ddaf00",
         "filename": "TheFadingLight.jpg"
@@ -323,15 +432,35 @@
       },
       "b61ea51c-9658-4c50-8ca3-e374541e8f00": {
         "id": "b61ea51c-9658-4c50-8ca3-e374541e8f00",
-        "filename": "TheEmergence-Edit.jpg"
+        "slug": "",
+        "year": "",
+        "title": "Where Light Rises from the Ground",
+        "camera": "",
+        "altText": "Pale dawn light spreading across a misty landscape, illuminating low ground before the sky fully brightens.",
+        "caption": "Dawn does not fall here — it surfaces, slow and certain, from below.",
+        "filename": "TheEmergence-Edit.jpg",
+        "location": "",
+        "saleType": "none",
+        "storyBody": "",
+        "printSizes": [],
+        "storyTitle": "",
+        "hasStoryPage": false
       },
       "b71ecadd-a353-4af2-d71d-b1b16aa70300": {
         "id": "b71ecadd-a353-4af2-d71d-b1b16aa70300",
         "filename": "TheHorizon.jpg"
       },
+      "b83a6c7c-5e11-462e-750c-b29f93ea1e00": {
+        "id": "b83a6c7c-5e11-462e-750c-b29f93ea1e00",
+        "filename": "FloatingGIants.jpg"
+      },
       "b8f2383a-0180-426b-ed44-ecdd0de74700": {
         "id": "b8f2383a-0180-426b-ed44-ecdd0de74700",
         "filename": "TheSeaStacks-Edit.jpg"
+      },
+      "ba6f4ef8-630e-467e-0b03-b2aaf5cade00": {
+        "id": "ba6f4ef8-630e-467e-0b03-b2aaf5cade00",
+        "filename": "TheDepth.jpg"
       },
       "bbf400dc-45aa-443f-3f41-e874e8136400": {
         "id": "bbf400dc-45aa-443f-3f41-e874e8136400",
@@ -352,6 +481,10 @@
       "c22414ad-40a2-46bf-1ccc-963ac3f4b100": {
         "id": "c22414ad-40a2-46bf-1ccc-963ac3f4b100",
         "filename": "BasaltCathedral.jpg"
+      },
+      "c23257b8-d415-4cc3-29f7-9dd570de7300": {
+        "id": "c23257b8-d415-4cc3-29f7-9dd570de7300",
+        "filename": "GFXS4357.jpg"
       },
       "c3257cf3-712b-40ea-2dea-8f9f8ce32500": {
         "id": "c3257cf3-712b-40ea-2dea-8f9f8ce32500",
@@ -377,6 +510,14 @@
         "id": "cf786493-77cd-48cf-aa19-2804d79fed00",
         "filename": "DSCF1075.jpeg"
       },
+      "d1ffebdc-18cb-4d22-9885-997a19a69f00": {
+        "id": "d1ffebdc-18cb-4d22-9885-997a19a69f00",
+        "filename": "TheCrystalSkull.jpg"
+      },
+      "d394b295-a88d-4b4c-95fe-056171b0e800": {
+        "id": "d394b295-a88d-4b4c-95fe-056171b0e800",
+        "filename": "IMG_5158.jpeg"
+      },
       "d416f9ef-7677-48a3-a5f0-4cd7d4e67800": {
         "id": "d416f9ef-7677-48a3-a5f0-4cd7d4e67800",
         "filename": "TheFlow.jpg"
@@ -384,6 +525,14 @@
       "d450351f-c9b0-4a45-98d8-cd829543a600": {
         "id": "d450351f-c9b0-4a45-98d8-cd829543a600",
         "filename": "GroundedJewels.jpg"
+      },
+      "d4ad75dd-c6f4-470f-9648-9293dee27c00": {
+        "id": "d4ad75dd-c6f4-470f-9648-9293dee27c00",
+        "filename": "XT052707.jpeg"
+      },
+      "d61c2fb9-56ef-4667-654d-a706610bda00": {
+        "id": "d61c2fb9-56ef-4667-654d-a706610bda00",
+        "filename": "GFXS4143.jpg"
       },
       "d6571716-3f0b-4a11-8398-56c87bc56100": {
         "id": "d6571716-3f0b-4a11-8398-56c87bc56100",
@@ -405,6 +554,10 @@
         "id": "e12d97a0-c815-4a2a-fa78-9577ca25a100",
         "filename": "TheHidden_GljuÌfrabuÌi.jpg"
       },
+      "e29d52cd-ba33-4bfb-a109-1b19022dcf00": {
+        "id": "e29d52cd-ba33-4bfb-a109-1b19022dcf00",
+        "filename": "BasaltCathedral.jpg"
+      },
       "e599128b-fd5f-42a6-2f81-d692de6ab400": {
         "id": "e599128b-fd5f-42a6-2f81-d692de6ab400",
         "filename": "TheEmergence.jpg"
@@ -425,13 +578,37 @@
         "id": "e90e120b-4ca3-409e-e5f0-f57f641b8f00",
         "filename": "TheHorizon.jpg"
       },
+      "eac708b9-35fe-430f-f79f-b4a125e6b000": {
+        "id": "eac708b9-35fe-430f-f79f-b4a125e6b000",
+        "filename": "TheAscent.jpg"
+      },
+      "ed880a7f-53de-4633-4367-b01eb5550900": {
+        "id": "ed880a7f-53de-4633-4367-b01eb5550900",
+        "filename": "TheIceDiamond.jpg"
+      },
       "ee0336b5-8709-4796-833e-3de85dce1800": {
         "id": "ee0336b5-8709-4796-833e-3de85dce1800",
         "filename": "TheRoadToLife_Walter_Mitty.jpg"
       },
+      "efcbe648-d15c-45b3-d3ba-ded684d39d00": {
+        "id": "efcbe648-d15c-45b3-d3ba-ded684d39d00",
+        "filename": "TheSeaStacks-Edit.jpg"
+      },
+      "f0c4864b-59ae-4ec3-f6ef-da034c3c0200": {
+        "id": "f0c4864b-59ae-4ec3-f6ef-da034c3c0200",
+        "filename": "TheFlow.jpg"
+      },
       "f140854b-e02c-4c4e-4700-83989d680c00": {
         "id": "f140854b-e02c-4c4e-4700-83989d680c00",
         "filename": "TheRelic.jpg"
+      },
+      "f2e23754-72d3-4308-c4bf-e3cb7bc1ae00": {
+        "id": "f2e23754-72d3-4308-c4bf-e3cb7bc1ae00",
+        "filename": "TheStaircase.jpg"
+      },
+      "f4ddd9cd-0980-4aa8-48d3-a681772e0f00": {
+        "id": "f4ddd9cd-0980-4aa8-48d3-a681772e0f00",
+        "filename": "The_Grandeur_Seljalandsfoss.jpg"
       },
       "f87be321-86c0-4b79-b5e8-6de51301dd00": {
         "id": "f87be321-86c0-4b79-b5e8-6de51301dd00",
@@ -468,20 +645,32 @@
           "id": "h1",
           "data": {
             "eyebrow": "Fine Art Landscape Photography",
-            "tagline": "Beyond the Daydream",
+            "tagline": "Every arch opens onto another path.",
             "variant": "wordmark",
-            "scrollText": "Enter"
+            "scrollText": "Enter",
+            "backgroundImage": {
+              "sizes": {
+                "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
+                "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
+                "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
+                "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
+              },
+              "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+              "caption": "",
+              "filename": "Ghost Structure.jpg",
+              "imageKey": "DHZZ7dn"
+            }
           },
           "type": "hero"
         },
         {
           "id": "h2",
           "data": {
-            "body": "Most of us spend our lives just outside the frame &mdash; scrolling past the image, saving it for later, never quite arriving. I started chasing the places that couldn&rsquo;t be scrolled past.\n\nPhotography is where light becomes language and landscape becomes mirror. The most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re waited for. Cold mornings, uncertain skies, the moment you raise the camera toward impossible light and believe something is there before you can see it.",
+            "body": "I don't photograph where I've been. I photograph what I'm moving toward. The bend in the road, the opening in the trees, the moment just before arrival, when you can't yet see the other side and you go anyway.",
             "ctaUrl": "/pages/about.html",
             "ctaText": "Read the Full Statement",
-            "eyebrow": "The Vision",
-            "heading": "The arch frames what lies beyond.<br>Every image is a gateway.",
+            "eyebrow": "Fine Art Landscape Photography",
+            "heading": "Every image is a threshold, not a destination.",
             "variant": "default"
           },
           "type": "text"
@@ -496,44 +685,14 @@
           "data": {
             "ctaUrl": "/pages/galleries.html",
             "ctaText": "View All",
-            "heading": "Four bodies of work.<br>One way of seeing."
+            "heading": "Five chapters. One direction."
           },
           "type": "collections-grid"
-        },
-        {
-          "id": "h5",
-          "data": {
-            "eyebrow": "Signature Projects",
-            "heading": "Work that required commitment to earn."
-          },
-          "type": "featured-list"
         },
         {
           "id": "h6",
           "data": {},
           "type": "divider"
-        },
-        {
-          "id": "h7",
-          "data": {
-            "items": [
-              {
-                "body": "Locations are studied before they&rsquo;re visited. Weather patterns, golden hour windows, seasonal light &mdash; the expedition plan is built around the image, not the schedule. Arriving prepared means arriving open.",
-                "title": "Research &amp; Arrival"
-              },
-              {
-                "body": "The GFX system doesn&rsquo;t reward spray-and-pray. 102 megapixels asks you to slow down, choose your moment, and mean it. Technical mastery is what frees you to respond to what you couldn&rsquo;t plan for.",
-                "title": "Medium Format Patience"
-              },
-              {
-                "body": "The honest photograph isn&rsquo;t taken &mdash; it&rsquo;s waited for. Sometimes that means three hours in the cold. Sometimes it means coming back on the fifth day. The image that earns its place always knew you were willing to wait.",
-                "title": "The Wait"
-              }
-            ],
-            "eyebrow": "The Approach",
-            "heading": "How the photographs get made."
-          },
-          "type": "process-grid"
         },
         {
           "id": "h8",
@@ -585,10 +744,236 @@
         {
           "id": "h11",
           "data": {
-            "text": "Beautiful things don&rsquo;t ask for attention.",
-            "attribution": "Sean O&rsquo;Connell"
+            "text": "\"I like it when one is not certain of what one sees. When we do not know why we are looking at it, all of a sudden, we discover something. The meaning of a photograph is not always apparent, but if you look and look, it will reveal itself.\"",
+            "attribution": "Saul Leiter."
           },
           "type": "quote"
+        }
+      ],
+      "metaDescription": ""
+    },
+    "about": {
+      "title": "About The Infinite Arch",
+      "blocks": [
+        {
+          "id": "a1",
+          "data": {
+            "label": "Fine art landscape photography made in solitude, attentive to the moment when light and landform briefly agree.",
+            "tagline": "Somewhere past the threshold of the familiar, where attention sharpens and the mind grows still.",
+            "variant": "masthead",
+            "backgroundImage": ""
+          },
+          "type": "hero"
+        },
+        {
+          "id": "a2",
+          "data": {
+            "line1": "The land holds its breath before the shutter opens.",
+            "line2": "We scroll past the image and save it for later. Later rarely comes. The light doesn't wait, and neither does the threshold. You are there for it, or you are not.",
+            "variant": "pull-quote"
+          },
+          "type": "text"
+        },
+        {
+          "id": "a3",
+          "data": {},
+          "type": "divider"
+        },
+        {
+          "id": "a4",
+          "data": {
+            "body": "The Infinite Arch started as a trail name. A play on my last name and the idea that every arch leads to a path worth discovering. It became a brand because it became a belief. What's next? The next trail, the next race, the next adventure with friends and family. I started hiking and running later than most people would expect, and I have not stopped since. Every arch opens onto another path. Every path leads somewhere I have not been yet. A name, a brand, and a reminder that the possibilities are infinite if you keep moving forward.\nI came to photography the same way I came to the trail. Slowly, and later than most people would admit. Life moves fast, and I wasn't good at stopping to see the world around me. The camera fixed that. I shoot Fujifilm GFX medium format and X Series digital. I still load film into a vintage Minolta X-700, because film asks something digital does not. It asks you to commit. Every frame costs something. Every shutter press is a decision.\nThe paths I have chosen have taken me to the summit of Guadalupe Peak, at 8,751 feet the highest point in Texas. To the black volcanic sand of Reynisfjara, and into the crevasses of Vatnajökull, Europe's largest glacier. And back down the forgotten back roads of North Texas, where the land is flat and the sky goes on forever. These are the journeys that go beyond the daydream.\n",
+            "closing": "Welcome to the other side of the daydream.",
+            "variant": "article"
+          },
+          "type": "text"
+        },
+        {
+          "id": "a5",
+          "data": {
+            "text": "\"To see the world, things dangerous to come to, to see behind walls, to draw closer, to find each other, and to feel. That is the purpose of life.\"\n",
+            "attribution": "— the motto of Life magazine, and the heart of The Secret Life of Walter Mitty"
+          },
+          "type": "quote"
+        },
+        {
+          "id": "text-1783926458823",
+          "data": {
+            "body": "Randy Archambault is a fine art photographer based in Frisco, Texas. Shooting under The Infinite Arch, he works with Fujifilm medium format and vintage film cameras across landscapes, journeys, and the moments most people scroll past. His work explores passage, presence, and what waits on the other side of the daydream.",
+            "ctaUrl": "",
+            "ctaText": "",
+            "eyebrow": "",
+            "heading": "Artist Bio",
+            "variant": "article"
+          },
+          "type": "text"
+        },
+        {
+          "id": "badge-1783926609996",
+          "data": {
+            "text": ""
+          },
+          "type": "badge"
+        },
+        {
+          "id": "gearstrip-1783927365079",
+          "data": {
+            "items": [
+              "Fujifilm GFX 100SII",
+              "Fujifilm GFX 100RF",
+              "Fujifilm X-E5",
+              "Konica Hexar RF",
+              "Yashica 35 GSN",
+              "Minolta X700"
+            ]
+          },
+          "type": "gear-strip"
+        },
+        {
+          "id": "text-1783927587783",
+          "data": {
+            "body": "The tools are few and chosen carefully.\n\nFor medium format digital work, two Fujifilm GFX bodies: the GFX 100S II and the GFX 100RF. The former for deliberate, considered shooting; the latter for work that asks for something more compact, more present in the landscape. Both render with a quality of light that still surprises, even after years of use.\n\nFor lighter expeditions and moments that call for speed over deliberation, the Fujifilm X-E5. Small enough to disappear into a jacket pocket, capable enough to hold its own against far larger systems.\n\nThen film. A Konica Hexar RF, a Minolta X-700, a Yashica Electro 35. Each with its own character, its own way of slowing the act of seeing. Film cameras ask something different of the photographer: a certain commitment, a willingness to trust the frame before it is confirmed. That tension is part of what makes them worth carrying.\n\nThe gear is not the point. But the right tools, used honestly, tend to stay out of the way and let the work happen.",
+            "ctaUrl": "",
+            "ctaText": "",
+            "eyebrow": "The tools I work with",
+            "heading": "What I carry",
+            "variant": "article"
+          },
+          "type": "text"
+        }
+      ],
+      "metaDescription": ""
+    },
+    "prints": {
+      "title": "",
+      "blocks": [
+        {
+          "id": "p1",
+          "data": {
+            "body": "Museum-quality archival prints, hand-finished and signed. Each edition is produced in limited runs with meticulous attention to tonal accuracy.",
+            "title": "Prints",
+            "eyebrow": "The Infinite Arch",
+            "variant": "centered",
+            "subtitle": "Coming Soon"
+          },
+          "type": "hero"
+        },
+        {
+          "id": "p2",
+          "data": {
+            "items": [
+              "Archival Pigment on Cotton Rag",
+              "Limited Editions &middot; Signed &amp; Numbered",
+              "Custom Framing Available"
+            ]
+          },
+          "type": "details-list"
+        },
+        {
+          "id": "p3",
+          "data": {
+            "text": "Launching 2026"
+          },
+          "type": "badge"
+        },
+        {
+          "id": "p4",
+          "data": {
+            "url": "/",
+            "text": "Return Home"
+          },
+          "type": "back-link"
+        }
+      ],
+      "metaDescription": ""
+    },
+    "contact": {
+      "title": "",
+      "blocks": [
+        {
+          "id": "c1",
+          "data": {
+            "body": "For print inquiries, collaboration proposals, licensing, or simply to say hello — reach out below.",
+            "title": "Contact",
+            "eyebrow": "The Infinite Arch",
+            "variant": "centered",
+            "subtitle": "Let’s talk about light"
+          },
+          "type": "hero"
+        },
+        {
+          "id": "c2",
+          "data": {
+            "email": "rla1022@gmail.com"
+          },
+          "type": "email-link"
+        },
+        {
+          "id": "c3",
+          "data": {
+            "url": "/",
+            "text": "Return Home"
+          },
+          "type": "back-link"
+        },
+        {
+          "id": "inquiry-1783954084136",
+          "data": {},
+          "type": "inquiry"
+        }
+      ],
+      "metaDescription": ""
+    },
+    "hope-hike": {
+      "title": "",
+      "blocks": [
+        {
+          "id": "hh1",
+          "data": {
+            "body": "A three-day expedition to the highest point in Texas, combining fine art landscape photography with a fundraising mission. Every step carries purpose &mdash; every frame tells the story of why we climb.",
+            "title": "Hope",
+            "eyebrow": "The Infinite Arch Presents",
+            "variant": "centered",
+            "location": "Guadalupe Peak &middot; Texas",
+            "subtitle": "May 29 &ndash; 31, 2026",
+            "titleSub": "Hike"
+          },
+          "type": "hero"
+        },
+        {
+          "id": "hh2",
+          "data": {
+            "items": [
+              {
+                "label": "Summit Elevation",
+                "value": "8,751'"
+              },
+              {
+                "label": "Days",
+                "value": "3"
+              },
+              {
+                "label": "Purpose",
+                "value": "&infin;"
+              }
+            ]
+          },
+          "type": "stats-bar"
+        },
+        {
+          "id": "hh3",
+          "data": {
+            "text": "“The summit is not the destination. It’s the proof that you kept going.”"
+          },
+          "type": "purpose-quote"
+        },
+        {
+          "id": "hh4",
+          "data": {
+            "url": "/",
+            "text": "Return Home"
+          },
+          "type": "back-link"
         }
       ],
       "metaDescription": ""
@@ -599,12 +984,12 @@
         {
           "id": "pf1",
           "data": {
-            "body": "<p>The Infinite Arch takes its name from two things at once: the natural arch in rock and the arch of a human life. Both describe the same passage — a threshold between what was and what’s possible.</p><p>I shoot with Fujifilm’s GFX medium format system because 102 megapixels demands intention. Every frame is a choice. Every trip into the field is a commitment to be present for whatever the light decides to do.</p><p>This work is landscape as contemplation. The camera is the last step in a process that begins with arriving, waiting, and being willing to return. The image is the record of that patience.</p>",
-            "quote": "“The most honest photographs aren’t taken — they’re waited for. They come to the photographer who arrives early, stays late, and returns when the light changes.”",
-            "title": "The photograph isn’t made. It’s waited for.",
-            "byline": "Randy Allen &nbsp;&middot;&nbsp; <strong>The Infinite Arch</strong> &nbsp;&middot;&nbsp; Fine Art Landscape Photography",
+            "body": "<p>The Infinite Arch takes its name from two things at once: the natural arch in rock and the arch of a human life. Both describe the same passage: a threshold between what was and what's possible.</p><p>I shoot Fujifilm's GFX medium format system because 102 megapixels demands intention. Every frame is a choice. Every trip into the field is a commitment to be present for whatever the light decides to do.</p><p>This work is landscape as contemplation. The camera is the last step in a process that begins with arriving, waiting, and being willing to return. The image is the record of that patience.</p>",
+            "quote": "The space between things is not empty. It is where the picture lives.",
+            "title": "I don't photograph the destination. I photograph the way in.",
+            "byline": "Randy Archambault · The Infinite Arch · Fine Art Landscape Photography",
             "eyebrow": "Artist Statement",
-            "signature": "— Beyond the Daydream"
+            "signature": "The Infinite Arch"
           },
           "type": "portfolio-statement"
         },
@@ -614,29 +999,15 @@
             "items": [
               "Fujifilm GFX 100S II",
               "GF 32–64mm f/4",
-              "GF 100–200mm f/5.6",
               "Fujifilm X-E5",
-              "Instax Mini Evo",
-              "Capture One"
+              "Fujifilm GFX 100RF",
+              "Lightroom",
+              "Konica Hexar RF",
+              "Yashica 35 GSN"
             ],
             "label": "System"
           },
           "type": "gear-strip"
-        },
-        {
-          "id": "pf3",
-          "data": {
-            "photos": [
-              {
-                "workId": "pw-daydream",
-                "assetId": "aa1e2b18-8716-4ce7-b120-3f365aa7cb00",
-                "caption": "Test Caption"
-              }
-            ],
-            "eyebrow": "Selected Work",
-            "heading": "Images from the field."
-          },
-          "type": "curated-grid"
         },
         {
           "id": "pf4",
@@ -650,12 +1021,126 @@
           "data": {
             "note": "All series available &nbsp;&middot;&nbsp; Custom sizes on request",
             "title": "Every print is a<br>limited edition.",
-            "ctaUrl": "mailto:sayhello@theinfinitearch.com?subject=Print Inquiry",
+            "ctaUrl": "mailto:sayhello@infinitearchphoto.com?subject=Print Inquiry",
             "ctaText": "Begin a Conversation",
             "eyebrow": "Original Fine Art Prints",
-            "subtitle": "Archival pigment on Hahnemühle Fine Art paper. Each print is signed, numbered, and produced from the original GFX 102-megapixel file."
+            "subtitle": "Archival pigment on Red River Papers Fine Art paper. Each print is signed, numbered, and produced from the original file"
           },
           "type": "inquiry"
+        }
+      ],
+      "metaDescription": ""
+    },
+    "exhibitions-recognition": {
+      "title": "",
+      "blocks": [
+        {
+          "id": "h1",
+          "data": {
+            "eyebrow": "Fine Art Landscape Photography",
+            "tagline": "Every arch opens onto another path.",
+            "variant": "wordmark",
+            "scrollText": "Enter",
+            "backgroundImage": {
+              "sizes": {
+                "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
+                "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
+                "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
+                "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
+              },
+              "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+              "caption": "",
+              "filename": "Ghost Structure.jpg",
+              "imageKey": "DHZZ7dn"
+            }
+          },
+          "type": "hero"
+        },
+        {
+          "id": "h2",
+          "data": {
+            "body": "I don't photograph where I've been. I photograph what I'm moving toward. The bend in the road, the opening in the trees, the moment just before arrival, when you can't yet see the other side and you go anyway.",
+            "ctaUrl": "/pages/about.html",
+            "ctaText": "Read the Full Statement",
+            "eyebrow": "Fine Art Landscape Photography",
+            "heading": "Every image is a threshold, not a destination.",
+            "variant": "default"
+          },
+          "type": "text"
+        },
+        {
+          "id": "h3",
+          "data": {},
+          "type": "divider"
+        },
+        {
+          "id": "h4",
+          "data": {
+            "ctaUrl": "/pages/galleries.html",
+            "ctaText": "View All",
+            "heading": "Five chapters. One direction."
+          },
+          "type": "collections-grid"
+        },
+        {
+          "id": "h6",
+          "data": {},
+          "type": "divider"
+        },
+        {
+          "id": "h8",
+          "data": {
+            "body": "Ten participants. Three days. One summit. Guided by resilience speaker Tia Banks and documented through the lens of The Infinite Arch. Applications open through the WE CLIMB initiative.",
+            "title": "The Hope Hike",
+            "ctaUrl": "/pages/hope-hike.html",
+            "ctaText": "Learn More",
+            "eyebrow": "May 29&ndash;31, 2026 &middot; Guadalupe Mountains, Texas",
+            "subtitle": "Adventure Wellness at the Top of Texas"
+          },
+          "type": "callout"
+        },
+        {
+          "id": "h9",
+          "data": {
+            "items": [
+              {
+                "body": "Museum-quality archival prints from the expedition collections. Limited editions with certificates of authenticity. Sizes from 16&times;20 to 40&times;60 on premium papers.",
+                "price": "From $450 &middot; Worldwide shipping",
+                "title": "Fine Art Prints"
+              },
+              {
+                "body": "Custom landscape and architectural photography for commercial clients, publications, and private collectors. Each project begins with a conversation about what you&rsquo;re actually trying to say.",
+                "price": "From $2,500 &middot; Custom quotes",
+                "title": "Commission Work"
+              },
+              {
+                "body": "Small-group expeditions combining landscape photography instruction with wilderness immersion. Not a photo tour &mdash; a genuine creative expedition into terrain that asks something of you.",
+                "price": "From $850 &middot; Limited availability",
+                "title": "Adventure Workshops"
+              }
+            ],
+            "eyebrow": "Services",
+            "heading": "Ways to work together."
+          },
+          "type": "services-grid"
+        },
+        {
+          "id": "h10",
+          "data": {
+            "body": "Monthly dispatches from the field &mdash; new collections, Hope Hike news, and early access to limited edition print releases.",
+            "eyebrow": "Stay Connected",
+            "heading": "New work. Expedition updates.<br>Nothing you didn&rsquo;t ask for.",
+            "placeholder": "your@email.com"
+          },
+          "type": "newsletter"
+        },
+        {
+          "id": "h11",
+          "data": {
+            "text": "\"I like it when one is not certain of what one sees. When we do not know why we are looking at it, all of a sudden, we discover something. The meaning of a photograph is not always apparent, but if you look and look, it will reveal itself.\"",
+            "attribution": "Saul Leiter."
+          },
+          "type": "quote"
         }
       ],
       "metaDescription": ""
@@ -663,7 +1148,66 @@
   },
   "photos": {},
   "series": {},
-  "imgFolders": {},
+  "imgFolders": {
+    "f-1773127038397": {
+      "name": "Iceland",
+      "images": [
+        "c22414ad-40a2-46bf-1ccc-963ac3f4b100",
+        "4cbd4c58-9e4b-448b-f8a5-4cf438c91b00",
+        "8fd43213-a965-459b-0e09-79f3bad00800",
+        "bbf400dc-45aa-443f-3f41-e874e8136400",
+        "061cdec0-079b-4eb5-ed7c-7ce72e14a500",
+        "7bd882fd-638e-4ed9-cfb4-93b9d0354600",
+        "bf781bce-2fc1-4211-cbfa-be1c3d465c00",
+        "336c718e-ab7e-45d4-a135-6c3c60f2ba00",
+        "bbf78a76-ccdd-4e34-969d-2ad030a58c00",
+        "46d239e8-16be-4bb4-cff0-146250174b00",
+        "73a65d42-d3db-4e18-78f9-70f6fdeb8500",
+        "ca24d3ec-2d83-4bde-cc49-d5c9105ad200",
+        "c3257cf3-712b-40ea-2dea-8f9f8ce32500",
+        "aa620978-a9f6-4eff-6eca-803ac9990a00",
+        "cee9a4d6-f75c-4cb6-3549-3437c0ddc700",
+        "e670fe7b-1001-4d74-98ec-1f7b181cfc00",
+        "5c8cc859-971f-4424-b3e2-fc83cd9e1200",
+        "1a67d9d6-c1ac-4407-ea70-339f96ee0d00",
+        "70e9c487-75b1-4730-d70b-587c7ffd7b00",
+        "a0982ae1-4595-4187-9801-16523cd53500",
+        "0aaf145f-8f30-45eb-2f74-010463118400",
+        "4d32cb9e-99f0-470c-f714-746f8233b800",
+        "7c5ef18f-2fcf-456d-c400-78d340d34c00",
+        "5aa1ba07-8a13-49fa-d58c-b39a58752c00",
+        "cadb7fc6-2892-4a80-6936-e380d3170900",
+        "b61ea51c-9658-4c50-8ca3-e374541e8f00",
+        "3280c43e-adc9-4f55-730f-51a279bbe000",
+        "aa8a7263-5ff3-4cba-3e79-6f3ed3392800",
+        "b3775384-9812-4911-3356-4b9653ddaf00",
+        "73832d05-096e-44e9-3d4b-e3825c0cd700",
+        "d6bf393f-945c-4b89-a68c-0b150a5a1300",
+        "e12d97a0-c815-4a2a-fa78-9577ca25a100",
+        "b71ecadd-a353-4af2-d71d-b1b16aa70300",
+        "a8e4833f-6030-4023-1e93-1b0f8094ec00",
+        "33491681-d79a-496c-8ff1-70dc3599ca00",
+        "1943be27-9d01-445f-8544-45cc9ad11a00",
+        "5aa38a2b-5112-471b-70c1-00d673752100",
+        "7f8d5ed0-4297-46aa-6a75-912795280f00",
+        "d6ba64fd-5148-4527-7397-53b84adabc00",
+        "ee0336b5-8709-4796-833e-3de85dce1800",
+        "3f4baa9e-97b9-4c27-dfa5-a253b92b1500",
+        "b8f2383a-0180-426b-ed44-ecdd0de74700",
+        "b235bc28-f073-414f-b3dc-8f61f7bf1d00",
+        "e817dea5-e328-4c37-f447-4af0b823b800",
+        "86ae443b-cafc-46e0-7e36-2245bf183800",
+        "d7058441-8604-4f6d-7d22-90258ebacc00",
+        "fa3882eb-ba11-4150-54d6-7ac156701500",
+        "2857af4d-a12a-47d1-8f03-51ade283cb00",
+        "477c2dd0-146f-4d04-c051-44b3a8868800",
+        "bdf632b2-f32c-4f76-1429-83b07a277e00",
+        "4de330a9-fc82-4a1b-ea16-fe2f723cd300",
+        "9245e00b-ba0c-48dd-6691-394b760a0800",
+        "48cafff8-066d-4fe5-0669-64267c46c900"
+      ]
+    }
+  },
   "navigation": [
     {
       "href": "/",
@@ -673,11 +1217,6 @@
     {
       "href": "/pages/portfolio.html",
       "label": "Portfolio",
-      "visible": true
-    },
-    {
-      "href": "/pages/galleries.html",
-      "label": "Galleries",
       "visible": true
     },
     {
@@ -694,144 +1233,35 @@
       "href": "/pages/contact.html",
       "label": "Contact",
       "visible": true
+    },
+    {
+      "href": "/pages/exhibitions-recognition.html",
+      "label": "Exhibitions & Recognition",
+      "visible": true
     }
   ],
   "siteSettings": {
-    "email": "",
+    "email": "rla1022@gmail.com",
     "tagline": "Fine Art Photography",
     "siteName": "The Infinite Arch",
     "footerAttr": "The Infinite Arch",
-    "footerQuote": "Some landscapes refuse to remain peripheral."
+    "footerQuote": "The space between things is not empty. It is where the picture lives."
   },
   "portfolioWorks": [
     {
       "id": "pw-daydream",
-      "type": "Expeditions",
-      "title": "Beyond the Daydream",
-      "camera": "GFX 100S II",
-      "format": "Digital",
+      "type": "Structures & Relics",
+      "title": "Witnesses",
+      "camera": "FUJI GFX 100RF, Fuji X-E5, Yashica 35 GSN, Fuji GFX 100sii, Konica Hexar RF",
+      "format": "Digital and Film",
       "location": "Iceland · Guadalupe Peak · and beyond",
-      "subtitle": "The places that couldn’t be scrolled past",
+      "subtitle": "What the land holds after we have gone — the fence post, the cairn, the collapsed wall — things that stood through weather and forgetting, still standing.",
       "galleries": [
         {
           "id": "gal-iceland",
           "type": "Series",
-          "title": "Iceland",
-          "camera": "GFX 100S II",
-          "photos": [],
-          "folders": [
-            {
-              "id": "fld-s1",
-              "type": "Triptych",
-              "title": "Solitude & Scale",
-              "camera": "GFX 100S II + 32-64mm",
-              "photos": [],
-              "location": "Fjallsarlon Glacier Lagoon",
-              "subtitle": "The Secret Lagoon",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s2",
-              "type": "Diptych",
-              "title": "Glacial Contrasts",
-              "camera": "GFX 100S II + 100-200mm",
-              "photos": [],
-              "location": "Jokulsarlon & Diamond Beach",
-              "subtitle": "Ice in Two Realms",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s3",
-              "type": "Triptych",
-              "title": "Blue Trilogy",
-              "camera": "X-E5 + GFX 100S II",
-              "photos": [],
-              "location": "Ice Cave / Diamond Beach / Jokulsarlon",
-              "subtitle": "The Impossible Blues of Iceland Ice",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s4",
-              "type": "Diptych",
-              "title": "Coastal Contrasts",
-              "camera": "GFX 100S II",
-              "photos": [],
-              "location": "Reynisfjara / Blue Lagoon",
-              "subtitle": "Black Sand vs Blue Water",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s5",
-              "type": "Diptych",
-              "title": "The Human Element",
-              "camera": "GFX 100S II",
-              "photos": [],
-              "location": "South Iceland Plains",
-              "subtitle": "Presence at the Edge of the World",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s6",
-              "type": "Triptych",
-              "title": "Arnarstapi Geometry",
-              "camera": "GFX 100S II + 32-64mm",
-              "photos": [],
-              "location": "Arnarstapi, Snaefellsnes",
-              "subtitle": "The Architecture of Erosion",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s7",
-              "type": "Triptych",
-              "title": "Peninsular Panorama",
-              "camera": "GFX 100S II + 32-64mm",
-              "photos": [],
-              "location": "Snaefellsnes Peninsula",
-              "subtitle": "Snaefellsnes in Three Moods",
-              "coverAssetId": ""
-            },
-            {
-              "id": "fld-s8",
-              "type": "Triptych",
-              "title": "Urban Odyssey",
-              "camera": "GFX 100S II + 32-64mm",
-              "photos": [],
-              "location": "Reykjavik",
-              "subtitle": "Reykjavik as Coda",
-              "coverAssetId": ""
-            }
-          ],
-          "location": "Iceland",
-          "subtitle": "A photographic journey through fire and ice",
-          "coverAssetId": ""
-        }
-      ],
-      "description": "Iceland. Guadalupe Peak. New Orleans. Each expedition is a deliberate act — arriving somewhere to wait for the light, the weather, the moment that justifies the journey.",
-      "coverAssetId": {
-        "sizes": {
-          "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
-          "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
-          "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
-          "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
-        },
-        "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
-        "caption": "",
-        "filename": "Ghost Structure.jpg",
-        "imageKey": "DHZZ7dn"
-      }
-    },
-    {
-      "id": "pw-frame",
-      "type": "Home Terrain",
-      "title": "Beyond the Frame",
-      "camera": "GFX 100S II",
-      "format": "Digital",
-      "location": "North Texas",
-      "subtitle": "The near distance",
-      "galleries": [
-        {
-          "id": "gal-1772505442065",
-          "title": "Test Collection",
+          "title": "Monuments to Nobody",
+          "camera": "FUJI GFX 100RF, Fuji X-E5, Fuji GFX 50R",
           "photos": [
             {
               "sizes": {
@@ -846,47 +1276,970 @@
               "imageKey": "DHZZ7dn"
             }
           ],
-          "folders": [],
-          "subtitle": "",
+          "folders": [
+            {
+              "id": "fld-1783958648520-1",
+              "type": "Series",
+              "title": "The Keepers",
+              "camera": "Various",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
+                    "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
+                    "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
+                    "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
+                  },
+                  "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+                  "caption": "",
+                  "filename": "Ghost Structure.jpg",
+                  "imageKey": "DHZZ7dn"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-64c1eee1876e4f1d92ed18b65a83e697/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-64c1eee1876e4f1d92ed18b65a83e697/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-64c1eee1876e4f1d92ed18b65a83e697/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-64c1eee1876e4f1d92ed18b65a83e697/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "64c1eee1876e4f1d92ed18b65a83e697",
+                  "caption": "",
+                  "filename": "e3ddacfd14f7fae487aab90a11625-Topaz-Gigapixel-2X.dng",
+                  "imageKey": "lr-64c1eee1876e4f1d92ed18b65a83e697"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "4f9e3ddacfd14f7fae487aab90a11625",
+                  "caption": "",
+                  "filename": "Sentinel.jpg",
+                  "imageKey": "lr-4f9e3ddacfd14f7fae487aab90a11625"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "3b40567643e44909926a43c44a83d2c1",
+                  "caption": "",
+                  "filename": "Structural Interval.raf",
+                  "imageKey": "lr-3b40567643e44909926a43c44a83d2c1"
+                }
+              ],
+              "location": "American West",
+              "subtitle": "Dam, bridge, and ruin, still standing watch. (Sentinel · The Span · Ghost Structure)",
+              "coverAssetId": {
+                "sizes": {
+                  "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
+                  "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
+                  "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
+                  "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
+                },
+                "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+                "caption": "",
+                "filename": "Ghost Structure.jpg",
+                "imageKey": "DHZZ7dn"
+              }
+            },
+            {
+              "id": "fld-1783958648520-2",
+              "type": "Series",
+              "title": "The Signs Still Burning",
+              "camera": "Various",
+              "photos": [],
+              "location": "Texas · Route 66",
+              "subtitle": "Roadside relics that refuse to go dark. (Red Roof · Cadillac Ranch)",
+              "coverAssetId": ""
+            }
+          ],
+          "location": "Various",
+          "subtitle": "Built with intention, surrendered to weather and neglect, and gradually returned to the materials they came from.",
           "coverAssetId": {
             "sizes": {
-              "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
-              "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
-              "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
-              "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
+              "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/cover",
+              "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/thumb",
+              "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/hero",
+              "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-3b40567643e44909926a43c44a83d2c1/full"
             },
-            "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+            "source": "lightroom",
+            "assetId": "3b40567643e44909926a43c44a83d2c1",
             "caption": "",
-            "filename": "Ghost Structure.jpg",
-            "imageKey": "DHZZ7dn"
+            "filename": "Structural Interval.raf",
+            "imageKey": "lr-3b40567643e44909926a43c44a83d2c1"
+          }
+        },
+        {
+          "id": "gal-1783958402795-2",
+          "type": "Structures",
+          "title": "The Faith That Built These Walls",
+          "camera": "Fujifilm GFX 100S II",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783958679878-1",
+              "type": "Series",
+              "title": "The Northern Churches",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "79cf0cc79bb344ba8a3bbf776fe0096b",
+                  "caption": "",
+                  "filename": "TheRedRoof1.HIF",
+                  "imageKey": "lr-79cf0cc79bb344ba8a3bbf776fe0096b"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-859a74b4197e42c28a833eb2963fa2ae/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-859a74b4197e42c28a833eb2963fa2ae/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-859a74b4197e42c28a833eb2963fa2ae/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-859a74b4197e42c28a833eb2963fa2ae/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "859a74b4197e42c28a833eb2963fa2ae",
+                  "caption": "",
+                  "filename": "TheSanctuaryChurch.RAF",
+                  "imageKey": "lr-859a74b4197e42c28a833eb2963fa2ae"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-cd2aabf536ac4034aefe7ad90f5e5a1c/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-cd2aabf536ac4034aefe7ad90f5e5a1c/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-cd2aabf536ac4034aefe7ad90f5e5a1c/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-cd2aabf536ac4034aefe7ad90f5e5a1c/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "cd2aabf536ac4034aefe7ad90f5e5a1c",
+                  "caption": "",
+                  "filename": "TheSilentThreshold.RAF",
+                  "imageKey": "lr-cd2aabf536ac4034aefe7ad90f5e5a1c"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-9d593aa84ce6485ba4889986b9856276/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-9d593aa84ce6485ba4889986b9856276/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-9d593aa84ce6485ba4889986b9856276/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-9d593aa84ce6485ba4889986b9856276/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "9d593aa84ce6485ba4889986b9856276",
+                  "caption": "",
+                  "filename": "DSCF3031.RAF",
+                  "imageKey": "lr-9d593aa84ce6485ba4889986b9856276"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-6854647d57f64f2baf0495fd7a5cceae/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-6854647d57f64f2baf0495fd7a5cceae/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-6854647d57f64f2baf0495fd7a5cceae/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-6854647d57f64f2baf0495fd7a5cceae/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "6854647d57f64f2baf0495fd7a5cceae",
+                  "caption": "",
+                  "filename": "TheIconicSentinel.jpeg",
+                  "imageKey": "lr-6854647d57f64f2baf0495fd7a5cceae"
+                }
+              ],
+              "location": "Iceland",
+              "subtitle": "Sanctuaries alone against the arctic light. (The Sanctuary · Basalt Cathedral)",
+              "coverAssetId": ""
+            }
+          ],
+          "location": "Iceland · and beyond",
+          "subtitle": "Churches and sanctuaries that outlasted their congregations.",
+          "coverAssetId": {
+            "sizes": {
+              "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/cover",
+              "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/thumb",
+              "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/hero",
+              "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-79cf0cc79bb344ba8a3bbf776fe0096b/full"
+            },
+            "source": "lightroom",
+            "assetId": "79cf0cc79bb344ba8a3bbf776fe0096b",
+            "caption": "",
+            "filename": "TheRedRoof1.HIF",
+            "imageKey": "lr-79cf0cc79bb344ba8a3bbf776fe0096b"
           }
         }
       ],
-      "description": "North Texas landscape — the land you drive past every day and never stop for. Palo Duro. The Trinity bottomlands. The Llano Estacado at golden hour. What’s here when you look.",
+      "description": "Some things refuse to disappear. A dam holding back a river that no longer needs holding. A church standing at the edge of a plain where the congregation long ago scattered. A sign whose letters have faded past legibility but whose iron post still drives into the caliche like an act of faith. These are not ruins, exactly. Ruins imply defeat. What I find instead are presences, structures that have outlasted their purpose and arrived at something quieter and more durable than use.\n\nI come to them with the GFX, or sometimes the X-E5 when the road narrows and the light demands speed, and I try to photograph not what they were but what they have become. Witnesses. That is the word that keeps returning. They stood before I arrived and they will stand after I leave, holding their vigil over landscapes that have no other memory. The land forgets. Stone and steel and old timber do not, or at least they forget more slowly, carrying the weight of the people and the weather and the particular quality of silence that accumulates in a place no one visits anymore.\n\nIceland offered its own version of this. So did Guadalupe Peak, and the Chihuahuan desert stretching south toward nothing. Different geologies, different climates, the same essential fact: something was built here, and the building outlasted the builders, and now it keeps watch.",
+      "coverAssetId": {
+        "sizes": {
+          "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/cover",
+          "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/thumb",
+          "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/hero",
+          "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-4f9e3ddacfd14f7fae487aab90a11625/full"
+        },
+        "source": "lightroom",
+        "assetId": "4f9e3ddacfd14f7fae487aab90a11625",
+        "caption": "",
+        "filename": "Sentinel.jpg",
+        "imageKey": "lr-4f9e3ddacfd14f7fae487aab90a11625"
+      },
+      "featuredImageId": {
+        "sizes": {
+          "large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/L/Ghost%20Structure-L.jpg",
+          "medium": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/M/Ghost%20Structure-M.jpg",
+          "xlarge": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/XL/Ghost%20Structure-XL.jpg",
+          "x2large": "https://photos.smugmug.com/The-Platform/i-DHZZ7dn/0/MwNHNVRbhXQmdnfxgsdvB4nftBF2PdsXsWRBnxjr7/X2/Ghost%20Structure-X2.jpg"
+        },
+        "webUri": "https://theinfinitearch.smugmug.com/The-Platform/i-DHZZ7dn",
+        "caption": "",
+        "filename": "Ghost Structure.jpg",
+        "imageKey": "DHZZ7dn"
+      }
+    },
+    {
+      "id": "pw-frame",
+      "type": "Series",
+      "title": "Thresholds",
+      "camera": "GFX 100S II",
+      "format": "Digital",
+      "location": "Roads, trails, bridges · everywhere",
+      "subtitle": " The moment before arrival.",
+      "galleries": [
+        {
+          "id": "gal-1783958491381-1",
+          "type": "Series",
+          "title": "The Way In",
+          "camera": "Fujifilm GFX 100S II",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783958711580-1",
+              "type": "Series",
+              "title": "The Roads That Called",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-944ab9a178d04ccb98149136b9ef8498/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-944ab9a178d04ccb98149136b9ef8498/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-944ab9a178d04ccb98149136b9ef8498/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/lr-944ab9a178d04ccb98149136b9ef8498/full"
+                  },
+                  "source": "lightroom",
+                  "assetId": "944ab9a178d04ccb98149136b9ef8498",
+                  "caption": "",
+                  "filename": "TheRoadToLife_Walter_Mitty.jpeg",
+                  "imageKey": "lr-944ab9a178d04ccb98149136b9ef8498"
+                }
+              ],
+              "location": "Various",
+              "subtitle": "Empty roads and the daydream down them. (Appalachian Road · The Road to Life)",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958711580-2",
+              "type": "Series",
+              "title": "The Climbs",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Guadalupe · Blue Ridge",
+              "subtitle": "Trails that only go up. (The Ascent · Guadalupe)",
+              "coverAssetId": ""
+            }
+          ],
+          "location": "Various",
+          "subtitle": "Roads and trails that ask you to come further.",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783958491381-2",
+          "type": "Series",
+          "title": "What Waits Beyond the Bend",
+          "camera": "Fujifilm GFX 100S II",
+          "photos": [],
+          "folders": [],
+          "location": "Various",
+          "subtitle": "Bridges and crossings, the far side still in shadow.",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783958491381-3",
+          "type": "Series",
+          "title": "The Openings",
+          "camera": "Fujifilm GFX 100S II",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783958734449-1",
+              "type": "Series",
+              "title": "The Arches",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Various",
+              "subtitle": "Doorways of stone, the way through. (Ephemeral Arch · The Arch)",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958734449-2",
+              "type": "Series",
+              "title": "Bridges and Crossings",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Various",
+              "subtitle": "The far side still in shadow. (What Waits Beyond · The Silent Threshold)",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958734449-3",
+              "type": "Series",
+              "title": "Where the Light Escapes",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Iceland · Oregon",
+              "subtitle": "Gaps the river and the light break through. (Where Dragons Fly · Sea Stacks)",
+              "coverAssetId": ""
+            }
+          ],
+          "location": "Various",
+          "subtitle": "Arches, gaps, and passages, the frame that offers the view.",
+          "coverAssetId": ""
+        }
+      ],
+      "description": " Roads, trails, bridges, the openings in a landscape that ask you to come further in. I don't photograph destinations. I photograph the approach, the bend, the passage, the threshold you cross to reach whatever waits on the other side. The path is the subject.",
       "coverAssetId": ""
     },
     {
       "id": "pw-moment",
-      "type": "Figures in the Threshold",
-      "title": "Beyond the Moment",
+      "type": "Series",
+      "title": "Companions",
       "camera": "GFX 100S II",
       "format": "Digital",
       "location": "Various",
       "subtitle": "The ones who also chose to be out there",
-      "galleries": [],
-      "description": "People in landscape. Climbers. Hikers. The WE CLIMB community. Figures who remind us that the wilderness is not empty — it is where we go to remember who we are.",
+      "galleries": [
+        {
+          "id": "gal-1783958363826-1",
+          "type": "Series",
+          "title": "Until You Found Your Own Path",
+          "camera": "Fujifilm GFX 100S II",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783958377091-1",
+              "type": "Diptych",
+              "title": "Until You Found Your Own Path",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Various",
+              "subtitle": "Walking toward the horizon, away from me.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958377091-2",
+              "type": "Series",
+              "title": "For a Little While Longer",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Various",
+              "subtitle": "The look back, before the path takes her.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958377091-3",
+              "type": "Series",
+              "title": "The Ones Who Also Chose to Be Out There",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Various",
+              "subtitle": "Strangers who answered the same call to go. The horses live here too.",
+              "coverAssetId": ""
+            }
+          ],
+          "location": "Various",
+          "subtitle": "The daughter who walked ahead, toward her own horizon.",
+          "coverAssetId": ""
+        }
+      ],
+      "description": "There is something that shifts when a figure enters the frame. The landscape doesn't diminish — it clarifies. Scale arrives, and with it, something closer to truth.\n\nThese photographs follow people moving through open country: Zoë walking toward a horizon that keeps its distance, strangers crossing a bridge without knowing they're being watched, figures small against terrain that was never as empty as it appeared. Each one carries the quiet suggestion that we have always gone to wild places in search of something we struggle to name at home.\n\nWhat interests me isn't the solitude of wilderness but its companionship — the particular intimacy of shared passage, the way a journey changes when you make it alongside someone else, or simply not alone. These are the people encountered on the way through: some known, some not, all of them briefly part of the same unfolding distance.",
       "coverAssetId": ""
     },
     {
       "id": "pw-shutter",
       "type": "Film · Konica Hexar",
-      "title": "Beyond the Shutter",
-      "camera": "Konica Hexar",
-      "format": "Film",
-      "location": "Various",
-      "subtitle": "The slower eye",
+      "title": "Elsewhere",
+      "camera": "FUJI GFX 100RF, Fuji X-E5, Yashica 35 GSN, Fuji GFX 100sii, Konica Hexar RF",
+      "format": "Digital and Film",
+      "location": "Iceland · Alaska · Oregon · Appalachia · Québec * Japan",
+      "subtitle": "The places that demanded presence.",
+      "galleries": [
+        {
+          "id": "gal-1783956147637",
+          "type": "Trips",
+          "title": "The Ice Remembers — Iceland",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783957756462-1",
+              "type": "Series",
+              "title": "The Architecture of Erosion",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/full"
+                  },
+                  "caption": "",
+                  "filename": "TheBasaltMaw.jpg",
+                  "imageKey": "a0982ae1-4595-4187-9801-16523cd53500"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/70e9c487-75b1-4730-d70b-587c7ffd7b00/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/70e9c487-75b1-4730-d70b-587c7ffd7b00/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/70e9c487-75b1-4730-d70b-587c7ffd7b00/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/70e9c487-75b1-4730-d70b-587c7ffd7b00/full"
+                  },
+                  "caption": "",
+                  "filename": "TheBasaltGeometry.jpg",
+                  "imageKey": "70e9c487-75b1-4730-d70b-587c7ffd7b00"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/1a67d9d6-c1ac-4407-ea70-339f96ee0d00/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/1a67d9d6-c1ac-4407-ea70-339f96ee0d00/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/1a67d9d6-c1ac-4407-ea70-339f96ee0d00/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/1a67d9d6-c1ac-4407-ea70-339f96ee0d00/full"
+                  },
+                  "caption": "",
+                  "filename": "TheBasaltCathedral2.jpg",
+                  "imageKey": "1a67d9d6-c1ac-4407-ea70-339f96ee0d00"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/full"
+                  },
+                  "caption": "",
+                  "filename": "TheSeaStacks-Edit.jpg",
+                  "imageKey": "b8f2383a-0180-426b-ed44-ecdd0de74700"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c22414ad-40a2-46bf-1ccc-963ac3f4b100/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c22414ad-40a2-46bf-1ccc-963ac3f4b100/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c22414ad-40a2-46bf-1ccc-963ac3f4b100/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c22414ad-40a2-46bf-1ccc-963ac3f4b100/full"
+                  },
+                  "caption": "",
+                  "filename": "BasaltCathedral.jpg",
+                  "imageKey": "c22414ad-40a2-46bf-1ccc-963ac3f4b100"
+                }
+              ],
+              "location": "Reynisfjara",
+              "subtitle": "Basalt raised by no hand but the sea's.",
+              "coverAssetId": {
+                "sizes": {
+                  "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/cover",
+                  "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/thumb",
+                  "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/hero",
+                  "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/a0982ae1-4595-4187-9801-16523cd53500/full"
+                },
+                "caption": "",
+                "filename": "TheBasaltMaw.jpg",
+                "imageKey": "a0982ae1-4595-4187-9801-16523cd53500"
+              }
+            },
+            {
+              "id": "fld-1783957756462-2",
+              "type": "Diptych",
+              "title": "The Ocean's Final Word",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Jökulsárlón & Diamond Beach",
+              "subtitle": "Where glacial ice meets the tide and ends.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957756462-3",
+              "type": "Triptych",
+              "title": "The Impossible Blues",
+              "camera": "Fujifilm X-E5 · GFX 100S II",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/full"
+                  },
+                  "caption": "",
+                  "filename": "TheAzureVein.jpg",
+                  "imageKey": "5c8cc859-971f-4424-b3e2-fc83cd9e1200"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/full"
+                  },
+                  "caption": "",
+                  "filename": "The_Grandeur_Seljalandsfoss.jpg",
+                  "imageKey": "ca24d3ec-2d83-4bde-cc49-d5c9105ad200"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/73a65d42-d3db-4e18-78f9-70f6fdeb8500/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/73a65d42-d3db-4e18-78f9-70f6fdeb8500/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/73a65d42-d3db-4e18-78f9-70f6fdeb8500/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/73a65d42-d3db-4e18-78f9-70f6fdeb8500/full"
+                  },
+                  "caption": "",
+                  "filename": "PurePower.jpg",
+                  "imageKey": "73a65d42-d3db-4e18-78f9-70f6fdeb8500"
+                }
+              ],
+              "location": "Seljalandsfoss · Gullfoss · Brúarfoss",
+              "subtitle": "Water the color of a thing that shouldn't exist.",
+              "coverAssetId": {
+                "sizes": {
+                  "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/cover",
+                  "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/thumb",
+                  "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/hero",
+                  "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5c8cc859-971f-4424-b3e2-fc83cd9e1200/full"
+                },
+                "caption": "",
+                "filename": "TheAzureVein.jpg",
+                "imageKey": "5c8cc859-971f-4424-b3e2-fc83cd9e1200"
+              }
+            },
+            {
+              "id": "fld-1783957756462-4",
+              "type": "Triptych",
+              "title": "The Blue Cathedral",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/full"
+                  },
+                  "caption": "",
+                  "filename": "TheEmergence.jpg",
+                  "imageKey": "3280c43e-adc9-4f55-730f-51a279bbe000"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/cadb7fc6-2892-4a80-6936-e380d3170900/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/cadb7fc6-2892-4a80-6936-e380d3170900/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/cadb7fc6-2892-4a80-6936-e380d3170900/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/cadb7fc6-2892-4a80-6936-e380d3170900/full"
+                  },
+                  "caption": "",
+                  "filename": "TheDepth.jpg",
+                  "imageKey": "cadb7fc6-2892-4a80-6936-e380d3170900"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c3257cf3-712b-40ea-2dea-8f9f8ce32500/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c3257cf3-712b-40ea-2dea-8f9f8ce32500/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c3257cf3-712b-40ea-2dea-8f9f8ce32500/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/c3257cf3-712b-40ea-2dea-8f9f8ce32500/full"
+                  },
+                  "caption": "",
+                  "filename": "TheApproach.jpg",
+                  "imageKey": "c3257cf3-712b-40ea-2dea-8f9f8ce32500"
+                }
+              ],
+              "location": "Vatnajökull",
+              "subtitle": "Light through walls of ice, at the end of the map.",
+              "coverAssetId": {
+                "sizes": {
+                  "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/cover",
+                  "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/thumb",
+                  "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/hero",
+                  "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/3280c43e-adc9-4f55-730f-51a279bbe000/full"
+                },
+                "caption": "",
+                "filename": "TheEmergence.jpg",
+                "imageKey": "3280c43e-adc9-4f55-730f-51a279bbe000"
+              }
+            },
+            {
+              "id": "fld-1783957756462-5",
+              "type": "Diptych",
+              "title": "The Crystal Ossuary",
+              "camera": "Fujifilm GFX 100RF · 50R · X-E5",
+              "photos": [
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/fa3882eb-ba11-4150-54d6-7ac156701500/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/fa3882eb-ba11-4150-54d6-7ac156701500/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/fa3882eb-ba11-4150-54d6-7ac156701500/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/fa3882eb-ba11-4150-54d6-7ac156701500/full"
+                  },
+                  "caption": "",
+                  "filename": "TheTexture.jpg",
+                  "imageKey": "fa3882eb-ba11-4150-54d6-7ac156701500"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d7058441-8604-4f6d-7d22-90258ebacc00/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d7058441-8604-4f6d-7d22-90258ebacc00/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d7058441-8604-4f6d-7d22-90258ebacc00/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d7058441-8604-4f6d-7d22-90258ebacc00/full"
+                  },
+                  "caption": "",
+                  "filename": "TheSurge.jpg",
+                  "imageKey": "d7058441-8604-4f6d-7d22-90258ebacc00"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5aa1ba07-8a13-49fa-d58c-b39a58752c00/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5aa1ba07-8a13-49fa-d58c-b39a58752c00/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5aa1ba07-8a13-49fa-d58c-b39a58752c00/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/5aa1ba07-8a13-49fa-d58c-b39a58752c00/full"
+                  },
+                  "caption": "",
+                  "filename": "TheCrystalSkull.jpg",
+                  "imageKey": "5aa1ba07-8a13-49fa-d58c-b39a58752c00"
+                },
+                {
+                  "sizes": {
+                    "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/cover",
+                    "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/thumb",
+                    "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/hero",
+                    "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/full"
+                  },
+                  "caption": "",
+                  "filename": "TheRelic.jpg",
+                  "imageKey": "d6ba64fd-5148-4527-7397-53b84adabc00"
+                }
+              ],
+              "location": "Southeast Iceland",
+              "subtitle": "Glacial remains, pale and permanent beneath arctic light.",
+              "coverAssetId": {
+                "sizes": {
+                  "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/cover",
+                  "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/thumb",
+                  "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/hero",
+                  "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/d6ba64fd-5148-4527-7397-53b84adabc00/full"
+                },
+                "caption": "",
+                "filename": "TheRelic.jpg",
+                "imageKey": "d6ba64fd-5148-4527-7397-53b84adabc00"
+              }
+            }
+          ],
+          "location": "Iceland",
+          "subtitle": "Fire, silence, and the edge of the world.",
+          "coverAssetId": {
+            "sizes": {
+              "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/cover",
+              "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/thumb",
+              "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/hero",
+              "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/b8f2383a-0180-426b-ed44-ecdd0de74700/full"
+            },
+            "caption": "",
+            "filename": "TheSeaStacks-Edit.jpg",
+            "imageKey": "b8f2383a-0180-426b-ed44-ecdd0de74700"
+          }
+        },
+        {
+          "id": "gal-1783956429398",
+          "title": "What the Music Left Behind — New Orleans",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783957772940-1",
+              "type": "Series",
+              "title": "The Door Has Heard It All",
+              "camera": "Fujifilm X-E5",
+              "photos": [],
+              "location": "Preservation Hall",
+              "subtitle": "Music outliving the walls that hold it.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957772940-2",
+              "type": "Series",
+              "title": "He Who Keeps the Best Stories",
+              "camera": "Fujifilm GFX · Acros",
+              "photos": [],
+              "location": "French Quarter",
+              "subtitle": "The characters who hold court after dark.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957772940-3",
+              "type": "Series",
+              "title": "What the Walls Refuse to Forget",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "French Quarter",
+              "subtitle": "Plaster, patina, and the weight of remembering.",
+              "coverAssetId": ""
+            }
+          ],
+          "subtitle": "",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783957801810",
+          "title": "The Air Gets Thin Up Here - Colorado",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783957847313-1",
+              "type": "Series",
+              "title": "The Climb Is the Point",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Rocky Mountains",
+              "subtitle": "Altitude, and the reasons we chase it.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957847313-2",
+              "type": "Series",
+              "title": "Above the Timberline",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Front Range",
+              "subtitle": "Where the trees give up and the rock takes over.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957847313-3",
+              "type": "Series",
+              "title": "What the Snow Keeps",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Colorado high country",
+              "subtitle": "Silence held at altitude.",
+              "coverAssetId": ""
+            }
+          ],
+          "subtitle": "",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783957818827",
+          "title": "The Last Quiet Places - Alaska",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783957832400-1",
+              "type": "Diptych",
+              "title": "Committed",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Alaska",
+              "subtitle": "The floatplane, the water, the point of no return.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957832400-2",
+              "type": "Series",
+              "title": "Between Here and There",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Alaska interior",
+              "subtitle": "Suspended over a country too big to name.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957832400-3",
+              "type": "Series",
+              "title": "The Smallness It Teaches",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Alaska Range",
+              "subtitle": "Scale that humbles whoever stands in it.",
+              "coverAssetId": ""
+            }
+          ],
+          "subtitle": "",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783957914683",
+          "title": "The Quiet Between Gates - Japan",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783957926393-1",
+              "type": "Series",
+              "title": "The Quiet Between Gates",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Fushimi Inari",
+              "subtitle": "The corridor of torii, and the pause inside it.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957926393-2",
+              "type": "Series",
+              "title": "The Mountain Withholds Itself",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Mt. Fuji · Yoshida Trail",
+              "subtitle": "Fuji, seen and unseen, deciding what to show.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957926393-3",
+              "type": "Series",
+              "title": "Where the Old City Breathes",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Kyoto",
+              "subtitle": "Temples, moss, and the space between things.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957926393-4",
+              "type": "Triptych",
+              "title": "The Threshold Repeated",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Fushimi Inari",
+              "subtitle": "Ten thousand gates, each one an invitation in.",
+              "coverAssetId": ""
+            }
+          ],
+          "subtitle": "",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783957969230",
+          "title": "The Long Green Tunnel - The Appalachian Trail",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783957977759-1",
+              "type": "Series",
+              "title": "The Long Green Tunnel",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Appalachian Trail",
+              "subtitle": "The corridor of trees at the edge of dark.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957977759-2",
+              "type": "Series",
+              "title": "Appalachian Road",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Blue Ridge",
+              "subtitle": "The way in, before the climb begins.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783957977759-3",
+              "type": "Series",
+              "title": "What the Fog Allows",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Great Smoky Mountains",
+              "subtitle": "Mountains that reveal themselves one ridge at a time.",
+              "coverAssetId": ""
+            }
+          ],
+          "subtitle": "",
+          "coverAssetId": ""
+        },
+        {
+          "id": "gal-1783958008172",
+          "title": "The Old Country Remembers - Québec",
+          "photos": [],
+          "folders": [
+            {
+              "id": "fld-1783958026502-1",
+              "type": "Series",
+              "title": "The Old Country Remembers",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Vieux-Québec",
+              "subtitle": "Stone streets that kept their language.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958026502-2",
+              "type": "Series",
+              "title": "Le Petit Champ",
+              "camera": "Fujifilm GFX 100S II",
+              "photos": [],
+              "location": "Québec countryside",
+              "subtitle": "The small field, and what waits at its edge.",
+              "coverAssetId": ""
+            },
+            {
+              "id": "fld-1783958026502-3",
+              "type": "Series",
+              "title": "Where Winter Sets the Terms",
+              "camera": "Fujifilm GFX 100RF",
+              "photos": [],
+              "location": "Québec City",
+              "subtitle": "A city that made peace with the cold.",
+              "coverAssetId": ""
+            }
+          ],
+          "subtitle": "",
+          "coverAssetId": ""
+        }
+      ],
+      "description": "The far places. The ones that ask something of you before they offer anything back. Iceland's volcanic interior, where the ground still remembers its own making. The long Appalachian light that arrives sideways and stays just long enough to change what you thought you understood. The Oregon coast where the continent simply runs out, and the Pacific receives that fact without comment.\n\nEach journey here was a deliberate act — not of escape, but of arrival. Going somewhere in order to become still. To wait for the light to do what you had quietly suspected it might, if you were patient enough and present enough to deserve it. The suspicion, it turns out, is the practice. You carry it across time zones and weather systems and return home unsure whether you succeeded, until the contact sheet tells you otherwise.\n\nThis is where film earns its place. The Hexar loaded, the frame finite, the decision irreversible. No reviewing, no adjusting, no undoing. Just the moment accepted or missed, and the discipline of not always knowing which.\n\nThese images gather the Iceland 2026 expedition alongside other journeys that refused to be understood from a distance: Alaska's scale that humbles without requiring spectacle, the particular and unhurried quiet of rural Québec, the compressed and layered world of Japan encountered slowly, on foot, in weather that kept changing its mind. Five geographies, one disposition. Elsewhere, in the end, is not a place you reach but a way of paying attention — practiced repeatedly, imperfectly, and without guarantee of arrival.",
+      "coverAssetId": {
+        "sizes": {
+          "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/cover",
+          "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/thumb",
+          "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/hero",
+          "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/full"
+        },
+        "caption": "",
+        "filename": "The_Grandeur_Seljalandsfoss.jpg",
+        "imageKey": "ca24d3ec-2d83-4bde-cc49-d5c9105ad200"
+      },
+      "featuredImageId": {
+        "sizes": {
+          "large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/cover",
+          "medium": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/thumb",
+          "xlarge": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/hero",
+          "x2large": "https://imagedelivery.net/W2O7t84FW9eAHociDpBWSg/ca24d3ec-2d83-4bde-cc49-d5c9105ad200/full"
+        },
+        "caption": "",
+        "filename": "The_Grandeur_Seljalandsfoss.jpg",
+        "imageKey": "ca24d3ec-2d83-4bde-cc49-d5c9105ad200"
+      }
+    },
+    {
+      "id": "pw-1783925647384",
+      "type": "Series",
+      "title": "Becoming",
+      "camera": "",
+      "format": "",
+      "location": "Wherever the road leads next",
+      "subtitle": "Choosing the next version of yourself.",
       "galleries": [],
-      "description": "The Konica Hexar sees differently. Grain, patience, the commitment of analog — no spray and pray, no instant review. One frame at a time. One chance to mean it.",
+      "description": "The autobiographical thread runs through everything here. Starting over, later than most, and moving forward anyway. Hiking, running, photography — all of it taken up deliberately, as a way of deciding who to become next. Not as escape, but as authorship.\n\nThe arch isn't the subject. It never was. What interests me is the perspective that only comes from passing through something, the way the frame changes what you see on the other side. This is the chapter about walking through it. About choosing motion over stillness, becoming over having been. The images in this series are less about arrival than about the quality of attention that sustained movement makes possible.\n\nLater than most. And moving forward anyway.",
       "coverAssetId": ""
     }
   ]
