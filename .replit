@@ -63,3 +63,7 @@ CF_IMAGES_HASH = "W2O7t84FW9eAHociDpBWSg"
 
 [userenv.production]
 CLIENT_URL = "https://the-infinite-arch.replit.app"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 180000
