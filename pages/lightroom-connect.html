@@ -118,7 +118,7 @@
     } catch (e) {
       if (e.message === 'AUTH') {
         render('<p>You must be signed in as the site admin first.</p>' +
-          '<a class="btn" href="/api/login" data-testid="link-login">Sign In</a>');
+          '<a class="btn" href="/sign-in" data-testid="link-login">Sign In</a>');
       } else {
         showError('Could not start the connection', e.message);
       }

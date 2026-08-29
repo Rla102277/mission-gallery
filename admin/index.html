@@ -370,8 +370,8 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
   <div class="auth-box">
     <span class="auth-logo">The Infinite Arch &middot; Admin</span>
     <h1 class="auth-h">Photo Manager</h1>
-    <p style="color:var(--muted);font-size:14px;margin:0 0 18px 0;text-align:center;line-height:1.5">Sign in with your Replit account.<br>Only authorized admins may enter.</p>
-    <a class="auth-btn" href="/api/login" style="display:block;text-align:center;text-decoration:none" data-testid="link-login">Continue with Replit</a>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 18px 0;text-align:center;line-height:1.5">Sign in to your account.<br>Only authorized admins may enter.</p>
+    <a class="auth-btn" href="/sign-in" style="display:block;text-align:center;text-decoration:none" data-testid="link-login">Sign In</a>
     <div class="auth-err" id="authErr" style="margin-top:14px"></div>
   </div>
 </div>
@@ -390,8 +390,8 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
       <button class="tb-tab" data-tab="settings"   onclick="switchTab('settings')">Settings</button>
     </div>
     <div class="tb-right">
-      <button class="tb-save" id="saveBtn" onclick="saveAll()">Save &amp; Publish</button>
-      <button class="tb-signout" onclick="doLogout()">Sign Out</button>
+      <button class="tb-save" id="saveBtn" onclick="saveAll()" data-testid="button-save">Save &amp; Publish</button>
+      <button class="tb-signout" onclick="doLogout()" data-testid="button-sign-out">Sign Out</button>
     </div>
   </div>
   <div class="body">
@@ -480,6 +480,7 @@ button,input,select,textarea{font-family:var(--font)}a{color:var(--gold)}
 <div class="toast" id="toast"></div>
 
 <script src="/assets/js/lightroom-auth.js"></script>
+<script src="/assets/js/clerk-auth.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // TIA-DATA.JS  v8
@@ -628,14 +629,15 @@ const TIA = {
 };
 
 
-// AUTH (Replit Auth — admin allowlist enforced server-side)
+// AUTH (Clerk session cookie — admin allowlist enforced server-side)
 let authed = false;
 let currentUser = null;
 
-function doLogout() { window.location.href = "/api/logout"; }
+async function doLogout() { await TIAClerk.signOut(); }
 
 async function checkAuth() {
   try {
+    await TIAClerk.ready();
     const r = await fetch("/api/auth/user", { credentials: "include" });
     if (r.status === 401) {
       showLoginScreen();
@@ -663,8 +665,12 @@ function showLoginScreen(errMsg) {
   if (errMsg) {
     err.textContent = errMsg + " ";
     const logoutLink = document.createElement("a");
-    logoutLink.href = "/api/logout";
+    logoutLink.href = "#";
     logoutLink.textContent = "Sign out & try a different account";
+    logoutLink.onclick = function(event) {
+      event.preventDefault();
+      doLogout();
+    };
     logoutLink.style.color = "var(--gold)";
     logoutLink.style.textDecoration = "underline";
     err.appendChild(logoutLink);

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 84" role="img" aria-labelledby="title">
+  <title id="title">The Infinite Arch</title>
+  <rect width="320" height="84" fill="#faf7f0"/>
+  <path d="M22 62V43c0-17 13-30 30-30s30 13 30 30v19h-9V43c0-12-9-21-21-21s-21 9-21 21v19z" fill="#b5922a"/>
+  <path d="M38 62V44c0-8 6-14 14-14s14 6 14 14v18h-8V44c0-4-2-6-6-6s-6 2-6 6v18z" fill="#0d0d0d"/>
+  <text x="102" y="37" fill="#0d0d0d" font-family="Georgia,serif" font-size="17" letter-spacing="2">THE INFINITE</text>
+  <text x="102" y="61" fill="#8a6d17" font-family="Arial,sans-serif" font-size="12" letter-spacing="7">ARCH</text>
+</svg>

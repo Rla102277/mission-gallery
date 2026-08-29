@@ -6,7 +6,19 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 import pg from "pg";
 import Anthropic from "@anthropic-ai/sdk";
-import { setupAuth, registerAuthRoutes, requireAdmin, isAuthenticated, ensureAuthTables } from "./replit_integrations/auth";
+import { clerkMiddleware } from "@clerk/express";
+import { publishableKeyFromHost } from "@clerk/shared/keys";
+import {
+  ensureAuthTables,
+  registerClerkAuthRoutes,
+  requireAdmin,
+  requireAuth,
+} from "./middlewares/clerkAuth";
+import {
+  CLERK_PROXY_PATH,
+  clerkProxyMiddleware,
+  getClerkProxyHost,
+} from "./middlewares/clerkProxyMiddleware";
 import { getAlbums, getAlbumImages } from "./smugmug";
 import { registerAdobeRoutes } from "./adobe";
 import { registerLightroomRoutes } from "./lightroom";
@@ -16,7 +28,17 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = Number(process.env.PORT) || 5000;
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  clerkMiddleware((req) => ({
+    publishableKey: publishableKeyFromHost(
+      getClerkProxyHost(req) ?? "",
+      process.env.CLERK_PUBLISHABLE_KEY,
+    ),
+  })),
+);
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -116,7 +138,7 @@ async function ensureConfigTable() {
 
 
 function registerRoutes() {
-  app.get("/api/smugmug/albums", isAuthenticated, requireAdmin, async (_req, res) => {
+  app.get("/api/smugmug/albums", requireAuth, requireAdmin, async (_req, res) => {
     try {
       const albums = await getAlbums();
       res.json(albums);
@@ -126,7 +148,7 @@ function registerRoutes() {
     }
   });
 
-  app.get("/api/smugmug/albums/:albumKey/images", isAuthenticated, requireAdmin, async (req, res) => {
+  app.get("/api/smugmug/albums/:albumKey/images", requireAuth, requireAdmin, async (req, res) => {
     try {
       const albumKey = Array.isArray(req.params.albumKey) ? req.params.albumKey[0] : req.params.albumKey;
       const images = await getAlbumImages(albumKey);
@@ -137,7 +159,7 @@ function registerRoutes() {
     }
   });
 
-  app.get("/api/images/list", isAuthenticated, requireAdmin, async (_req, res) => {
+  app.get("/api/images/list", requireAuth, requireAdmin, async (_req, res) => {
     const accountId = process.env.CF_ACCOUNT_ID;
     const token = process.env.CF_IMAGES_TOKEN;
     const hash = process.env.CF_IMAGES_HASH || null;
@@ -179,7 +201,7 @@ function registerRoutes() {
     res.type("application/json").send(JSON.stringify(configCache));
   });
 
-  app.post("/api/config", isAuthenticated, requireAdmin, async (req, res) => {
+  app.post("/api/config", requireAuth, requireAdmin, async (req, res) => {
     try {
       await persistConfig(req.body);
       const seriesCount = Object.keys(req.body.series || {}).length;
@@ -194,7 +216,7 @@ function registerRoutes() {
     }
   });
 
-  app.post("/api/ai/enrich", isAuthenticated, requireAdmin, async (req, res) => {
+  app.post("/api/ai/enrich", requireAuth, requireAdmin, async (req, res) => {
     const baseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
     const apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY;
     if (!baseURL || !apiKey) return res.status(500).json({ error: "AI integration not configured" });
@@ -247,8 +269,8 @@ function registerRoutes() {
     }
   });
 
-  registerAdobeRoutes(app, [isAuthenticated, requireAdmin]);
-  registerLightroomRoutes(app, [isAuthenticated, requireAdmin], {
+  registerAdobeRoutes(app, [requireAuth, requireAdmin]);
+  registerLightroomRoutes(app, [requireAuth, requireAdmin], {
     getConfig: () => configCache,
     saveConfig: persistConfig,
   });
@@ -256,6 +278,21 @@ function registerRoutes() {
   const publicDir = fs.existsSync(path.join(__dirname, "public"))
     ? path.join(__dirname, "public")
     : path.join(__dirname, "..");
+  const clerkAssetsDir = path.join(
+    __dirname,
+    "..",
+    "node_modules",
+    "@clerk",
+    "clerk-js",
+    "dist",
+  );
+  app.use("/assets/vendor/clerk", express.static(clerkAssetsDir));
+  app.get(["/sign-in", "/sign-in/*path"], (_req, res) => {
+    res.sendFile(path.join(publicDir, "pages", "sign-in.html"));
+  });
+  app.get(["/sign-up", "/sign-up/*path"], (_req, res) => {
+    res.sendFile(path.join(publicDir, "pages", "sign-up.html"));
+  });
   app.get("/test/lightroom", (_req, res) => {
     res.sendFile(path.join(publicDir, "pages", "lightroom-connect.html"));
   });
@@ -624,17 +661,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     await initializeConfigCache();
     await ensureConfigTable();
     await queryWithTimeout(async () => await ensureAuthTables(), 5000);
-    if (process.env.REPL_ID) {
-      await queryWithTimeout(async () => await setupAuth(app), 5000);
-      registerAuthRoutes(app);
-    } else {
-      console.log("Local mode: Replit Auth disabled");
-    }
+    registerClerkAuthRoutes(app);
     registerRoutes();
     app.listen(port, "0.0.0.0", () => {
       console.log(`Static file server listening on port ${port}`);
       console.log(`[SmugMug] Nickname: ${process.env.SMUGMUG_NICKNAME || "MISSING"}`);
-      console.log(`[Auth] Replit Auth ${process.env.REPL_ID ? "enabled" : "disabled"}`);
+      console.log("[Auth] Clerk enabled");
     });
   } catch (err: any) {
     console.error("[Startup] Fatal error:", err);

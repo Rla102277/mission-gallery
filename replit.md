@@ -9,6 +9,7 @@ JSON-config-driven CMS photography platform with a block-rendered page system an
 - **Config Storage**: PostgreSQL database (`site_config` table with JSONB column) — persists across deployments. Dev and production use SEPARATE databases (changes made in the live admin exist only in prod config, and vice versa)
 - **Photo Hosting**: Cloudflare Images (sole image server)
 - **Server**: Express with multer — proxies uploads to Cloudflare Images API (protects API token)
+- **Authentication**: Clerk session cookies with a local `users` table bridge and server-side admin email allowlist
 - **Build**: `script/build.cjs` copies static files to `dist/public/` and creates `dist/index.cjs` Express server
 
 ## Block Renderer System (Phase 1 Complete)
@@ -151,6 +152,7 @@ Admin terminology: Collection Sets (works), Collections (galleries), Folders (ne
 - `CF_IMAGES_TOKEN` — Cloudflare Images API token (secret)
 - `CF_IMAGES_HASH` — Cloudflare Images delivery hash
 - `SESSION_SECRET` — Session secret
+- `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY` — Replit-managed Clerk credentials
 
 ## Deployment
 - Target: autoscale

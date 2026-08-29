@@ -1,6 +1,6 @@
 # mission-gallery — The Infinite Arch
 Full-stack app: Express 5 + Node 20 backend (server/index.ts), HTML pages,
-Postgres site_config (JSONB) as the CMS store, Replit Auth, AI enrichment.
+Postgres site_config (JSONB) as the CMS store, Clerk Auth, AI enrichment.
 Follow REFACTOR_PLAN.md for the current work.
 
 ## Hard rules
