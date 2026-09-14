@@ -2,6 +2,7 @@
   "use strict";
 
   var clerkPromise;
+  var clerkScriptPromise;
   var appearance = {
     variables: {
       colorPrimary: "#b5922a",
@@ -39,7 +40,6 @@
   async function getClerk() {
     if (clerkPromise) return clerkPromise;
     clerkPromise = (async function () {
-      var clerkModule = await import("/assets/vendor/clerk/clerk.mjs");
       var response = await fetch("/api/auth/config", {
         credentials: "include",
       });
@@ -48,9 +48,28 @@
       if (!config.publishableKey) {
         throw new Error("Authentication is not configured");
       }
-      var clerk = new clerkModule.Clerk(config.publishableKey, {
-        proxyUrl: config.proxyUrl,
-      });
+
+      if (!window.Clerk) {
+        clerkScriptPromise = clerkScriptPromise || new Promise(function (resolve, reject) {
+          var script = document.createElement("script");
+          script.src = "/assets/vendor/clerk/clerk.browser.js";
+          script.async = true;
+          script.crossOrigin = "anonymous";
+          script.setAttribute("data-clerk-publishable-key", config.publishableKey);
+          if (config.proxyUrl) {
+            script.setAttribute("data-clerk-proxy-url", config.proxyUrl);
+          }
+          script.onload = resolve;
+          script.onerror = function () {
+            reject(new Error("Could not load Clerk browser components"));
+          };
+          document.head.appendChild(script);
+        });
+        await clerkScriptPromise;
+      }
+
+      var clerk = window.Clerk;
+      if (!clerk) throw new Error("Clerk browser components did not initialize");
       await clerk.load({
         appearance: appearance,
         signInUrl: "/sign-in",
