@@ -221,9 +221,11 @@ const TIA = {
 
   _mapPhotoIds(ids) {
     var state = TIA.getState();
+    var am = (state.cf && state.cf.assetMeta) || {};
     return ids.map(function(photo) {
       // Handle SmugMug photo objects
       if (photo && typeof photo === 'object' && photo.sizes) {
+        var m1 = am[photo.imageKey] || {};
         return {
           assetId: photo.imageKey,
           thumb: photo.sizes.large || photo.sizes.medium || photo.webUri,
@@ -231,15 +233,22 @@ const TIA = {
           cover: photo.sizes.large || photo.sizes.xlarge || photo.webUri,
           hero: photo.sizes.xlarge || photo.sizes.x2large || photo.webUri,
           filename: photo.filename || photo.imageKey,
-          webUri: photo.webUri
+          webUri: photo.webUri,
+          metaTitle: m1.title || photo.title || '',
+          caption: m1.caption || photo.caption || '',
+          alt: m1.altText || ''
         };
       }
       // Legacy: string IDs use Cloudflare
       const aid = typeof photo === 'string' ? photo : photo?.imageKey || photo?.assetId;
+      var m2 = am[aid] || {};
       return {
         assetId: aid, thumb: TIA.thumb(aid), full: TIA.full(aid),
         cover: TIA.cover(aid), hero: TIA.hero(aid),
-        filename: (state.cf && state.cf.assetMeta && state.cf.assetMeta[aid] && state.cf.assetMeta[aid].filename) || aid.split('/').pop() || aid
+        filename: m2.filename || aid.split('/').pop() || aid,
+        metaTitle: m2.title || '',
+        caption: m2.caption || '',
+        alt: m2.altText || ''
       };
     });
   },

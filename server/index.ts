@@ -204,15 +204,32 @@ function registerRoutes() {
       "The photographer specializes in landscape and expedition photography with a Fujifilm GFX system. " +
       "The tone is: literary, contemplative, precise — like a quiet essay. Avoid clichés, marketing speak, and exclamation marks. " +
       "Keep the voice grounded and authentic. Do not use em-dashes excessively.";
+    const isPhoto = context.entity === "photo";
+    const fieldHints: Record<string, string> = {
+      description: "Write 2-3 sentences that capture the essence and intent of this body of work.",
+      subtitle: "Write a short, evocative subtitle (under 10 words).",
+      caption: "Write one short caption line for this single photograph (under 15 words).",
+      altText: "Write concise, factual alt text describing what is visible in this photograph, for accessibility and image SEO (under 125 characters). Plain description, no artistic flourish, no 'image of' prefix.",
+      storyTitle: "Write a short, literary title for this photograph's story page (under 8 words). No quotes.",
+      storyBody: "Write 2-4 short paragraphs telling the story behind this photograph — the place, the moment, the intent. Separate paragraphs with a blank line. Plain text only, no headings or markdown.",
+    };
+    if (isPhoto) {
+      fieldHints.title = "Write a short, evocative display title for this single photograph (under 8 words). No quotes.";
+    }
+    const hint = fieldHints[field as string] || "Write appropriate content for this field.";
+    const ctxParts = ["title", "subtitle", "type", "location", "camera", "year", "caption", "image", "appearsIn", "storyTitle", "storyExcerpt"]
+      .filter((k) => context[k])
+      .map((k) => `${k}: ${context[k]}`);
+    const ctxStr = ctxParts.join(", ");
     let userPrompt = "";
     if (mode === "enrich") {
-      userPrompt = `Enrich and improve the following ${field} text for a photography portfolio work. Make it more evocative and compelling while keeping the photographer's authentic voice. Context about this work: Title: ${context.title || ""}, Type: ${context.type || ""}, Location: ${context.location || ""}, Camera: ${context.camera || ""}. Return ONLY the improved text, nothing else. Keep it roughly the same length unless the original is very short. Current text: ${current}`;
+      userPrompt = `Enrich and improve the following ${field} text for a photography portfolio. Make it more evocative and compelling while keeping the photographer's authentic voice. ${hint} Context: ${ctxStr}. Return ONLY the improved text, nothing else. Keep it roughly the same length unless the original is very short. Current text: ${current}`;
     } else if (mode === "generate") {
-      userPrompt = `Generate a ${field} for a photography portfolio work. Context: Title: ${context.title || ""}, Type: ${context.type || ""}, Location: ${context.location || ""}, Camera: ${context.camera || ""}, Subtitle: ${context.subtitle || ""}. Return ONLY the text, nothing else. ${field === "description" ? "Write 2-3 sentences that capture the essence and intent of this body of work." : field === "subtitle" ? "Write a short, evocative subtitle (under 10 words)." : "Write appropriate content for this field."}`;
+      userPrompt = `Generate a ${field} for a photography portfolio. Context: ${ctxStr}. Return ONLY the text, nothing else. ${hint}`;
     } else if (mode === "shorten") {
       userPrompt = `Make this ${field} text more concise while preserving its meaning and tone: ${current}\nReturn ONLY the shortened text.`;
     } else if (mode === "expand") {
-      userPrompt = `Expand this ${field} text with more detail and depth while maintaining its tone: ${current}\nContext: Title: ${context.title || ""}, Location: ${context.location || ""}\nReturn ONLY the expanded text.`;
+      userPrompt = `Expand this ${field} text with more detail and depth while maintaining its tone. ${hint}\nContext: ${ctxStr}\nCurrent text: ${current}\nReturn ONLY the expanded text.`;
     }
     try {
       const client = new Anthropic({ apiKey, baseURL });
