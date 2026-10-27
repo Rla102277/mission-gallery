@@ -287,6 +287,9 @@ function registerRoutes() {
     "dist",
   );
   app.use("/assets/vendor/clerk", express.static(clerkAssetsDir));
+  app.use("/assets/vendor/clerk-ui", express.static(
+    path.join(__dirname, "..", "node_modules", "@clerk", "ui", "dist"),
+  ));
   app.get(["/sign-in", "/sign-in/*path"], (_req, res) => {
     res.sendFile(path.join(publicDir, "pages", "sign-in.html"));
   });

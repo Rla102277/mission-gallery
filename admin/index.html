@@ -716,7 +716,7 @@ async function init(){
   STATE=await TIA.load();
   STATE.series=STATE.series||{};STATE.photos=STATE.photos||{};
   STATE.home=STATE.home||{};
-  STATE.stories=STATE.stories||{};
+  STATE.stories=normalizeStories(STATE.stories);
   STATE.cf=STATE.cf||{};STATE.cf.assetMeta=STATE.cf.assetMeta||{};
   STATE.imgFolders=STATE.imgFolders||{};
   delete STATE.portfolioEntries;
@@ -3142,6 +3142,11 @@ async function showImagesPanel(){
   }
 }
 
+function normalizeStories(stories){
+  if(Array.isArray(stories))return stories;
+  return Object.entries(stories||{}).map(([id,story])=>({ ...story, id:story.id||id }));
+}
+
 function showStoriesPanel(){
   const stories=STATE.stories||[];
   setPanel("Stories","All Stories","<button class='btn pri' onclick='createNewStory()' data-testid='btn-new-story'>+ New Story</button>");
@@ -4597,7 +4602,7 @@ async function imgDeleteSelected(){
 }
 
 // HELPERS
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function toast(msg,isErr=false){
   const t=document.getElementById("toast");t.textContent=msg;
   t.className="toast show"+(isErr?" err":"");clearTimeout(t._t);

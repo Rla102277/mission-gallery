@@ -16,6 +16,7 @@
     "@clerk/express": "^2.1.67",
     "@clerk/react": "^6.15.2",
     "@clerk/shared": "^4.31.1",
+    "@clerk/ui": "^1.42.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@octokit/rest": "^22.0.0",

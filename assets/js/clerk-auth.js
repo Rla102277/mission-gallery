@@ -70,7 +70,22 @@
 
       var clerk = window.Clerk;
       if (!clerk) throw new Error("Clerk browser components did not initialize");
+      // Clerk 6 ships its UI separately from the session/client SDK.
+      if (!window.__internal_ClerkUICtor) {
+        await new Promise(function (resolve, reject) {
+          var script = document.createElement("script");
+          script.src = "/assets/vendor/clerk-ui/ui.browser.js";
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = function () {
+            reject(new Error("Could not load Clerk UI"));
+          };
+          document.head.appendChild(script);
+        });
+      }
+      if (!window.__internal_ClerkUICtor) throw new Error("Clerk UI did not initialize");
       await clerk.load({
+        ui: { ClerkUI: window.__internal_ClerkUICtor },
         appearance: appearance,
         signInUrl: "/sign-in",
         signUpUrl: "/sign-up",
