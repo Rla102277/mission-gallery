@@ -3,14 +3,15 @@
    theinfinitearch.com
    ═══════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;450;500;600;700&display=swap');
 
 /* ── TOKENS ── */
 :root {
   --ink:        #f2ede3;
   --cream:      #15201a;
   --warm:       #1c2922;
-  --gold:       #e8833a;
+  --gold:       #c9a24a;
+  --gold-paper: #7a5f18;
   --muted:      #d1cec5;
   --rule:       rgba(242,237,227,0.18);
   --rule-dark:  rgba(242,237,227,0.18);
@@ -18,7 +19,7 @@
   --forest:     #15201a;
   --paper:      #f2ede3;
   --body-copy:  #d1cec5;
-  --font-display: 'Oswald', sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'Inter', sans-serif;
   --nav-h:      92px;
   --page-max:   1400px;
@@ -47,7 +48,7 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 9999;
   opacity: 0.2;
@@ -284,8 +285,8 @@ body::before {
 /* THE NEXT PATH companion system. Public shells share this visual language. */
 html { scroll-padding-top: calc(var(--nav-h) + 24px); }
 body { min-height: 100dvh; font-weight: 400; line-height: 1.7; }
-body::before { opacity: .08; }
-::selection { background: var(--gold); color: var(--forest); }
+body::before { opacity: .06; }
+::selection { background: #15201a; color: #c9a24a; }
 button, input, select, textarea { font: inherit; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 6px; }
@@ -400,4 +401,56 @@ body .quote-attr { color: var(--gold); font-size: 10px; letter-spacing: .1em; ma
   html { scroll-behavior: auto !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
+}
+
+/* Quiet editorial companion: preserve the architecture, let the type breathe. */
+body { font-size: 16px; line-height: 1.7; }
+.nav-brand { font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 27px; }
+.nav-brand em, .footer-wordmark em { font-weight: 500; }
+.nav-brand small { font-size: 11px; letter-spacing: .18em; color: #c9a24a; text-transform: uppercase; }
+.nav-links a, .nav-mobile a { font-family: var(--font-body); }
+.nav-mobile a { text-transform: none; font-size: clamp(24px, 4vh, 34px); }
+.footer-left::before { content: none; }
+.footer-wordmark { display: block; font: 600 32px/1.15 var(--font-display); letter-spacing: normal; text-transform: none; color: var(--paper); margin-bottom: 20px; }
+.footer-quote, .footer-path-quote { font: italic 500 24px/1.4 var(--font-display); color: var(--paper); letter-spacing: normal; opacity: 1; }
+.footer-attr { font: 400 11px/1.7 var(--font-body); letter-spacing: .18em; color: #c9a24a; }
+.footer-sister { margin-top: 16px; padding-top: 22px; border-top: 1px solid var(--rule); max-width: 360px; }
+.footer-path-quote { margin-bottom: 12px; font-size: 23px; }
+.footer-sister-link { color: #c9a24a; font: 400 13px/1.7 var(--font-body); text-decoration: none; text-underline-offset: 4px; }
+.footer-sister-link:hover { text-decoration: underline; }
+.footer-copyright { margin-top: 12px; color: var(--body-copy); }
+body .hero-title, body .work-hero-title, body .gal-hero-title {
+  font: 500 clamp(56px, 8vw, 112px)/1.05 var(--font-display);
+  text-transform: none; letter-spacing: normal;
+}
+body .section-headline, body .work-gal-header h2, body .tile-title,
+body .gal-card-title, body .gal-photo-title, body .lb-title {
+  font-family: var(--font-display); font-weight: 500;
+  text-transform: none; letter-spacing: normal; line-height: 1.15;
+}
+body .gal-photo-title { font-size: 23px; }
+body .lb-title { font-size: 28px; }
+body .hero-subtitle, body .section-body, body .work-hero-desc, body .gal-hero-desc,
+body .tile-description { font-size: 16px; line-height: 1.7; letter-spacing: normal; }
+body .hero-eyebrow, body .section-label-vert, body .tile-tag, body .tile-number,
+body .work-hero-type, body .gal-hero-series, body .gal-card-num,
+body .wib-label, body .gib-label, body .wg-eyebrow, .label-sm {
+  font: 500 11px/1.7 var(--font-body); letter-spacing: .18em;
+  text-transform: uppercase; color: #c9a24a; opacity: 1;
+}
+body .tile, body .gal-card, body .gal-photo-cell, body .lightbox,
+body .work-hero, body .gal-hero, body .work-info-bar, body .gal-info-bar,
+body .quote-strip { background-color: #15201a; }
+body .lightbox { background: #15201a; }
+body .tile-vignette, body .gal-card-overlay {
+  background: linear-gradient(to top, rgba(21,32,26,.98), rgba(21,32,26,.55) 48%, transparent 82%);
+}
+body .gal-photo-hover, body .lb-meta { background: linear-gradient(to top, #15201a, rgba(21,32,26,.88) 65%, transparent); }
+body .quote-text { font: italic 500 clamp(26px, 3vw, 36px)/1.4 var(--font-display); color: var(--paper); }
+body .quote-attr { font: 500 11px/1.7 var(--font-body); letter-spacing: .18em; color: #c9a24a; }
+@media (max-width: 1050px) { .nav-brand { font-size: 23px; } }
+@media (max-width: 767px) {
+  .nav-brand { font-size: 22px; }
+  .nav-brand small { font-size: 11px; letter-spacing: .18em; }
+  .nav-logo { gap: 9px; }
 }

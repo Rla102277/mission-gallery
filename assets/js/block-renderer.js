@@ -77,7 +77,7 @@ var BlockRenderer = {
           '<div class="mh-rule-heavy"></div><div class="mh-rule-thin"></div>' +
           '<span class="mh-the">the</span>' +
           '<span class="mh-infinite">Infinite</span>' +
-          '<span class="mh-arch">ARCH</span>' +
+          '<span class="mh-arch">Arch</span>' +
           '<div class="mh-rule-thin-b"></div>' +
           '<span class="mh-tagline">' + (d.tagline || 'Beyond the Daydream') + '</span>' +
           '<div class="mh-rule-heavy-b"></div>' +
@@ -216,11 +216,12 @@ var BlockRenderer = {
   render_services_grid: function(d, state, id) {
     var items = d.items || [];
     var itemsHtml = items.map(function(item) {
-      return '<div class="service-card">' +
+      var trail = item.title === 'Trail and Lens';
+      return (trail ? '<a class="service-card" href="https://intelligent-crushing-unit.replit.app/ways-in">' : '<div class="service-card">') +
         '<h3 class="sc-title">' + (item.title || '') + '</h3>' +
         '<p class="sc-body">' + (item.body || '') + '</p>' +
         (item.price ? '<span class="sc-price">' + item.price + '</span>' : '') +
-      '</div>';
+      (trail ? '</a>' : '</div>');
     }).join('');
 
     return '<section class="blk-services" data-reveal="0" data-testid="blk-services-' + id + '">' +
@@ -500,11 +501,11 @@ BlockRenderer.PAGE_DEFAULTS = {
       { title:'Medium Format Patience', body:'The GFX system doesn&rsquo;t reward spray-and-pray. 102 megapixels asks you to slow down, choose your moment, and mean it. Technical mastery is what frees you to respond to what you couldn&rsquo;t plan for.' },
       { title:'The Wait', body:'The honest photograph isn&rsquo;t taken &mdash; it&rsquo;s waited for. Sometimes that means three hours in the cold. Sometimes it means coming back on the fifth day. The image that earns its place always knew you were willing to wait.' }
     ] } },
-    { id:'h8', type:'callout', data:{ eyebrow:'May 29&ndash;31, 2026 &middot; Guadalupe Mountains, Texas', title:'The Hope Hike', subtitle:'Adventure Wellness at the Top of Texas', body:'Ten participants. Three days. One summit. Guided by resilience speaker Tia Banks and documented through the lens of The Infinite Arch. Applications open through the WE CLIMB initiative.', ctaText:'Learn More', ctaUrl:'/pages/hope-hike.html' } },
+    { id:'h8', type:'callout', data:{ eyebrow:'MAY 2026 · GUADALUPE MOUNTAINS, TEXAS', title:'The Hope Hike', body:'Ten hikers. Three days. One summit at the top of Texas. Guided by resilience speaker Tia Banks and documented through the lens of The Infinite Arch.', ctaText:'See the story', ctaUrl:'/pages/hope-hike.html' } },
     { id:'h9', type:'services-grid', data:{ eyebrow:'Services', heading:'Ways to work together.', items:[
       { title:'Fine Art Prints', body:'Museum-quality archival prints from the expedition collections. Limited editions with certificates of authenticity. Sizes from 16&times;20 to 40&times;60 on premium papers.', price:'From $450 &middot; Worldwide shipping' },
       { title:'Commission Work', body:'Custom landscape and architectural photography for commercial clients, publications, and private collectors. Each project begins with a conversation about what you&rsquo;re actually trying to say.', price:'From $2,500 &middot; Custom quotes' },
-      { title:'Adventure Workshops', body:'Small-group expeditions combining landscape photography instruction with wilderness immersion. Not a photo tour &mdash; a genuine creative expedition into terrain that asks something of you.', price:'From $850 &middot; Limited availability' }
+      { title:'Trail and Lens', body:'Half-day photo hikes about learning to see again, run with The Next Path. Small groups, any camera.', price:'FROM $150 · SPRING 2027' }
     ] } },
     { id:'h10', type:'newsletter', data:{ eyebrow:'Stay Connected', heading:'New work. Expedition updates.<br>Nothing you didn&rsquo;t ask for.', body:'Monthly dispatches from the field &mdash; new collections, Hope Hike news, and early access to limited edition print releases.', placeholder:'your@email.com' } },
     { id:'h11', type:'quote', data:{ text:'Beautiful things don&rsquo;t ask for attention.', attribution:'Sean O&rsquo;Connell' } }
@@ -526,7 +527,7 @@ BlockRenderer.PAGE_DEFAULTS = {
   ],
 
   'hope-hike': [
-    { id:'hh1', type:'hero', data:{ variant:'centered', eyebrow:'The Infinite Arch Presents', title:'Hope', titleSub:'Hike', location:'Guadalupe Peak &middot; Texas', subtitle:'May 29 &ndash; 31, 2026', body:'A three-day expedition to the highest point in Texas, combining fine art landscape photography with a fundraising mission. Every step carries purpose &mdash; every frame tells the story of why we climb.' } },
+    { id:'hh1', type:'hero', data:{ variant:'centered', eyebrow:'MAY 2026 · GUADALUPE MOUNTAINS, TEXAS', title:'The Hope Hike', body:'Ten hikers. Three days. One summit at the top of Texas. Guided by resilience speaker Tia Banks and documented through the lens of The Infinite Arch.' } },
     { id:'hh2', type:'stats-bar', data:{ items:[{ value:'8,751\'', label:'Summit Elevation' }, { value:'3', label:'Days' }, { value:'&infin;', label:'Purpose' }] } },
     { id:'hh3', type:'purpose-quote', data:{ text:'\u201CThe summit is not the destination. It\u2019s the proof that you kept going.\u201D' } },
     { id:'hh4', type:'back-link', data:{ url:'/', text:'Return Home' } }

@@ -55,9 +55,9 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `contact` — 3 blocks (centered hero, email-link, back-link)
 
 ## Design System
-- **Public visual reference**: The Next Path (https://intelligent-crushing-unit.replit.app/). The two sites should feel related while retaining The Infinite Arch’s photography, content, and identity.
-- **Public palette and typography**: forest green (#15201A), warm cream (#F2EDE3), muted body text (#D1CEC5), and orange (#E8833A); Oswald display headings and Inter body text.
-- **Layout**: compact navigation, spacious left-aligned titles, two-tone homepage headline, contrasting button styles, responsive stacking. Shared styles live in `assets/css/tia.css` and `assets/css/blocks.css`. This direction does not apply to the CMS admin or sign-in flow.
+The public site is a sister to The Next Path: forest #15201A, cream #F2EDE3, Inter body and controls, shared layout, outlined final nav CTA and arch mark. The footer uses #111B16.
+
+The Infinite Arch has its own mixed-case Cormorant Garamond display type, italic quotes and wordmark emphasis, antique gold #C9A24A on dark and #7A5F18 on cream, and cream reading sections. Photographs, heroes, galleries and the lightbox stay on forest. Preserve focus indicators, skip navigation, reduced motion and responsive spacing. Admin and sign-in are separate.
 
 ## Key Files
 - `index.html` — Homepage thin shell (block-driven)
@@ -68,7 +68,7 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `pages/hope-hike.html` — Hope Hike thin shell (block-driven)
 - `pages/contact.html` — Contact thin shell (block-driven)
 - `pages/gallery.html` — Interactive gallery viewer (special-purpose, not block-driven)
-- `admin/index.html` — Admin panel (PIN-protected, case-insensitive "tia2026")
+- `admin/index.html` — Admin panel: PIN-protected (PIN stored privately)
 - `assets/js/block-renderer.js` — Block renderer engine with 22 block types + default seeds + initReveals()
 - `assets/js/tia-data.js` — TIA data layer v8 (helpers: getPageBlocks, getPageMeta, getAllGalleries, getWorkById, getGalleryPhotos)
 - `assets/js/tia.js` — Frontend site logic (scroll effects, mobile menu, page transitions)
