@@ -18,23 +18,31 @@ var BlockRenderer = {
   render_hero: function(d, state, id) {
     var v = d.variant || 'wordmark';
     if (v === 'wordmark') {
-      var bgStyle = '';
-      if (d.backgroundImage) {
-        var url = TIA.photoUrl(d.backgroundImage, 'hero');
-        if (url) bgStyle = ' style="background:linear-gradient(to bottom,rgba(13,13,13,0.6) 0%,rgba(13,13,13,0.35) 40%,rgba(13,13,13,0.7) 100%),url(\'' + url + '\') center/cover no-repeat"';
+      var heroPhoto = d.backgroundImage || (state.home && state.home.hero_bg);
+      if (!heroPhoto) {
+        (state.portfolioWorks || []).some(function(w) {
+          heroPhoto = w.featuredImageId || w.coverAssetId;
+          if (!heroPhoto) (w.galleries || []).some(function(g) {
+            heroPhoto = g.coverAssetId || (g.photos || [])[0];
+            return !!heroPhoto;
+          });
+          return !!heroPhoto;
+        });
       }
-      return '<section class="blk-hero blk-hero--wordmark" data-testid="blk-hero-' + id + '"' + bgStyle + '>' +
-        '<div class="hero-wordmark fade-up">' +
-          '<div class="hw-rule-top"></div><div class="hw-rule-thin"></div>' +
-          '<span class="hw-the">the</span>' +
-          '<span class="hw-infinite">Infinite</span>' +
-          '<span class="hw-arch">ARCH</span>' +
-          '<div class="hw-rule-thin-b"></div>' +
-          '<span class="hw-tagline">' + (d.tagline || 'Beyond the Daydream') + '</span>' +
-          '<div class="hw-rule-bot"></div>' +
+      var url = heroPhoto ? TIA.photoUrl(heroPhoto, 'hero') : '';
+      var tagline = (d.tagline || 'Beyond the Daydream').trim();
+      var words = tagline.split(/\s+/);
+      var lastWord = words.pop();
+      return '<section class="blk-hero blk-hero--wordmark" data-testid="blk-hero-' + id + '">' +
+        '<div class="hero-art"' + (url ? ' style="background-image:url(&quot;' + BlockRenderer.esc(url) + '&quot;)"' : '') + ' aria-hidden="true"></div>' +
+        '<div class="hero-copy fade-up">' +
+          '<p class="hero-eyebrow">' + (d.eyebrow || 'Fine Art Landscape Photography') + '</p>' +
+          '<h1 class="hero-title">' + BlockRenderer.esc(words.join(' ')) + '<span class="hero-accent">' + BlockRenderer.esc(lastWord) + '</span></h1>' +
+          '<p class="hero-intro">The Infinite Arch &mdash; landscape, light, and the moment before arrival.</p>' +
+          '<div class="hero-actions"><a class="tia-button" href="/pages/galleries.html">Explore the collections <span aria-hidden="true">&#8599;</span></a>' +
+          '<a class="tia-button tia-button--outline" href="/pages/about.html">The artist statement</a></div>' +
         '</div>' +
-        '<p class="hero-sub fade-up delay-3">' + (d.eyebrow || 'Fine Art Landscape Photography') + '</p>' +
-        '<div class="hero-scroll"><div class="scroll-line"></div><span>' + (d.scrollText || 'Enter') + '</span></div>' +
+        '<a class="hero-scroll" href="/pages/galleries.html"><div class="scroll-line"></div><span>' + (d.scrollText || 'Enter') + ' the collections &nbsp;&#8594;</span></a>' +
       '</section>';
     }
     if (v === 'standard') {
@@ -446,6 +454,10 @@ var BlockRenderer = {
 };
 
 BlockRenderer.initReveals = function() {
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('revealed'); });
+    return;
+  }
   var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
       if (entry.isIntersecting) {

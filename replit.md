@@ -55,11 +55,9 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `contact` — 3 blocks (centered hero, email-link, back-link)
 
 ## Design System
-- **Color Palette**: Light cream (#f5f0e8) background with dark ink (#0d0d0d) text EVERYWHERE. Hero sections and collection tiles stay dark (have own dark gradient backgrounds) with cream text. Gold (#b5922a) accents. NEVER set body to dark/ink background.
-- **Typography**: Playfair Display (headings), Cormorant Garamond (body)
-- **Visual Effects**: Grain overlay via body::before, radial gradient backgrounds, gold accent lines
-- **CSS Files**: `tia.css` (base/nav/footer) + `blocks.css` (all block type styles including portfolio statement, gear strip, work blocks, inquiry)
-- **CSS Variables**: `--rule-dark: rgba(13,13,13,0.12)` for borders, `--gold: #b5922a`
+- **Public visual reference**: The Next Path (https://intelligent-crushing-unit.replit.app/). The two sites should feel related while retaining The Infinite Arch’s photography, content, and identity.
+- **Public palette and typography**: forest green (#15201A), warm cream (#F2EDE3), muted body text (#D1CEC5), and orange (#E8833A); Oswald display headings and Inter body text.
+- **Layout**: compact navigation, spacious left-aligned titles, two-tone homepage headline, contrasting button styles, responsive stacking. Shared styles live in `assets/css/tia.css` and `assets/css/blocks.css`. This direction does not apply to the CMS admin or sign-in flow.
 
 ## Key Files
 - `index.html` — Homepage thin shell (block-driven)

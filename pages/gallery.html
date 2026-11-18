@@ -12,7 +12,6 @@
   <meta property="og:image" content="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
@@ -222,35 +221,12 @@
       .lb-meta { padding:16px 24px; }
     }
   </style>
+  <link rel="stylesheet" href="/assets/css/tia.css">
+  <link rel="stylesheet" href="/assets/css/blocks.css">
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <a href="../index.html" class="nav-mark">
-    <span class="nm-hr"></span><span class="nm-thin"></span>
-    <span class="nm-the">the</span><span class="nm-inf">Infinite</span>
-    <span class="nm-arch">ARCH</span><span class="nm-tag">Beyond the Daydream</span><span class="nm-bot"></span>
-  </a>
-  <div class="nav-links">
-    <a href="../index.html#featured">Featured</a>
-    <a href="./about.html">About</a>
-    <a href="./gallery.html" class="active">Gallery</a>
-    <a href="../index.html#contact">Contact</a>
-    <a href="./portfolio.html">Portfolio</a>
-  </div>
-  <div class="hamburger" id="ham" onclick="document.getElementById('mob').classList.toggle('open')">
-    <span></span><span></span><span></span>
-  </div>
-</nav>
-<div class="mob-menu" id="mob">
-  <span class="mob-close" onclick="document.getElementById('mob').classList.remove('open')">&#x2715;</span>
-  <a href="../index.html#featured">Featured</a>
-  <a href="./about.html">About</a>
-  <a href="./gallery.html">Gallery</a>
-  <a href="../index.html#contact">Contact</a>
-  <a href="./portfolio.html">Portfolio</a>
-</div>
+<main id="gallery-main">
 
 <!-- PAGE HEADER -->
 <header class="page-header">
@@ -308,15 +284,7 @@
   <span class="lb-next" onclick="lbNav(1)">&#8594;</span>
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <span class="footer-copy">&copy; 2026 The Infinite Arch</span>
-  <div class="footer-links">
-    <a href="../index.html">Home</a>
-    <a href="./portfolio.html">Portfolio</a>
-    <a href="../index.html#contact">Contact</a>
-  </div>
-</footer>
+</main>
 
 <script src="../assets/js/tia-data.js"></script>
 <script>
@@ -540,5 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCards();
 });
 </script>
+<script src="/assets/js/components.js"></script>
+<script src="/assets/js/tia.js"></script>
 </body>
 </html>

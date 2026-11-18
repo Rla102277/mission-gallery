@@ -21,16 +21,15 @@
     mobileLinks = '<a href="/">Home</a><a href="/pages/portfolio.html">Portfolio</a><a href="/pages/galleries.html">Galleries</a><a href="/pages/about.html">About</a><a href="/pages/prints.html">Prints</a><a href="/pages/hope-hike.html">Hope Hike</a><a href="/pages/contact.html">Contact</a>';
   }
 
-  var navHTML = '<nav class="tia-nav">' +
+  var navHTML = '<a class="skip-link" href="#main-content">Skip to content</a><nav class="tia-nav" aria-label="Main navigation">' +
     '<a href="/" class="nav-logo" aria-label="The Infinite Arch — Home">' +
-      '<div class="r-heavy"></div><div class="r-thin"></div>' +
-      '<span class="l-the">the</span><span class="l-infinite">Infinite</span><span class="l-arch">ARCH</span>' +
-      '<div class="r-bot"></div>' +
+      '<span class="nav-symbol" aria-hidden="true"></span>' +
+      '<span class="nav-brand">The Infinite Arch<small>Fine Art Landscape Photography</small></span>' +
     '</a>' +
     '<ul class="nav-links">' + navLinks + '</ul>' +
-    '<div class="nav-hamburger" aria-label="Menu" role="button" tabindex="0"><span></span><span></span><span></span></div>' +
+    '<button type="button" class="nav-hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-navigation"><span></span><span></span><span></span></button>' +
   '</nav>' +
-  '<div class="nav-mobile">' + mobileLinks + '</div>';
+  '<div class="nav-mobile" id="mobile-navigation" aria-label="Mobile navigation" inert>' + mobileLinks + '</div>';
 
   var footerQuote = ss && ss.footerQuote ? ss.footerQuote : 'Beautiful things don\u2019t ask for attention.';
   var footerAttr = ss && ss.footerAttr ? ss.footerAttr : 'Sean O\u2019Connell';
@@ -51,15 +50,6 @@
       '<div style="margin-top:12px; opacity:0.6;">&copy; ' + new Date().getFullYear() + ' The Infinite Arch</div>' +
     '</div>' +
     '<div class="footer-center">' +
-      '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:16px;">' +
-        '<div style="width:80px;height:2px;background:currentColor;opacity:0.15;"></div>' +
-        '<div style="width:80px;height:1px;background:currentColor;opacity:0.08;margin-bottom:10px;"></div>' +
-        '<span style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:9px;letter-spacing:7px;opacity:0.22;">the</span>' +
-        '<span style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:14px;letter-spacing:3px;opacity:0.32;">Infinite</span>' +
-        '<span style="font-family:\'Playfair Display\',serif;font-weight:900;font-size:36px;letter-spacing:-1px;opacity:0.22;line-height:1;">ARCH</span>' +
-        '<div style="width:80px;height:1px;background:currentColor;opacity:0.08;margin-top:10px;"></div>' +
-        '<div style="width:80px;height:2px;background:currentColor;opacity:0.15;"></div>' +
-      '</div>' +
       '<p class="footer-quote">&ldquo;' + footerQuote + '&rdquo;</p>' +
       '<span class="footer-attr">&mdash; ' + footerAttr + '</span>' +
     '</div>' +
@@ -68,5 +58,12 @@
 
   document.body.insertAdjacentHTML('afterbegin', navHTML);
   document.body.insertAdjacentHTML('beforeend', footerHTML);
+  var main = document.querySelector('main, .page-content, .story-page');
+  if (main) {
+    main.id = main.id || 'main-content';
+    if (main.tagName !== 'MAIN') main.setAttribute('role', 'main');
+    main.setAttribute('tabindex', '-1');
+    document.querySelector('.skip-link').href = '#' + main.id;
+  }
 
 })();
