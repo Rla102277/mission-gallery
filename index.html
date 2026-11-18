@@ -46,14 +46,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   var ogUrl = document.querySelector('meta[property="og:url"]');
   if (ogUrl) ogUrl.content = window.location.href;
-  var heroId = state.home && state.home.hero_bg;
-  if (heroId) {
-    var heroUrl = TIA.photoUrl(heroId, 'hero');
-    if (heroUrl) {
-      var heroEl = document.querySelector('.blk-hero--wordmark .hero-art');
-      if (heroEl) heroEl.style.backgroundImage = "url('" + heroUrl + "')";
-    }
-  }
   BlockRenderer.initReveals();
 });
 </script>

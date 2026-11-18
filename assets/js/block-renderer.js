@@ -15,29 +15,27 @@ var BlockRenderer = {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   },
 
+  hideUnavailableHero: function(img) {
+    var hero = img.closest('.blk-hero--wordmark');
+    if (hero) hero.classList.replace('has-hero-photo', 'no-hero-photo');
+  },
+
   render_hero: function(d, state, id) {
     var v = d.variant || 'wordmark';
     if (v === 'wordmark') {
-      var heroPhoto = d.backgroundImage || (state.home && state.home.hero_bg);
-      if (!heroPhoto) {
-        (state.portfolioWorks || []).some(function(w) {
-          heroPhoto = w.featuredImageId || w.coverAssetId;
-          if (!heroPhoto) (w.galleries || []).some(function(g) {
-            heroPhoto = g.coverAssetId || (g.photos || [])[0];
-            return !!heroPhoto;
-          });
-          return !!heroPhoto;
-        });
-      }
-      var url = heroPhoto ? TIA.photoUrl(heroPhoto, 'hero') : '';
+      var heroPhoto = d.backgroundImage;
+      var url = typeof heroPhoto === 'string' && /^https?:\/\//i.test(heroPhoto)
+        ? heroPhoto : heroPhoto ? TIA.photoUrl(heroPhoto, 'hero') : '';
+      var art = url ? '<div class="hero-art" aria-hidden="true"><img src="' + BlockRenderer.esc(url) +
+        '" alt="" fetchpriority="high" onerror="BlockRenderer.hideUnavailableHero(this)"></div>' : '';
       var tagline = (d.tagline || 'Beyond the Daydream').trim();
       var words = tagline.split(/\s+/);
       var lastWord = words.pop();
-      return '<section class="blk-hero blk-hero--wordmark" data-testid="blk-hero-' + id + '">' +
-        '<div class="hero-art"' + (url ? ' style="background-image:url(&quot;' + BlockRenderer.esc(url) + '&quot;)"' : '') + ' aria-hidden="true"></div>' +
+      return '<section class="blk-hero blk-hero--wordmark ' + (url ? 'has-hero-photo' : 'no-hero-photo') + '" data-testid="blk-hero-' + id + '">' +
+        art +
         '<div class="hero-copy fade-up">' +
           '<p class="hero-eyebrow">' + (d.eyebrow || 'Fine Art Landscape Photography') + '</p>' +
-          '<h1 class="hero-title">' + BlockRenderer.esc(words.join(' ')) + '<span class="hero-accent">' + BlockRenderer.esc(lastWord) + '</span></h1>' +
+          '<h1 class="hero-title">' + BlockRenderer.esc(words.join(' ')) + ' <span class="hero-accent">' + BlockRenderer.esc(lastWord) + '</span></h1>' +
           '<p class="hero-intro">The Infinite Arch &mdash; landscape, light, and the moment before arrival.</p>' +
           '<div class="hero-actions"><a class="tia-button" href="/pages/galleries.html">Explore the collections <span aria-hidden="true">&#8599;</span></a>' +
           '<a class="tia-button tia-button--outline" href="/pages/about.html">The artist statement</a></div>' +
