@@ -55,6 +55,8 @@ Each page has hardcoded default blocks in `BlockRenderer.PAGE_DEFAULTS`:
 - `contact` — 3 blocks (centered hero, email-link, back-link)
 
 ## Design System
+
+Public copy, including default content and quote attributions, never uses em dashes. Use a colon, comma, or period as appropriate.
 The public site is a sister to The Next Path: forest #15201A, cream #F2EDE3, Inter body and controls, shared layout, outlined final nav CTA and arch mark. The footer uses #111B16.
 
 The Infinite Arch has its own mixed-case Cormorant Garamond display type, italic quotes and wordmark emphasis, antique gold #C9A24A on dark and #7A5F18 on cream, and cream reading sections. Photographs, heroes, galleries and the lightbox stay on forest. Preserve focus indicators, skip navigation, reduced motion and responsive spacing. Admin and sign-in are separate.

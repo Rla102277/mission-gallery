@@ -36,7 +36,7 @@ var BlockRenderer = {
         '<div class="hero-copy fade-up">' +
           '<p class="hero-eyebrow">' + (d.eyebrow || 'Fine Art Landscape Photography') + '</p>' +
           '<h1 class="hero-title">' + BlockRenderer.esc(words.join(' ')) + ' <span class="hero-accent">' + BlockRenderer.esc(lastWord) + '</span></h1>' +
-          '<p class="hero-intro">The Infinite Arch &mdash; landscape, light, and the moment before arrival.</p>' +
+          '<p class="hero-intro">The Infinite Arch: landscape, light, and the moment before arrival.</p>' +
           '<div class="hero-actions"><a class="tia-button" href="/pages/galleries.html">Explore the collections <span aria-hidden="true">&#8599;</span></a>' +
           '<a class="tia-button tia-button--outline" href="/pages/about.html">The artist statement</a></div>' +
         '</div>' +
@@ -154,9 +154,9 @@ var BlockRenderer = {
   render_featured_list: function(d, state, id) {
     var works = (state.portfolioWorks || []);
     var defaultItems = [
-      { tag:'Expedition &middot; Iceland 2026', title:'Beyond the Daydream: Iceland', description:'429 photographs. 8 thematic series. January light in a country that barely sees the sun. From glacial silences at J&ouml;kuls&aacute;rl&oacute;n to aurora-lit skies above Sn&aelig;fellsnes &mdash; this is the project that defines what The Infinite Arch is built to do.' },
-      { tag:'Adventure Wellness &middot; May 2026', title:'The Hope Hike &mdash; Guadalupe Peak', description:'Ten people. One summit. Three days on the highest point in Texas with resilience speaker Tia Banks. This isn&rsquo;t adventure tourism &mdash; it&rsquo;s what happens when landscape becomes the therapist. Photography documents every step.' },
-      { tag:'Ongoing &middot; North Texas', title:'The Near Distance', description:'The land you drive past every day without stopping. Palo Duro Canyon at blue hour. The Llano Estacado in winter light. Texas landscape is undershot and overlooked &mdash; that&rsquo;s exactly why it belongs in the work.' }
+      { tag:'Expedition &middot; Iceland 2026', title:'Beyond the Daydream: Iceland', description:'429 photographs. 8 thematic series. January light in a country that barely sees the sun. From glacial silences at J&ouml;kuls&aacute;rl&oacute;n to aurora-lit skies above Sn&aelig;fellsnes: this is the project that defines what The Infinite Arch is built to do.' },
+      { tag:'Adventure Wellness &middot; May 2026', title:'The Hope Hike: Guadalupe Peak', description:'Ten people. One summit. Three days on the highest point in Texas with resilience speaker Tia Banks. This isn&rsquo;t adventure tourism. It&rsquo;s what happens when landscape becomes the therapist. Photography documents every step.' },
+      { tag:'Ongoing &middot; North Texas', title:'The Near Distance', description:'The land you drive past every day without stopping. Palo Duro Canyon at blue hour. The Llano Estacado in winter light. Texas landscape is undershot and overlooked. That&rsquo;s exactly why it belongs in the work.' }
     ];
     var items = d.items || (works.length ? works.map(function(w) {
       return { tag: (w.type || 'Series') + (w.location ? ' &middot; ' + w.location : ''), title: w.title || 'Untitled', description: w.description || '' };
@@ -247,7 +247,7 @@ var BlockRenderer = {
     return '<div class="blk-quote" data-reveal="0" data-testid="blk-quote-' + id + '">' +
       '<div class="qs-rule"></div>' +
       '<div><p class="qs-text">&ldquo;' + (d.text || '') + '&rdquo;</p>' +
-      (d.attribution ? '<span class="qs-attr">&mdash; ' + d.attribution + '</span>' : '') +
+      (d.attribution ? '<span class="qs-attr">' + d.attribution + '</span>' : '') +
       '</div>' +
       '<div class="qs-rule"></div>' +
     '</div>';
@@ -489,15 +489,15 @@ BlockRenderer.defaultBlocks = function(pageSlug) {
 BlockRenderer.PAGE_DEFAULTS = {
   home: [
     { id:'h1', type:'hero', data:{ variant:'wordmark', tagline:'Beyond the Daydream', eyebrow:'Fine Art Landscape Photography', scrollText:'Enter' } },
-    { id:'h2', type:'text', data:{ variant:'default', eyebrow:'The Vision', heading:'The arch frames what lies beyond.<br>Every image is a gateway.', body:'Most of us spend our lives just outside the frame &mdash; scrolling past the image, saving it for later, never quite arriving. I started chasing the places that couldn&rsquo;t be scrolled past.\n\nPhotography is where light becomes language and landscape becomes mirror. The most honest photographs aren&rsquo;t taken &mdash; they&rsquo;re waited for. Cold mornings, uncertain skies, the moment you raise the camera toward impossible light and believe something is there before you can see it.', ctaText:'Read the Full Statement', ctaUrl:'/pages/about.html' } },
+    { id:'h2', type:'text', data:{ variant:'default', eyebrow:'The Vision', heading:'The arch frames what lies beyond.<br>Every image is a gateway.', body:'Most of us spend our lives just outside the frame, scrolling past the image, saving it for later, never quite arriving. I started chasing the places that couldn&rsquo;t be scrolled past.\n\nPhotography is where light becomes language and landscape becomes mirror. The most honest photographs aren&rsquo;t taken. They&rsquo;re waited for. Cold mornings, uncertain skies, the moment you raise the camera toward impossible light and believe something is there before you can see it.', ctaText:'Read the Full Statement', ctaUrl:'/pages/about.html' } },
     { id:'h3', type:'divider', data:{} },
     { id:'h4', type:'collections-grid', data:{ heading:'Four bodies of work.<br>One way of seeing.', ctaText:'View All', ctaUrl:'/pages/galleries.html' } },
     { id:'h5', type:'featured-list', data:{ eyebrow:'Signature Projects', heading:'Work that required commitment to earn.' } },
     { id:'h6', type:'divider', data:{} },
     { id:'h7', type:'process-grid', data:{ eyebrow:'The Approach', heading:'How the photographs get made.', items:[
-      { title:'Research &amp; Arrival', body:'Locations are studied before they&rsquo;re visited. Weather patterns, golden hour windows, seasonal light &mdash; the expedition plan is built around the image, not the schedule. Arriving prepared means arriving open.' },
+      { title:'Research &amp; Arrival', body:'Locations are studied before they&rsquo;re visited. Weather patterns, golden hour windows, seasonal light. The expedition plan is built around the image, not the schedule. Arriving prepared means arriving open.' },
       { title:'Medium Format Patience', body:'The GFX system doesn&rsquo;t reward spray-and-pray. 102 megapixels asks you to slow down, choose your moment, and mean it. Technical mastery is what frees you to respond to what you couldn&rsquo;t plan for.' },
-      { title:'The Wait', body:'The honest photograph isn&rsquo;t taken &mdash; it&rsquo;s waited for. Sometimes that means three hours in the cold. Sometimes it means coming back on the fifth day. The image that earns its place always knew you were willing to wait.' }
+      { title:'The Wait', body:'The honest photograph isn&rsquo;t taken. It&rsquo;s waited for. Sometimes that means three hours in the cold. Sometimes it means coming back on the fifth day. The image that earns its place always knew you were willing to wait.' }
     ] } },
     { id:'h8', type:'callout', data:{ eyebrow:'MAY 2026 · GUADALUPE MOUNTAINS, TEXAS', title:'The Hope Hike', body:'Ten hikers. Three days. One summit at the top of Texas. Guided by resilience speaker Tia Banks and documented through the lens of The Infinite Arch.', ctaText:'See the story', ctaUrl:'/pages/hope-hike.html' } },
     { id:'h9', type:'services-grid', data:{ eyebrow:'Services', heading:'Ways to work together.', items:[
@@ -505,7 +505,7 @@ BlockRenderer.PAGE_DEFAULTS = {
       { title:'Commission Work', body:'Custom landscape and architectural photography for commercial clients, publications, and private collectors. Each project begins with a conversation about what you&rsquo;re actually trying to say.', price:'From $2,500 &middot; Custom quotes' },
       { title:'Trail and Lens', body:'Half-day photo hikes about learning to see again, run with The Next Path. Small groups, any camera.', price:'FROM $150 · SPRING 2027' }
     ] } },
-    { id:'h10', type:'newsletter', data:{ eyebrow:'Stay Connected', heading:'New work. Expedition updates.<br>Nothing you didn&rsquo;t ask for.', body:'Monthly dispatches from the field &mdash; new collections, Hope Hike news, and early access to limited edition print releases.', placeholder:'your@email.com' } },
+    { id:'h10', type:'newsletter', data:{ eyebrow:'Stay Connected', heading:'New work. Expedition updates.<br>Nothing you didn&rsquo;t ask for.', body:'Monthly dispatches from the field: new collections, Hope Hike news, and early access to limited edition print releases.', placeholder:'your@email.com' } },
     { id:'h11', type:'quote', data:{ text:'Beautiful things don&rsquo;t ask for attention.', attribution:'Sean O&rsquo;Connell' } }
   ],
 
@@ -513,8 +513,8 @@ BlockRenderer.PAGE_DEFAULTS = {
     { id:'a1', type:'hero', data:{ variant:'masthead', tagline:'Beyond the Daydream', label:'Artist Statement &nbsp;&middot;&nbsp; Fine Art Landscape Photography' } },
     { id:'a2', type:'text', data:{ variant:'pull-quote', line1:'Most of us spend our lives just outside the frame.', line2:'We scroll past the image, save it for later, and move on. The daydream is the beautiful moment we never quite inhabit.' } },
     { id:'a3', type:'divider', data:{} },
-    { id:'a4', type:'text', data:{ variant:'article', body:'<p>I started chasing the places that couldn\u2019t be scrolled past.</p><p>The Infinite Arch is built on a belief that the most honest photographs aren\u2019t taken \u2014 they\u2019re <em>waited for</em>. They come to the photographer who arrives early, stays late, and returns when the light changes. Who understands that the arch in the rock and the arch of a life are describing the same passage: a threshold between what was and what\u2019s possible.</p><p>I shoot with Fujifilm\u2019s GFX medium format system because the format demands presence. You can\u2019t spray and pray at 102 megapixels. You choose your moment, and you mean it. My kit is the GFX 100RF, the GFX 50R, the X-E5, and a Konica Hexar \u2014 each one chosen for what it sees, not what it proves.</p><p>This is photography as contemplation. Landscape as mirror. Light as metaphor.</p><p>Sean O\u2019Connell didn\u2019t say <em>number 25 is technically perfect</em> or <em>compositionally superior</em>. He said it was the quintessence of life. The difference matters to me. He was talking about the photograph that captured something true \u2014 not flawless, but undeniably alive. That\u2019s the standard I\u2019m chasing. Not the image that impresses, but the one that\u2019s irreplaceable. The one I had to be cold for, had to wait for, had to raise the camera toward the impossible light and believe something was there before I could see it. This is what I came for. This is the quintessence of life.</p>', closing:'Welcome to the other side of the daydream.' } },
-    { id:'a5', type:'quote', data:{ text:'Beautiful things don\u2019t ask for attention.', attribution:'Sean O\u2019Connell' } }
+    { id:'a4', type:'text', data:{ variant:'article', body:'<p>I started chasing the places that couldn\u2019t be scrolled past.</p><p>The Infinite Arch is built on a belief that the most honest photographs aren\u2019t taken. They\u2019re <em>waited for</em>. They come to the photographer who arrives early, stays late, and returns when the light changes. Who understands that the arch in the rock and the arch of a life are describing the same passage: a threshold between what was and what\u2019s possible.</p><p>I shoot with Fujifilm\u2019s GFX medium format system because the format demands presence. You can\u2019t spray and pray at 102 megapixels. You choose your moment, and you mean it. My kit is the GFX 100RF, the GFX 50R, the X-E5, and a Konica Hexar, each one chosen for what it sees, not what it proves.</p><p>This is photography as contemplation. Landscape as mirror. Light as metaphor.</p><p>Sean O\u2019Connell didn\u2019t say <em>number 25 is technically perfect</em> or <em>compositionally superior</em>. He said it was the quintessence of life. The difference matters to me. He was talking about the photograph that captured something true, not flawless, but undeniably alive. That\u2019s the standard I\u2019m chasing. Not the image that impresses, but the one that\u2019s irreplaceable. The one I had to be cold for, had to wait for, had to raise the camera toward the impossible light and believe something was there before I could see it. This is what I came for. This is the quintessence of life.</p>', closing:'Welcome to the other side of the daydream. The next path starts here.' } },
+    { id:'a5', type:'quote', data:{ text:"To see the world, things dangerous to come to, to see behind walls, to draw closer, to find each other, and to feel. That is the purpose of life.", attribution:'The motto of Life magazine, and the heart of The Secret Life of Walter Mitty' } }
   ],
 
   prints: [
@@ -536,9 +536,9 @@ BlockRenderer.PAGE_DEFAULTS = {
       eyebrow:'Artist Statement',
       title:'The photograph isn\u2019t made. It\u2019s waited for.',
       byline:'Randy Allen &nbsp;&middot;&nbsp; <strong>The Infinite Arch</strong> &nbsp;&middot;&nbsp; Fine Art Landscape Photography',
-      quote:'\u201CThe most honest photographs aren\u2019t taken \u2014 they\u2019re waited for. They come to the photographer who arrives early, stays late, and returns when the light changes.\u201D',
-      body:'<p>The Infinite Arch takes its name from two things at once: the natural arch in rock and the arch of a human life. Both describe the same passage \u2014 a threshold between what was and what\u2019s possible.</p><p>I shoot with Fujifilm\u2019s GFX medium format system because 102 megapixels demands intention. Every frame is a choice. Every trip into the field is a commitment to be present for whatever the light decides to do.</p><p>This work is landscape as contemplation. The camera is the last step in a process that begins with arriving, waiting, and being willing to return. The image is the record of that patience.</p>',
-      signature:'\u2014 Beyond the Daydream'
+      quote:'\u201CThe most honest photographs aren\u2019t taken. They\u2019re waited for. They come to the photographer who arrives early, stays late, and returns when the light changes.\u201D',
+      body:'<p>The Infinite Arch takes its name from two things at once: the natural arch in rock and the arch of a human life. Both describe the same passage: a threshold between what was and what\u2019s possible.</p><p>I shoot with Fujifilm\u2019s GFX medium format system because 102 megapixels demands intention. Every frame is a choice. Every trip into the field is a commitment to be present for whatever the light decides to do.</p><p>This work is landscape as contemplation. The camera is the last step in a process that begins with arriving, waiting, and being willing to return. The image is the record of that patience.</p>',
+      signature:'Beyond the Daydream'
     } },
     { id:'pf2', type:'gear-strip', data:{
       label:'System',
@@ -557,7 +557,7 @@ BlockRenderer.PAGE_DEFAULTS = {
   ],
 
   contact: [
-    { id:'c1', type:'hero', data:{ variant:'centered', eyebrow:'The Infinite Arch', title:'Contact', subtitle:'Let\u2019s talk about light', body:'For print inquiries, collaboration proposals, licensing, or simply to say hello \u2014 reach out below.' } },
+    { id:'c1', type:'hero', data:{ variant:'centered', eyebrow:'The Infinite Arch', title:'Contact', subtitle:'Let\u2019s talk about light', body:'For print inquiries, collaboration proposals, licensing, or simply to say hello, reach out below.' } },
     { id:'c2', type:'email-link', data:{ email:'hello@theinfinitearch.com' } },
     { id:'c3', type:'back-link', data:{ url:'/', text:'Return Home' } }
   ]

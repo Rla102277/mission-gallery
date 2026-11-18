@@ -116,7 +116,7 @@ async function run(): Promise<void> {
     slug: STORY_SLUG,
     title: "Where Dragons Fly",
     heroImageId: IMAGE_ID,
-    shortCaption: "The road to Landmannalaugar — a track so raw it felt less like a path than a dare.",
+    shortCaption: "The road to Landmannalaugar, a track so raw it felt less like a path than a dare.",
     location: "Iceland",
     camera: "GFX 100S II",
     year: 2025,
@@ -124,7 +124,7 @@ async function run(): Promise<void> {
     blocks: [
       {
         type: "text",
-        html: "The road to Landmannalaugar — a track so raw it felt less like a path than a dare. Volcanic gravel, river crossings, the kind of grade that makes you wonder whether the vehicle will hold or the mountain will win. I drove it alone, in early September, when the summer crowds had thinned and the highland felt properly abandoned. The light came in low and amber, the way it does when Iceland decides to be generous. I pulled over where the road bent through a field of obsidian and rhyolite, the colours absurd — rust, chartreuse, violet — and waited. Nothing happened for a long time. Then the wind shifted, a gap opened in the overcast, and for about forty seconds the entire valley was lit from below the clouds. I made the frame. The dragons, if they were ever here, had long since moved on. But the ground still looked like theirs."
+        html: "The road to Landmannalaugar, a track so raw it felt less like a path than a dare. Volcanic gravel, river crossings, the kind of grade that makes you wonder whether the vehicle will hold or the mountain will win. I drove it alone, in early September, when the summer crowds had thinned and the highland felt properly abandoned. The light came in low and amber, the way it does when Iceland decides to be generous. I pulled over where the road bent through a field of obsidian and rhyolite, the colours absurd, rust, chartreuse, and violet, and waited. Nothing happened for a long time. Then the wind shifted, a gap opened in the overcast, and for about forty seconds the entire valley was lit from below the clouds. I made the frame. The dragons, if they were ever here, had long since moved on. But the ground still looked like theirs."
       },
       {
         type: "image",

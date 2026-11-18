@@ -224,7 +224,7 @@ function registerRoutes() {
     let mode = rawMode;
     const systemPrompt = "You are a writing assistant for a fine-art photography portfolio website called The Infinite Arch. " +
       "The photographer specializes in landscape and expedition photography with a Fujifilm GFX system. " +
-      "The tone is: literary, contemplative, precise — like a quiet essay. Avoid clichés, marketing speak, and exclamation marks. " +
+      "The tone is: literary, contemplative, precise, like a quiet essay. Avoid clichés, marketing speak, em dashes, and exclamation marks. " +
       "Keep the voice grounded and authentic. Do not use em-dashes excessively.";
     const isPhoto = context.entity === "photo";
     const fieldHints: Record<string, string> = {
@@ -233,7 +233,7 @@ function registerRoutes() {
       caption: "Write one short caption line for this single photograph (under 15 words).",
       altText: "Write concise, factual alt text describing what is visible in this photograph, for accessibility and image SEO (under 125 characters). Plain description, no artistic flourish, no 'image of' prefix.",
       storyTitle: "Write a short, literary title for this photograph's story page (under 8 words). No quotes.",
-      storyBody: "Write 2-4 short paragraphs telling the story behind this photograph — the place, the moment, the intent. Separate paragraphs with a blank line. Plain text only, no headings or markdown.",
+      storyBody: "Write 2-4 short paragraphs telling the story behind this photograph: the place, the moment, the intent. Separate paragraphs with a blank line. Plain text only, no headings or markdown.",
     };
     if (isPhoto) {
       fieldHints.title = "Write a short, evocative display title for this single photograph (under 8 words). No quotes.";
@@ -480,7 +480,7 @@ function storyPageShell(imageId: string, meta: any): string {
       editionHtml = `<div class="story-edition" data-testid="story-edition">` +
         (soldOut
           ? `<span class="story-edition-status sold-out">Sold out</span><span class="story-edition-detail">Edition of ${size}</span>`
-          : `<span class="story-edition-status">Edition &mdash; of ${size}</span><span class="story-edition-detail">${sold} of ${size} sold</span>`) +
+          : `<span class="story-edition-status">Edition of ${size}</span><span class="story-edition-detail">${sold} of ${size} sold</span>`) +
         `</div>`;
     } else {
       editionHtml = `<div class="story-edition" data-testid="story-edition"><span class="story-edition-status">Open edition</span></div>`;
@@ -498,7 +498,7 @@ function storyPageShell(imageId: string, meta: any): string {
   if (sellable && !soldOutLimited) {
     const opts = printSizes.map((s: any, i: number) => {
       const label = escHtml(s.label || s.size || `Size ${i + 1}`);
-      const price = s.price != null && s.price !== "" ? ` — $${escHtml(s.price)}` : "";
+      const price = s.price != null && s.price !== "" ? `: $${escHtml(s.price)}` : "";
       return `<option value="${i}">${label}${price}</option>`;
     }).join("");
     buyHtml = `<div class="story-buy" data-testid="story-buy">

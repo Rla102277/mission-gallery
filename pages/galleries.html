@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Infinite Arch — Galleries</title>
+<title>The Infinite Arch: Galleries</title>
 <meta name="description" content="Fine art landscape photography galleries by Randy Allen. Explore works, collections, and series.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="The Infinite Arch — Galleries">
+<meta property="og:title" content="The Infinite Arch: Galleries">
 <meta property="og:description" content="Fine art landscape photography galleries by Randy Allen. Explore works, collections, and series.">
 <meta property="og:url" content="">
 <meta property="og:image" content="">
@@ -943,7 +943,7 @@
     <span class="section-label-vert">Collection Sets</span>
     <div class="section-text">
       <p class="section-headline">Four bodies of work.<br>One way of seeing.</p>
-      <p class="section-body">Each collection set is a different threshold &mdash; a different way of arriving at the moment the camera earns its place. Click to explore its collections and folders.</p>
+      <p class="section-body">Each collection set is a different threshold, a different way of arriving at the moment the camera earns its place. Click to explore its collections and folders.</p>
     </div>
   </div>
 
@@ -954,7 +954,7 @@
     <div>
       <p class="quote-text">
         &ldquo;Beautiful things don&rsquo;t ask for attention.&rdquo;
-        <span class="quote-attr">&mdash; Sean O&rsquo;Connell</span>
+        <span class="quote-attr">Sean O&rsquo;Connell</span>
       </p>
     </div>
     <div class="quote-rule"></div>
@@ -1132,8 +1132,8 @@ function renderWorkView(workId) {
       '</div>' +
     '</section>' +
     '<div class="work-info-bar" data-testid="work-info-bar">' +
-      '<div><span class="wib-label">Camera</span><div class="wib-val">' + (work.camera || '&mdash;') + '</div></div>' +
-      '<div><span class="wib-label">Location</span><div class="wib-val">' + (work.location || '&mdash;') + '</div></div>' +
+      '<div><span class="wib-label">Camera</span><div class="wib-val">' + (work.camera || 'Not listed') + '</div></div>' +
+      '<div><span class="wib-label">Location</span><div class="wib-val">' + (work.location || 'Not listed') + '</div></div>' +
       '<div><span class="wib-label">Collections</span><div class="wib-val">' + (galCount ? galCount + ' collection' + (galCount !== 1 ? 's' : '') : 'None yet') + '</div></div>' +
     '</div>' +
     '<div class="work-gal-section">' +
@@ -1254,9 +1254,9 @@ function renderGalleryView(workId, galId) {
       '</div>' +
     '</section>' +
     '<div class="gal-info-bar" data-testid="gallery-info-bar">' +
-      '<div><span class="gib-label">Camera</span><div class="gib-val">' + (work.camera || '&mdash;') + '</div></div>' +
-      '<div><span class="gib-label">Location</span><div class="gib-val">' + (gallery.location || work.location || '&mdash;') + '</div></div>' +
-      '<div><span class="gib-label">' + (hasFolders ? 'Total Frames' : 'Frames') + '</span><div class="gib-val">' + (totalPhotos || '&mdash;') + '</div></div>' +
+      '<div><span class="gib-label">Camera</span><div class="gib-val">' + (work.camera || 'Not listed') + '</div></div>' +
+      '<div><span class="gib-label">Location</span><div class="gib-val">' + (gallery.location || work.location || 'Not listed') + '</div></div>' +
+      '<div><span class="gib-label">' + (hasFolders ? 'Total Frames' : 'Frames') + '</span><div class="gib-val">' + (totalPhotos || 'Not listed') + '</div></div>' +
     '</div>' +
     contentHtml;
 }
@@ -1312,10 +1312,10 @@ function renderFolderView(workId, galId, folderId) {
       '</div>' +
     '</section>' +
     '<div class="gal-info-bar" data-testid="folder-info-bar">' +
-      '<div><span class="gib-label">Collection</span><div class="gib-val">' + (gallery.title || '&mdash;') + '</div></div>' +
+      '<div><span class="gib-label">Collection</span><div class="gib-val">' + (gallery.title || 'Not listed') + '</div></div>' +
       (folder.camera ? '<div><span class="gib-label">Camera</span><div class="gib-val">' + folder.camera + '</div></div>' : '') +
       (folder.location ? '<div><span class="gib-label">Location</span><div class="gib-val">' + folder.location + '</div></div>' : '') +
-      '<div><span class="gib-label">Frames</span><div class="gib-val">' + (photos.length || '&mdash;') + '</div></div>' +
+      '<div><span class="gib-label">Frames</span><div class="gib-val">' + (photos.length || 'Not listed') + '</div></div>' +
     '</div>' +
     '<div class="gal-photo-section">' +
       '<div class="gal-photo-grid" data-testid="photo-grid">' + photosHtml + '</div>' +

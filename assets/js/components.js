@@ -22,7 +22,7 @@
   }
 
   var navHTML = '<a class="skip-link" href="#main-content">Skip to content</a><nav class="tia-nav" aria-label="Main navigation">' +
-    '<a href="/" class="nav-logo" aria-label="The Infinite Arch — Home">' +
+    '<a href="/" class="nav-logo" aria-label="The Infinite Arch: Home">' +
       '<span class="nav-symbol" aria-hidden="true"></span>' +
       '<span class="nav-brand">The <em>Infinite</em> Arch<small>Fine Art Landscape Photography</small></span>' +
     '</a>' +
